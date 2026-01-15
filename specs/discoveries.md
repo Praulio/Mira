@@ -70,3 +70,24 @@
   - **Migración generada:** `db/migrations/0001_brave_moonstone.sql` contiene la creación de enums, tablas, foreign keys e índices.
   - **Patrón de Índices:** Se priorizan índices en columnas usadas frecuentemente en WHERE y JOIN clauses (assignee, status, created_at).
   - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts), build completado exitosamente en 919ms. Schema compila sin errores TypeScript.
+- **2026-01-15:** Sesión 2.2: Server Action - createTask.
+  - **Zod 4.3.5:** Ya instalado como dependencia transitiva de `eslint-plugin-react-hooks`. No requirió instalación adicional.
+  - **Archivo creado:**
+    - `app/actions/tasks.ts`: Server Action para crear tareas con validación Zod, logging de actividad y revalidación de rutas.
+  - **Patrón de Server Actions:**
+    - Directiva `'use server'` al inicio del archivo.
+    - Tipo estandarizado `ActionResponse<T>` con campos `success`, `data?`, `error?`.
+    - Autenticación con `auth()` de Clerk antes de cualquier operación.
+    - Validación de input con `safeParse()` de Zod, retornando el primer error de validación.
+    - Manejo de errores con try-catch y logs en consola.
+    - Uso de `revalidatePath()` para invalidar cache de rutas relevantes (/, /kanban, /backlog).
+  - **Schema de Validación:**
+    - `title`: String requerido, máximo 200 caracteres.
+    - `description`: String opcional, máximo 2000 caracteres.
+    - `assigneeId`: String opcional para asignar la tarea a un usuario.
+  - **Lógica de Creación:**
+    - Status por defecto: `'backlog'` (definido en schema de DB).
+    - Inserción en tabla `tasks` con `.returning()` para obtener el registro creado.
+    - Inserción en tabla `activity` con action `'created'` y metadata con título y assigneeId.
+  - **Bug Resuelto:** Error TypeScript inicial al usar `validationResult.error.errors[0]` en Zod 4.x. La propiedad correcta es `validationResult.error.issues[0]` en versiones modernas de Zod.
+  - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts). Build completado exitosamente en 829ms. TypeScript compila sin errores.

@@ -27,7 +27,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **2.1** Definir Schema de Base de Datos
   - Archivo: `db/schema.ts`.
   - Tablas: `users`, `tasks`, `activity` con sus respectivos enums e índices.
-- [ ] **2.2** Server Action: `createTask`
+- [x] **2.2** Server Action: `createTask`
   - Validar con Zod.
   - Insertar en DB y revalidatePath.
 - [ ] **2.3** Server Action: `updateTaskStatus` (Lógica Crítica)
