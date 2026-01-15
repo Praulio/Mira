@@ -52,7 +52,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Usar `setInterval` o `swr/react-query` para refrescar el dashboard cada 30s.
 
 ### Fase 4: Kanban & Drag (UX)
-- [ ] **4.1** Tablero Kanban Base
+- [x] **4.1** Tablero Kanban Base
   - Renderizar 4 columnas fijas: Backlog, To Do, In Progress, Done.
 - [ ] **4.2** Integración de `@dnd-kit`
   - Implementar drag and drop entre columnas.

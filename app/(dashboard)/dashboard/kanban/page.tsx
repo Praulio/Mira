@@ -1,32 +1,54 @@
-// Force dynamic rendering since this requires authentication
-export const dynamic = 'force-dynamic'
+import { getKanbanData } from '@/app/actions/kanban';
+import { KanbanColumn } from '@/components/kanban-column';
 
-export default function KanbanPage() {
+// Force dynamic rendering since this requires authentication
+export const dynamic = 'force-dynamic';
+
+/**
+ * Kanban Board Page - Displays tasks organized in 4 columns by status
+ * 
+ * Following React Best Practices:
+ * - Server Component for data fetching (no client-side waterfalls)
+ * - Single query fetches all tasks with related data
+ * - Pure presentational child components
+ */
+export default async function KanbanPage() {
+  // Fetch kanban data server-side
+  const kanbanData = await getKanbanData();
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Kanban Board</h2>
         <p className="text-neutral-600 dark:text-neutral-400">
-          Drag and drop tasks between columns
+          Organize and track your tasks across four stages
         </p>
       </div>
 
-      {/* Placeholder for Kanban board (Task 4.1) */}
-      <div className="grid grid-cols-4 gap-4">
-        {["Backlog", "To Do", "In Progress", "Done"].map((status) => (
-          <div
-            key={status}
-            className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-          >
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-400">
-              {status}
-            </h3>
-            <div className="space-y-2">
-              <div className="h-24 rounded border-2 border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800" />
-            </div>
-          </div>
-        ))}
+      {/* Kanban Board - 4 columns */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <KanbanColumn
+          title="Backlog"
+          tasks={kanbanData.backlog}
+          statusColor="neutral"
+        />
+        <KanbanColumn
+          title="To Do"
+          tasks={kanbanData.todo}
+          statusColor="blue"
+        />
+        <KanbanColumn
+          title="In Progress"
+          tasks={kanbanData.in_progress}
+          statusColor="amber"
+        />
+        <KanbanColumn
+          title="Done"
+          tasks={kanbanData.done}
+          statusColor="green"
+        />
       </div>
     </div>
-  )
+  );
 }

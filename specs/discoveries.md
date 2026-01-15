@@ -274,3 +274,34 @@
     - Para testear en Chrome: Ejecutar `npm run dev`, abrir `/dashboard`, verificar en console logs cada 30s.
     - Observar que las tareas in_progress se actualizan automáticamente si se modifican en otra pestaña o por otro usuario.
   - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1408.7ms con Turbopack. TypeScript compila sin errores. Componente client importado correctamente en Server Component.
+- **2026-01-15:** Sesión 4.1: Tablero Kanban Base.
+  - **Archivos creados:**
+    - `app/actions/kanban.ts`: Server Action `getKanbanData()` que retorna tareas agrupadas por status (backlog, todo, in_progress, done).
+    - `components/task-card.tsx`: Componente presentacional para renderizar una tarea individual con título, descripción, assignee y tiempo relativo.
+    - `components/kanban-column.tsx`: Componente presentacional para renderizar una columna del Kanban con header, contador de tareas y lista de TaskCards.
+  - **Archivos actualizados:**
+    - `app/(dashboard)/dashboard/kanban/page.tsx`: Reemplazado placeholder con implementación real usando `getKanbanData()` y componentes `KanbanColumn`.
+  - **Patrón de Data Fetching:**
+    - Server Component en `page.tsx` ejecuta `await getKanbanData()` para fetch server-side (evita client-side waterfalls - Best Practice 1.1).
+    - `getKanbanData()` usa LEFT JOIN para obtener assignee data en una sola query, luego paralleliza queries de creator data con Promise.all (Best Practice 1.4).
+    - Tareas ordenadas por `updatedAt DESC` para mostrar las más recientes primero.
+    - Retorna objeto `KanbanData` con arrays por status: `{ backlog: [], todo: [], in_progress: [], done: [] }`.
+  - **Componentes implementados:**
+    - **TaskCard:** Muestra título (máx 200 chars), descripción truncada con `line-clamp-2`, avatar del assignee (Next.js Image con width/height - Best Practice 2.1), y tiempo relativo con helper `getRelativeTime()` (Best Practice 7.8 - early returns).
+    - **KanbanColumn:** Renderiza header con título y badge de contador con color dinámico por status (neutral/blue/amber/green), lista de TaskCards, y estado vacío con "No tasks" cuando no hay tareas.
+  - **Optimizaciones de Performance:**
+    - Next.js Image component para avatares (Best Practice 2.1).
+    - Componentes puros presentacionales sin data fetching (minimiza serialización en RSC boundary - Best Practice 3.2).
+    - Helper `getRelativeTime()` con early returns (Best Practice 7.8).
+    - Helper `getColorClasses()` con switch statement para mapeo status → colores Tailwind.
+  - **Responsive Grid:**
+    - CSS classes: `grid-cols-1 md:grid-cols-2 xl:grid-cols-4` para layout 1xN (mobile), 2x2 (tablet), 1x4 (desktop).
+    - Altura mínima de columna: `min-h-[600px]` para evitar colapso con pocas tareas.
+    - Columnas con `overflow-y-auto` para scroll independiente cuando hay muchas tareas.
+  - **Tipos Exportados:**
+    - `KanbanTaskData`: Task con assignee y creator info completa.
+    - `KanbanData`: Objeto con arrays de tasks por status.
+  - **Manejo de Estados Vacíos:**
+    - Cada columna muestra placeholder "No tasks" con border dashed cuando no hay tareas en ese status.
+    - `getKanbanData()` retorna estructura vacía en caso de error (try-catch con console.error).
+  - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1403.8ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard/kanban` renderiza correctamente con 4 columnas.
