@@ -11,7 +11,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **1.1** Setup del proyecto Next.js 15
   - Comando: `npx create-next-app@latest . --ts --tailwind --eslint --app`
   - Instalar dependencias base: `lucide-react`, `clsx`, `tailwind-merge`.
-- [ ] **1.2** Configurar Clerk Auth
+- [x] **1.2** Configurar Clerk Auth
   - Instalar `@clerk/nextjs`.
   - Configurar Middleware y variables de entorno.
   - Crear página de Login/Sign-up básica.
