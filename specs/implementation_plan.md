@@ -56,7 +56,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Renderizar 4 columnas fijas: Backlog, To Do, In Progress, Done.
 - [x] **4.2** Integración de `@dnd-kit`
   - Implementar drag and drop entre columnas.
-- [ ] **4.3** Optimistic UI para Kanban
+- [x] **4.3** Optimistic UI para Kanban
   - Asegurar que el cambio visual sea instantáneo antes de que termine la Server Action.
 
 ### Fase 5: Activity, Polish & E2E

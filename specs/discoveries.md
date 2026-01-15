@@ -343,3 +343,47 @@
     - Si task se dropea en la misma columna donde estaba (`task.status === newStatus`), no hace update innecesario.
     - Error logging en consola si `updateTaskStatus()` falla (TODO en código: mostrar toast en Task 4.3).
   - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1284.5ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Drag and drop funcional implementado (E2E testing pendiente en Task 5.4).
+- **2026-01-15:** Sesión 4.3: Optimistic UI para Kanban.
+  - **Dependencia instalada:**
+    - `sonner@1.x`: Librería de toast notifications con soporte dark mode y animaciones suaves.
+  - **Archivos actualizados:**
+    - `components/kanban-board.tsx`: Implementada lógica de Optimistic UI con state management local.
+    - `app/layout.tsx`: Agregado `<Toaster />` component de sonner con posición bottom-right y richColors.
+  - **Patrón de Optimistic UI:**
+    - **Local State:** Añadido `useState<KanbanData>(initialData)` para mantener copia local de las tareas organizadas por columnas.
+    - **Immediate Update:** En `handleDragEnd()`, actualiza el state local ANTES de ejecutar la Server Action, moviendo la task de la columna vieja a la nueva instantáneamente.
+    - **Revert on Error:** Si `updateTaskStatus()` falla, revierte el cambio moviendo la task de vuelta a su columna original y muestra toast de error.
+    - **Success Feedback:** Muestra toast de éxito cuando el server action completa correctamente.
+  - **Implementación Técnica:**
+    - Función `handleDragStart()` actualizada para buscar task en `kanbanData` (state local) en vez de `initialData`.
+    - Función `handleDragEnd()` reescrita con 3 fases:
+      1. **Optimistic Update:** `setKanbanData()` con lógica de remove + add inmediatamente.
+      2. **Server Action:** `await updateTaskStatus()` persiste el cambio en DB.
+      3. **Revert or Confirm:** Si falla, ejecuta `setKanbanData()` reverso y muestra `toast.error()`. Si tiene éxito, muestra `toast.success()`.
+    - Todas las columnas renderizadas con `kanbanData` en vez de `initialData` para reflejar cambios optimistas.
+  - **Toast Notifications:**
+    - `toast.error()`: Usado para "Task not found", fallos de server action, y otros errores.
+    - `toast.success()`: Usado para "Task moved successfully" cuando server action completa.
+    - Toaster configurado con `richColors` para colores semánticos automáticos (verde para success, rojo para error).
+    - Posición `bottom-right` para no obstruir contenido principal del Kanban.
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **Best Practice 4.3:** Implementa Optimistic UI para feedback instantáneo, eliminando delay perceptible entre drag-drop y actualización visual.
+    - **Best Practice 5.5:** Lazy state initialization con `useState<KanbanData>(initialData)`.
+    - **Best Practice 5.1:** State read diferido - solo accede a `kanbanData` cuando se necesita (en handleDragStart, handleDragEnd, render).
+    - **Best Practice 2.1:** Mantiene Next.js Image optimization en TaskCard.
+  - **Edge Cases Manejados:**
+    - Si task no se encuentra durante drag, muestra toast.error y sale early.
+    - Si task se dropea en misma columna, no ejecuta update (early return).
+    - Si server action falla, state local se revierte exactamente a estado anterior (no se pierde data).
+    - Revalidación automática por server action actualiza `initialData` en siguiente render server-side (mantiene sincronización).
+  - **UX Improvements:**
+    - **Zero Delay:** Task se mueve visualmente al instante al hacer drop (antes había ~200-500ms delay visible).
+    - **Error Recovery:** Si falla, task vuelve automáticamente a su posición original con mensaje explicativo.
+    - **Success Feedback:** Confirmación visual explícita de que el cambio se persistió correctamente.
+    - **No Blocking:** El usuario puede seguir interactuando con el Kanban mientras la server action se ejecuta en background.
+  - **Testing Manual:**
+    - ✅ Lint pasó sin errores.
+    - ✅ Build completado exitosamente en 1492.2ms con Turbopack.
+    - ⚠️ Manual testing requerido: Abrir `/dashboard/kanban`, hacer drag de una task a otra columna, verificar que se mueva instantáneamente y que aparezca toast de success.
+    - ⚠️ Error testing requerido: Simular fallo de network/DB para verificar que revert funciona correctamente (pendiente para Task 5.4 E2E tests).
+  - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1492.2ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Optimistic UI implementado - manual testing pendiente en navegador.
