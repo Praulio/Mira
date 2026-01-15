@@ -64,7 +64,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Crear componente lateral que liste los últimos 20 eventos de la tabla `activity`.
 - [x] **5.2** Logging de Actividad
   - Asegurar que cada Server Action de la Fase 2 inserte un registro en `activity`.
-- [ ] **5.3** Error Boundaries y Toasts
+- [x] **5.3** Error Boundaries y Toasts
   - Configurar `sonner` para notificaciones.
   - Implementar `error.tsx` para manejo global de fallos.
 - [ ] **5.4** Implementar Tests E2E Críticos

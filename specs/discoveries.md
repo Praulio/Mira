@@ -444,3 +444,59 @@
     - ✅ Todas las transacciones atómicas incluyen activity logging como parte del transaction block.
     - ✅ Activity feed (Task 5.1) consume correctamente los datos de la tabla `activity`.
   - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1429.5ms con Turbopack (Next.js 16.1.2). TypeScript compila sin errores. 9/9 unit tests pasaron. Task 5.2 verificada como completa.
+- **2026-01-15:** Sesión 5.3: Error Boundaries y Toasts.
+  - **Status:** ✅ Task completada con implementación de Error Boundaries en dos niveles.
+  - **Sonner Toast Library:**
+    - ✅ Ya instalado en sesión previa (4.3) como dependencia `sonner@2.0.7`.
+    - ✅ `<Toaster />` component ya configurado en `app/layout.tsx` con posición `bottom-right` y `richColors` enabled.
+    - ✅ `toast.error()` y `toast.success()` ya en uso en `components/kanban-board.tsx` para feedback de drag and drop operations.
+  - **Archivos creados:**
+    - `app/error.tsx`: Global Error Boundary que captura errores en toda la aplicación.
+    - `app/(dashboard)/error.tsx`: Dashboard Error Boundary específico para errores dentro del route group del dashboard.
+  - **Patrón de Error Boundaries:**
+    - **Global Error Boundary (`app/error.tsx`):**
+      - Renderiza pantalla completa con dark mode styling (neutral-950 bg).
+      - Muestra icon de alerta (AlertCircle de lucide-react).
+      - Mensaje user-friendly: "Something went wrong" sin exponer detalles técnicos.
+      - Muestra error.message en bloque de código si está disponible.
+      - Botones de acción: "Try again" (reset) y "Go home" (redirect a /).
+      - Muestra error.digest (error ID de Next.js) para soporte técnico si está disponible.
+      - `useEffect` con dependency [error] para logging en console.
+    - **Dashboard Error Boundary (`app/(dashboard)/error.tsx`):**
+      - Diseño más contextual que se integra con el estilo del dashboard.
+      - Mensaje específico: "Failed to load dashboard" con explicación de posibles causas.
+      - Error details en bloque expandido con formato mono.
+      - Botones: "Try again" (reset con icon RefreshCw) y "Go to dashboard" (Link con icon Home).
+      - Sección de "Need help?" con reference ID y mensaje de soporte.
+      - Usa Next.js Link component para navegación sin full page reload (Best Practice).
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **Best Practice 5.3:** Minimal useEffect dependencies (solo [error]).
+    - **Best Practice 7.8:** Early returns implícitos en conditional rendering (error.message, error.digest).
+    - **Best Practice 6.7:** Conditional rendering explícito para error details opcionales.
+    - Client Components requeridos por Next.js para Error Boundaries (directiva 'use client' al inicio).
+  - **UX Improvements:**
+    - **Graceful Degradation:** Errores no crashean toda la app - se muestran en boundary más cercano.
+    - **Clear Actions:** Usuarios tienen opciones claras para recovery (retry o volver a página segura).
+    - **Dark Mode:** Error UI mantiene el estilo dark mode consistente con toda la aplicación.
+    - **Error Context:** Dashboard error boundary provee contexto más específico que global error.
+    - **Support Info:** Error digest permite al equipo de soporte debugging eficiente.
+  - **Integration con Sonner:**
+    - Error boundaries complementan toasts: Toasts para feedback en tiempo real de acciones (success/error de operaciones), Error boundaries para errores fatales que impiden renderizado.
+    - Kanban drag and drop usa toasts para feedback inmediato (Task 4.3).
+    - Server Actions pueden fallar sin crashear la UI (error boundary captura solo render errors).
+  - **Testing Manual Requerido:**
+    - ⚠️ Manual testing: Simular error en Server Component (throw new Error en page.tsx) para verificar que error boundary captura correctamente.
+    - ⚠️ Verificar que "Try again" button ejecuta reset y re-intenta renderizado.
+    - ⚠️ Verificar que "Go home" / "Go to dashboard" buttons navegan correctamente.
+    - ⚠️ Verificar que error.message y error.digest se muestran cuando están disponibles.
+    - ⚠️ Testear en Chrome DevTools con Network throttling para simular errores de fetch.
+  - **Arquitectura de Error Handling:**
+    - **Nivel 1 - Global (`app/error.tsx`):** Captura errores no manejados en toda la app (layout raíz, sign-in/sign-up, etc).
+    - **Nivel 2 - Dashboard (`app/(dashboard)/error.tsx`):** Captura errores específicos del dashboard (data fetching, component rendering).
+    - **Nivel 3 - Toasts (sonner):** Feedback de operaciones en tiempo real (server actions, mutations).
+    - **Nivel 4 - Inline Error States:** Componentes individuales pueden manejar sus propios error states (ej: empty states en activity feed).
+  - **Future Improvements (Out of Scope for MVP):**
+    - Integración con servicio de error tracking (Sentry, LogRocket) en producción.
+    - Error recovery strategies más sofisticadas (retry with exponential backoff).
+    - Offline detection y manejo de errores de connectividad.
+  - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1372.9ms con Turbopack (Next.js 16.1.2). TypeScript compila sin errores. 9/9 unit tests pasaron. Task 5.3 completada e integrada correctamente.
