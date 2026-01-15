@@ -1,15 +1,35 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
+import { TeamSlot } from "@/components/team-slot"
+import { getTeamViewData } from "@/app/actions/team"
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic'
 
+/**
+ * Dashboard Page - Team View
+ * 
+ * Displays the 8-slot team grid showing each user's current in-progress task.
+ * 
+ * Following React Best Practices:
+ * - Server Component for data fetching (no client-side waterfall)
+ * - Auth check before data fetch (Best Practice: 1.1 - defer await)
+ * - Minimal data serialization across RSC boundary
+ */
 export default async function DashboardPage() {
   const { userId } = await auth()
 
   if (!userId) {
     redirect("/sign-in")
   }
+
+  // Fetch team data (users + their in-progress tasks)
+  const teamSlots = await getTeamViewData()
+
+  // Ensure we always render 8 slots (fill empty ones if needed)
+  const slotsToRender = Array.from({ length: 8 }, (_, i) => {
+    return teamSlots[i] || null
+  })
 
   return (
     <div className="space-y-6">
@@ -20,18 +40,14 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Placeholder for the 8-slot grid (Task 3.2) */}
+      {/* 8-slot team grid: 1 column on mobile, 2 on tablet, 4 on desktop (2x4 grid) */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900"
-          >
-            <div className="text-center text-sm text-neutral-500">
-              <p className="font-medium">Slot {i + 1}</p>
-              <p className="text-xs">Empty</p>
-            </div>
-          </div>
+        {slotsToRender.map((slotData, index) => (
+          <TeamSlot
+            key={slotData?.user.id || `empty-${index}`}
+            data={slotData}
+            slotNumber={index + 1}
+          />
         ))}
       </div>
     </div>

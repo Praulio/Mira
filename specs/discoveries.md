@@ -202,3 +202,34 @@
     - Warning de eslint: Variable `request` no utilizada en middleware.ts. Solución: Removido import `NextRequest` y parámetro del fallback middleware.
     - Agregado `/` a rutas públicas en middleware para permitir acceso durante build.
   - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 932ms con Turbopack. 9 rutas generadas correctamente (/, sign-in, sign-up, dashboard, kanban, backlog, activity, api/webhooks, 404). TypeScript compila sin errores.
+- **2026-01-15:** Sesión 3.2: Grilla de Team View (The 8 Slots).
+  - **Archivos creados:**
+    - `app/actions/team.ts`: Server action `getTeamViewData()` que retorna array de TeamSlotData (usuarios + sus tareas in_progress).
+    - `components/team-slot.tsx`: Componente presentacional para renderizar un slot individual con user info y task activa.
+  - **Archivos actualizados:**
+    - `app/(dashboard)/dashboard/page.tsx`: Reemplazado placeholder grid con integración de datos reales desde `getTeamViewData()`.
+    - `next.config.ts`: Añadida configuración de `images.remotePatterns` para permitir avatares de Clerk desde `img.clerk.com`.
+  - **Patrón de Data Fetching:**
+    - Server Component en `page.tsx` ejecuta `await getTeamViewData()` para fetch de datos server-side (sin waterfalls cliente).
+    - `getTeamViewData()` usa Promise.all para paralelizar queries de tareas in_progress de cada usuario (Best Practice: 1.4).
+    - Query optimizada: Fetch de 8 usuarios ordenados por `slotIndex` (nulls primero), luego por `updatedAt` descendente.
+    - Para cada usuario, fetch de su única tarea `in_progress` usando `and()` con dos condiciones: `assigneeId === userId` y `status === 'in_progress'`.
+  - **TeamSlot Component:**
+    - Props: `data: TeamSlotData | null`, `slotNumber: number`.
+    - Renderiza estado vacío si no hay usuario asignado (icono User + "Empty").
+    - Si hay usuario, muestra avatar (Next.js Image component), nombre, email.
+    - Si tiene tarea in_progress, muestra badge "In Progress", título de tarea y tiempo transcurrido (helper `getTimeElapsed()`).
+    - Si no tiene tarea activa, muestra "No active task".
+  - **Optimizaciones de Performance:**
+    - Uso de Next.js `<Image />` en vez de `<img>` para optimización automática de imágenes (Best Practice: 2.1).
+    - Componente puro presentacional sin data fetching (minimiza serialización en RSC boundary - Best Practice: 3.2).
+    - Time elapsed calculado con early returns (Best Practice: 7.8).
+  - **Responsive Grid:**
+    - CSS classes: `grid-cols-1 md:grid-cols-2 lg:grid-cols-4` para layout 1xN (mobile), 2xN (tablet), 2x4 (desktop).
+    - Altura fija de slot: `h-48` (192px) para consistencia visual.
+  - **Tipo Exportado:**
+    - `TeamSlotData` definido y exportado desde `app/actions/team.ts` para reutilización en tipos de componentes.
+  - **Bug Resuelto:**
+    - Warning de lint inicial: Uso de `<img>` sin Next.js Image. Solución: Reemplazado por `<Image />` con `width={40}` y `height={40}`.
+    - Error de build potencial: Imágenes externas bloqueadas. Solución: Configurado `remotePatterns` en `next.config.ts` con hostname `img.clerk.com`.
+  - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1184ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard` renderiza correctamente con 8 slots.
