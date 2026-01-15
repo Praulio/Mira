@@ -25,3 +25,14 @@
   - **Patrón de Build Robusto:** Implementada verificación de validez de keys de Clerk (`pk_test_placeholder` vs keys reales) en `layout.tsx` y `middleware.ts`, permitiendo que el proyecto compile exitosamente en desarrollo local sin necesidad de obtener keys reales de Clerk dashboard.
   - **Layout actualizado:** `ClerkProvider` envuelve la app condicionalmente solo cuando hay keys válidas.
   - **Metadata actualizada:** Título y descripción reflejan "Mira Tasker".
+- **2026-01-15:** Sesión 1.3: Setup de Base de Datos (Neon + Drizzle).
+  - **Dependencias instaladas:**
+    - `drizzle-orm`: ORM TypeScript-first para PostgreSQL.
+    - `@neondatabase/serverless`: Driver serverless de Neon compatible con edge runtime.
+    - `drizzle-kit` (dev): Herramientas CLI para migraciones y generación de schemas.
+  - **Archivos creados:**
+    - `drizzle.config.ts`: Configuración de Drizzle Kit para migraciones con dialect `postgresql`.
+    - `db/index.ts`: Conexión serverless con Neon usando Pool. Incluye validación de `DATABASE_URL`.
+  - **Variables de entorno:** Añadida `DATABASE_URL` a `.env.example` y `.env.local` (con placeholders).
+  - **Patrón de Conexión:** Se usa `Pool` de `@neondatabase/serverless` para compatibilidad con edge runtime y serverless functions.
+  - **Build Status:** ✅ Lint y build pasaron exitosamente sin errores.

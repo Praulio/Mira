@@ -15,7 +15,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Instalar `@clerk/nextjs`.
   - Configurar Middleware y variables de entorno.
   - Crear página de Login/Sign-up básica.
-- [ ] **1.3** Setup de Base de Datos (Neon + Drizzle)
+- [x] **1.3** Setup de Base de Datos (Neon + Drizzle)
   - Instalar `drizzle-orm`, `@neondatabase/serverless`, `drizzle-kit`.
   - Configurar `db/index.ts` y `drizzle.config.ts`.
 - [ ] **1.4** Implementar Webhook de Clerk para User Sync
