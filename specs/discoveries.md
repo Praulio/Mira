@@ -387,3 +387,43 @@
     - ⚠️ Manual testing requerido: Abrir `/dashboard/kanban`, hacer drag de una task a otra columna, verificar que se mueva instantáneamente y que aparezca toast de success.
     - ⚠️ Error testing requerido: Simular fallo de network/DB para verificar que revert funciona correctamente (pendiente para Task 5.4 E2E tests).
   - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1492.2ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Optimistic UI implementado - manual testing pendiente en navegador.
+- **2026-01-15:** Sesión 5.1: Panel de Activity Feed.
+  - **Archivos creados:**
+    - `app/actions/activity.ts`: Server Action `getActivityFeed()` que retorna los últimos 20 eventos de activity con info de usuario y tarea.
+    - `components/activity-item.tsx`: Componente presentacional para renderizar un evento individual con icon, mensaje formateado, avatar del usuario y timestamp relativo.
+    - `app/(dashboard)/dashboard/activity/loading.tsx`: Loading skeleton para la página de activity con 10 items placeholder.
+  - **Archivos actualizados:**
+    - `app/(dashboard)/dashboard/activity/page.tsx`: Convertido a async Server Component que fetch data con `getActivityFeed()` y renderiza lista de `ActivityItem` components o empty state.
+  - **Patrón de Data Fetching:**
+    - Server Component en `page.tsx` ejecuta `await getActivityFeed()` server-side (Best Practice 1.1 - evita client-side waterfalls).
+    - `getActivityFeed()` usa LEFT JOIN para obtener user y task data en una sola query (Best Practice 1.4 - paralelización).
+    - Query optimizada: ordenada por `activity.createdAt DESC` con `LIMIT 20`, usando índice existente `activity_created_at_idx`.
+  - **Componentes implementados:**
+    - **ActivityItem:** Muestra icon dinámico por action type (CheckCircle2, ArrowRightCircle, UserPlus, Edit3, Trash2), avatar del usuario, mensaje formateado con detalles del cambio (usando metadata JSONB), y timestamp relativo con helper `getRelativeTime()` (Best Practice 7.8 - early returns).
+    - **getActivityMessage():** Helper function que formatea mensajes human-readable basados en action type y metadata. Incluye manejo especial para cada tipo de evento: created, status_changed, assigned, updated, deleted.
+    - **formatStatus():** Helper function que convierte status enums ('in_progress') a strings legibles ('In Progress').
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **Best Practice 1.1:** Server Component fetch (sin client-side waterfalls).
+    - **Best Practice 1.4:** LEFT JOIN para paralelizar queries de user y task en una sola query.
+    - **Best Practice 2.1:** Next.js Image component para avatares de usuarios.
+    - **Best Practice 3.2:** Componente puro presentacional (minimiza serialización en RSC boundary).
+    - **Best Practice 7.8:** Early returns en helpers (`getActionIcon()`, `getActivityMessage()`, `getRelativeTime()`, `formatStatus()`).
+  - **Tipos Exportados:**
+    - `ActivityData`: Activity event con user completo (id, name, email, imageUrl) y task opcional (id, title). Metadata tipado como `Record<string, unknown> | null` para flexibilidad.
+  - **Manejo de Estados:**
+    - Loading skeleton con 10 items que replica estructura de `ActivityItem`.
+    - Empty state con icon de Activity y mensaje "No activity yet" cuando no hay eventos.
+    - Error handling con try-catch en `getActivityFeed()` que retorna array vacío y logea error en consola.
+  - **Formato de Mensajes:**
+    - **created:** "created task \"{title}\""
+    - **status_changed:** "moved \"{title}\" from {oldStatus} to {newStatus}"
+    - **assigned:** "assigned \"{title}\" to someone"
+    - **updated:** "updated title/description of \"{title}\""
+    - **deleted:** "deleted task \"{title}\""
+    - Incluye fallbacks para casos donde metadata no está completa o task fue eliminado.
+  - **Testing Manual:**
+    - ⚠️ Manual testing requiere configurar Clerk credentials reales y DATABASE_URL en `.env.local` (actualmente usa placeholders).
+    - ⚠️ Para testear funcionalidad completa: crear tareas, cambiar status, actualizar metadata, eliminar tareas, y verificar que aparezcan en `/dashboard/activity` con mensajes formateados correctamente.
+    - ⚠️ Verificar que loading skeleton aparece durante fetch inicial.
+    - ⚠️ Verificar que empty state aparece cuando no hay activity events.
+  - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1276.7ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Ruta `/dashboard/activity` generada correctamente en production build.

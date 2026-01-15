@@ -60,7 +60,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Asegurar que el cambio visual sea instantáneo antes de que termine la Server Action.
 
 ### Fase 5: Activity, Polish & E2E
-- [ ] **5.1** Panel de Activity Feed
+- [x] **5.1** Panel de Activity Feed
   - Crear componente lateral que liste los últimos 20 eventos de la tabla `activity`.
 - [ ] **5.2** Logging de Actividad
   - Asegurar que cada Server Action de la Fase 2 inserte un registro en `activity`.
