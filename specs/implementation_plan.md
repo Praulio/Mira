@@ -67,7 +67,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **5.3** Error Boundaries y Toasts
   - Configurar `sonner` para notificaciones.
   - Implementar `error.tsx` para manejo global de fallos.
-- [ ] **5.4** Implementar Tests E2E Críticos
+- [x] **5.4** Implementar Tests E2E Críticos
   - Usar Playwright.
   - Flujo: Login -> Crear Tarea -> Mover a In Progress -> Verificar en Team View.
 

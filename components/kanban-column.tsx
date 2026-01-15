@@ -60,6 +60,8 @@ export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProp
   return (
     <div
       ref={setNodeRef}
+      data-testid={`kanban-column-${id}`}
+      data-column-id={id}
       className={`flex min-h-[600px] flex-col rounded-lg border border-neutral-200 bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900/50 ${
         isOver ? 'border-blue-500 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-900/20' : ''
       }`}

@@ -500,3 +500,68 @@
     - Error recovery strategies más sofisticadas (retry with exponential backoff).
     - Offline detection y manejo de errores de connectividad.
   - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1372.9ms con Turbopack (Next.js 16.1.2). TypeScript compila sin errores. 9/9 unit tests pasaron. Task 5.3 completada e integrada correctamente.
+- **2026-01-15:** Sesión 5.4: Implementación de Tests E2E Críticos.
+  - **Status:** ✅ Task completada con implementación de Playwright E2E tests y UI para creación de tareas.
+  - **Dependencias instaladas:**
+    - `@playwright/test@1.57.0`: Framework de testing E2E con soporte para navegadores modernos.
+    - Chromium browser instalado vía `npx playwright install chromium`.
+  - **Archivos creados:**
+    - `playwright.config.ts`: Configuración de Playwright para Next.js con webServer autostart.
+    - `e2e/critical-flow.spec.ts`: Suite de 3 tests E2E cubriendo el flujo crítico completo.
+    - `components/create-task-dialog.tsx`: Client Component con dialog modal para creación de tareas.
+    - `.env.test.example`: Template de variables de entorno para tests E2E.
+  - **Archivos actualizados:**
+    - `app/(dashboard)/dashboard/kanban/page.tsx`: Añadido botón "New Task" con `<CreateTaskDialog />` component.
+    - `components/task-card.tsx`: Añadidos data-testid attributes (`task-card-${id}`, `data-task-id`, `data-task-status`).
+    - `components/kanban-column.tsx`: Añadidos data-testid attributes (`kanban-column-${id}`, `data-column-id`).
+    - `components/team-slot.tsx`: Añadidos data-testid attributes (`team-slot-${userId}`, `data-user-id`, `data-has-active-task`).
+    - `package.json`: Añadidos scripts `test:e2e`, `test:e2e:ui`, `test:e2e:headed`.
+  - **Implementación de CreateTaskDialog:**
+    - Modal simple con campos title (requerido, max 200 chars) y description (opcional, max 2000 chars).
+    - Validación HTML5 nativa + validación server-side con Zod en `createTask` action.
+    - Estado de loading durante submit (`isSubmitting`) con botón disabled.
+    - Toast notifications para success/error feedback (integración con sonner).
+    - Reset automático del form después de creación exitosa.
+    - Test IDs en elementos clave: `create-task-button`, `task-title-input`, `task-description-input`, `submit-task-button`.
+  - **Tests E2E implementados:**
+    1. **Complete Critical Flow:** Login -> Create Task -> Drag to In Progress -> Verify in Team View.
+       - Usa Clerk authentication con test user credentials (environment variables).
+       - Crea task con timestamp único para identificación.
+       - Drag and drop usando Playwright's `.dragTo()` method.
+       - Verifica presencia en Team View con badge "In Progress".
+    2. **Task Creation Validation:** Verifica que HTML5 validation previene submit sin título.
+    3. **Multi-column Drag and Drop:** Test exhaustivo moviendo task a través de todas las columnas (Backlog → To Do → In Progress → Done).
+  - **Patrón de Testing E2E:**
+    - Configuración de Playwright con webServer que inicia `npm run dev` automáticamente.
+    - Base URL configurable (`http://localhost:3000`).
+    - Test user credentials leídas de environment variables (`TEST_USER_EMAIL`, `TEST_USER_PASSWORD`).
+    - Uso de `test.step()` para organizar tests en pasos lógicos con reporting claro.
+    - Assertions con timeouts explícitos (5-10s) para esperar operaciones async.
+    - Verificación de toasts de success/error después de mutaciones.
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **CreateTaskDialog:**
+      - Best Practice 5.5: Lazy state initialization con `useState(false)` y `useState<boolean>(false)`.
+      - Best Practice 5.1: State read diferido - solo accede a state cuando es necesario.
+      - Best Practice 5.3: Minimal useEffect dependencies (no usa useEffect).
+      - Server Action para mutación (evita client-side data fetching waterfalls).
+    - **Test IDs:** Añadidos solo en componentes críticos para E2E, sin contaminar todos los componentes con atributos innecesarios.
+  - **Clerk Authentication en E2E:**
+    - Tests asumen Clerk test mode con keys válidas (`pk_test_`, `sk_test_`).
+    - Requiere test user creado manualmente en Clerk Dashboard.
+    - Credentials leídas de `.env.test` (no incluido en repo por seguridad).
+    - Flujo de login: Fill identifier → Click Continue → Wait for password field → Fill password → Click Continue → Wait for redirect.
+    - Selectores pueden requerir ajuste si Clerk actualiza su UI.
+  - **Testing Manual Requerido:**
+    - ⚠️ Los tests E2E requieren:
+      1. Clerk credentials válidas en `.env.local`.
+      2. Test user creado en Clerk Dashboard con credentials en `.env.test`.
+      3. Database con al menos un usuario seeded (debe coincidir con test user de Clerk).
+      4. Server de desarrollo corriendo en `http://localhost:3000`.
+    - ⚠️ Para ejecutar: `npm run test:e2e` (headless) o `npm run test:e2e:headed` (con browser visible).
+    - ⚠️ Verificación de drag and drop visual disponible con `npm run test:e2e:ui` (Playwright UI mode).
+  - **Limitaciones y Mejoras Futuras:**
+    - **Clerk Mocking:** Actualmente los tests requieren Clerk real. En el futuro se podría implementar mock de Clerk para CI/CD sin dependencias externas.
+    - **Database Seeding:** Los tests asumen que existe un usuario en la DB. Idealmente se debería implementar script de seed automático antes de tests.
+    - **Parallel Execution:** Configurado con `workers: 1` para evitar race conditions en DB. Con isolation de DB por test se podría paralelizar.
+    - **Visual Regression:** No implementado en MVP. Playwright tiene soporte nativo para screenshot comparison.
+  - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1456.6ms con Turbopack (Next.js 16.1.2). TypeScript compila sin errores. 9/9 unit tests pasaron. Task 5.4 completada con E2E tests implementados (requiere setup manual de credentials para ejecutar).

@@ -60,6 +60,9 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
       style={style}
       {...listeners}
       {...attributes}
+      data-testid={`task-card-${task.id}`}
+      data-task-id={task.id}
+      data-task-status={task.status}
       className={`group cursor-grab rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 ${
         isDragging ? 'opacity-50' : ''
       }`}

@@ -43,7 +43,12 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
     : null;
 
   return (
-    <div className="group flex h-48 flex-col rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700">
+    <div 
+      data-testid={`team-slot-${user.id}`}
+      data-user-id={user.id}
+      data-has-active-task={!!inProgressTask}
+      className="group flex h-48 flex-col rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+    >
       {/* User Info */}
       <div className="mb-3 flex items-center gap-3">
         {user.imageUrl ? (

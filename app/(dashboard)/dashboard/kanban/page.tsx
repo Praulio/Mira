@@ -1,5 +1,6 @@
 import { getKanbanData } from '@/app/actions/kanban';
 import { KanbanBoard } from '@/components/kanban-board';
+import { CreateTaskDialog } from '@/components/create-task-dialog';
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic';
@@ -23,12 +24,15 @@ export default async function KanbanPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Kanban Board</h2>
-        <p className="text-neutral-600 dark:text-neutral-400">
-          Organize and track your tasks across four stages - Drag to move tasks
-        </p>
+      {/* Header with Create Task button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Kanban Board</h2>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Organize and track your tasks across four stages - Drag to move tasks
+          </p>
+        </div>
+        <CreateTaskDialog />
       </div>
 
       {/* Kanban Board with Drag and Drop */}
