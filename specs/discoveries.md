@@ -233,3 +233,21 @@
     - Warning de lint inicial: Uso de `<img>` sin Next.js Image. Solución: Reemplazado por `<Image />` con `width={40}` y `height={40}`.
     - Error de build potencial: Imágenes externas bloqueadas. Solución: Configurado `remotePatterns` en `next.config.ts` con hostname `img.clerk.com`.
   - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1184ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard` renderiza correctamente con 8 slots.
+- **2026-01-15:** Sesión 3.3: Lógica de Datos para Team View (Loading States).
+  - **Archivo creado:**
+    - `app/(dashboard)/dashboard/loading.tsx`: Componente de loading UI con skeletons para el grid de 8 slots.
+  - **Patrón de Loading UI:**
+    - Archivo especial `loading.tsx` de Next.js 15 que se muestra automáticamente mientras se realiza el fetch server-side de `page.tsx`.
+    - Componente `DashboardLoading` con header skeleton (título + descripción).
+    - Componente helper `TeamSlotSkeleton` que replica la estructura visual de `TeamSlot` (avatar, nombre, badge, task title, time elapsed).
+    - Uso de `animate-pulse` de Tailwind para efecto de shimmer en los placeholders.
+    - Grid con mismo layout responsive que la página principal: `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`.
+  - **Optimizaciones de Performance:**
+    - JSX estático hoistado (Best Practice: 6.3).
+    - Dimensiones de skeleton coinciden con componentes reales para evitar layout shift al cargar datos.
+    - Array.from({ length: 8 }) para renderizar 8 skeletons de manera determinística.
+  - **Manejo de Estados Vacíos:**
+    - Verificado que `getTeamViewData()` retorna array vacío en caso de error (try-catch implementado en sesión 3.2).
+    - La página siempre renderiza 8 slots usando `Array.from({ length: 8 })` y `teamSlots[i] || null`.
+    - `TeamSlot` component maneja gracefully el caso `data === null` mostrando estado "Empty" con icono User.
+  - **Build Status:** ✅ Lint pasó sin warnings ni errores. Build completado exitosamente en 1247.7ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard` genera correctamente con loading state.

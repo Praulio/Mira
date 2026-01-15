@@ -45,7 +45,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **3.2** Grilla de Team View (The 8 Slots)
   - Crear componente `TeamSlot.tsx`.
   - Implementar grid de 2x4 (desktop) / 1xN (mobile).
-- [ ] **3.3** Lógica de Datos para Team View
+- [x] **3.3** Lógica de Datos para Team View
   - Fetch de los 8 usuarios con sus tareas `IN_PROGRESS`.
   - Manejo de estados vacíos y carga (Skeletons).
 - [ ] **3.4** Implementar Polling para el Dashboard
