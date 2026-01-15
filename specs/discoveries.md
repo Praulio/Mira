@@ -50,3 +50,23 @@
   - **Patrón de Webhook:** Validación de firma Svix en headers (`svix-id`, `svix-timestamp`, `svix-signature`), manejo de eventos con insert/update en DB, logs de errores en consola.
   - **Seguridad:** El webhook verifica la firma antes de procesar cualquier payload, previniendo requests no autorizados.
   - **Build Status:** ✅ Lint y build pasaron exitosamente. Ruta `/api/webhooks/clerk` visible en manifest de Next.js.
+- **2026-01-15:** Sesión 2.1: Definición completa del Schema de Base de Datos.
+  - **Schema actualizado:** Se añadieron tablas `tasks` y `activity` a `db/schema.ts`.
+  - **Enums creados:**
+    - `taskStatusEnum`: Define los 4 estados posibles de una tarea (backlog, todo, in_progress, done).
+    - `activityActionEnum`: Define los tipos de eventos a registrar (created, status_changed, assigned, updated, deleted).
+  - **Tabla tasks:** 
+    - Campos: id (UUID), title, description, status (enum), assigneeId (FK nullable), creatorId (FK required), timestamps.
+    - Foreign Keys: assigneeId y creatorId referencian a `users.id` con `onDelete: set null` y `cascade` respectivamente.
+    - Índices: `tasks_assignee_idx`, `tasks_status_idx`, `tasks_creator_idx` para optimizar queries frecuentes.
+  - **Tabla activity:**
+    - Campos: id (UUID), taskId (FK nullable), userId (FK required), action (enum), metadata (JSONB), createdAt.
+    - Foreign Keys: taskId referencia `tasks.id` y userId referencia `users.id`, ambos con `cascade`.
+    - Índices: `activity_task_idx`, `activity_created_at_idx`, `activity_user_idx` para queries de histórico.
+    - Metadata JSONB permite almacenar información adicional como old/new status en transiciones.
+  - **Scripts de DB añadidos:** 
+    - Instalado `dotenv-cli` para cargar variables de entorno en comandos de Drizzle Kit.
+    - Scripts en `package.json`: `db:generate`, `db:push`, `db:studio`.
+  - **Migración generada:** `db/migrations/0001_brave_moonstone.sql` contiene la creación de enums, tablas, foreign keys e índices.
+  - **Patrón de Índices:** Se priorizan índices en columnas usadas frecuentemente en WHERE y JOIN clauses (assignee, status, created_at).
+  - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts), build completado exitosamente en 919ms. Schema compila sin errores TypeScript.

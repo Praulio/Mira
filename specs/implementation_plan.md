@@ -24,7 +24,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Sincronizar `user.created` y `user.updated` con la tabla `users` local.
 
 ### Fase 2: The Task Engine (Logic & Testing)
-- [ ] **2.1** Definir Schema de Base de Datos
+- [x] **2.1** Definir Schema de Base de Datos
   - Archivo: `db/schema.ts`.
   - Tablas: `users`, `tasks`, `activity` con sus respectivos enums e índices.
 - [ ] **2.2** Server Action: `createTask`
