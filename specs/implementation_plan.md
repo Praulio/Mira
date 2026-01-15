@@ -18,7 +18,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **1.3** Setup de Base de Datos (Neon + Drizzle)
   - Instalar `drizzle-orm`, `@neondatabase/serverless`, `drizzle-kit`.
   - Configurar `db/index.ts` y `drizzle.config.ts`.
-- [ ] **1.4** Implementar Webhook de Clerk para User Sync
+- [x] **1.4** Implementar Webhook de Clerk para User Sync
   - Crear endpoint `app/api/webhooks/clerk/route.ts`.
   - Validar firma con `svix`.
   - Sincronizar `user.created` y `user.updated` con la tabla `users` local.

@@ -36,3 +36,17 @@
   - **Variables de entorno:** Añadida `DATABASE_URL` a `.env.example` y `.env.local` (con placeholders).
   - **Patrón de Conexión:** Se usa `Pool` de `@neondatabase/serverless` para compatibilidad con edge runtime y serverless functions.
   - **Build Status:** ✅ Lint y build pasaron exitosamente sin errores.
+- **2026-01-15:** Sesión 1.4: Implementación de Webhook de Clerk para User Sync.
+  - **Dependencia instalada:**
+    - `svix`: Librería oficial para validación de signatures de webhooks de Clerk.
+  - **Archivos creados:**
+    - `db/schema.ts`: Schema inicial con tabla `users` (id, email, name, imageUrl, slotIndex, timestamps).
+    - `db/migrations/0000_classy_saracen.sql`: Primera migración SQL para crear tabla users.
+    - `app/api/webhooks/clerk/route.ts`: Endpoint POST que maneja eventos `user.created` y `user.updated`.
+    - `db/README.md`: Guía para ejecutar migraciones con Drizzle Kit.
+  - **Archivos actualizados:**
+    - `db/index.ts`: Importado schema para habilitar queries tipadas con Drizzle.
+    - `.env.example`: Añadida variable `CLERK_WEBHOOK_SECRET` con instrucciones.
+  - **Patrón de Webhook:** Validación de firma Svix en headers (`svix-id`, `svix-timestamp`, `svix-signature`), manejo de eventos con insert/update en DB, logs de errores en consola.
+  - **Seguridad:** El webhook verifica la firma antes de procesar cualquier payload, previniendo requests no autorizados.
+  - **Build Status:** ✅ Lint y build pasaron exitosamente. Ruta `/api/webhooks/clerk` visible en manifest de Next.js.
