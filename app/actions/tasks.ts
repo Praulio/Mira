@@ -34,6 +34,25 @@ const updateTaskStatusSchema = z.object({
 });
 
 /**
+ * Zod schema for task deletion
+ */
+const deleteTaskSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+});
+
+/**
+ * Zod schema for task metadata update (title/description)
+ */
+const updateTaskMetadataSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
+  description: z.string().max(2000, 'Description must be 2000 characters or less').optional(),
+}).refine(
+  (data) => data.title !== undefined || data.description !== undefined,
+  'At least one field (title or description) must be provided'
+);
+
+/**
  * Server Action: Create a new task
  * 
  * Creates a task in the database and logs the activity.
@@ -232,6 +251,207 @@ export async function updateTaskStatus(
     return {
       success: false,
       error: 'An unexpected error occurred while updating the task status',
+    };
+  }
+}
+
+/**
+ * Server Action: Delete a task
+ * 
+ * Deletes a task from the database and logs the deletion activity.
+ * Uses CASCADE delete behavior for related activity records (defined in schema).
+ * 
+ * @param input - Task deletion data (taskId)
+ * @returns ActionResponse with success status or error message
+ */
+export async function deleteTask(
+  input: z.infer<typeof deleteTaskSchema>
+): Promise<ActionResponse<{ taskId: string }>> {
+  try {
+    // Get authenticated user
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to delete tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = deleteTaskSchema.safeParse(input);
+    
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId } = validationResult.data;
+
+    // Fetch the task to verify it exists and to log its details
+    const [taskToDelete] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!taskToDelete) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Execute deletion in transaction to ensure activity is logged before task is deleted
+    await db.transaction(async (tx) => {
+      // Log the deletion activity BEFORE deleting the task
+      await tx.insert(activity).values({
+        taskId: taskToDelete.id,
+        userId,
+        action: 'deleted',
+        metadata: {
+          title: taskToDelete.title,
+          status: taskToDelete.status,
+          assigneeId: taskToDelete.assigneeId,
+        },
+      });
+
+      // Delete the task (CASCADE will handle related records)
+      await tx
+        .delete(tasks)
+        .where(eq(tasks.id, taskId));
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: { taskId },
+    };
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while deleting the task',
+    };
+  }
+}
+
+/**
+ * Server Action: Update task metadata (title/description)
+ * 
+ * Updates the title and/or description of a task.
+ * At least one field must be provided for update.
+ * Logs the update activity with old and new values.
+ * 
+ * @param input - Task metadata update data (taskId, title?, description?)
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function updateTaskMetadata(
+  input: z.infer<typeof updateTaskMetadataSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to update tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = updateTaskMetadataSchema.safeParse(input);
+    
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, title, description } = validationResult.data;
+
+    // Fetch the current task to get old values
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Build update object with only provided fields
+    const updateData: Partial<typeof tasks.$inferInsert> = {
+      updatedAt: new Date(),
+    };
+
+    if (title !== undefined) {
+      updateData.title = title;
+    }
+
+    if (description !== undefined) {
+      updateData.description = description;
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      // Update the task
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set(updateData)
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to update task');
+      }
+
+      // Log the metadata update in activity
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        metadata: {
+          oldTitle: currentTask.title,
+          newTitle: updatedTask.title,
+          oldDescription: currentTask.description,
+          newDescription: updatedTask.description,
+          fieldsUpdated: {
+            title: title !== undefined,
+            description: description !== undefined,
+          },
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error updating task metadata:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating the task',
     };
   }
 }

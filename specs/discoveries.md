@@ -143,3 +143,25 @@
     - Tipos `any` reemplazados por tipo explícito `MockTx` con definición de propiedades.
     - Parámetro `table` no utilizado removido de mock de `insert()`.
   - **Build Status:** ✅ 9/9 tests passed. Lint pasó (solo 1 warning pre-existente en middleware.ts). Build completado exitosamente en 1049ms. TypeScript compila sin errores.
+- **2026-01-15:** Sesión 2.5: Server Actions - deleteTask y updateTaskMetadata.
+  - **Archivo actualizado:**
+    - `app/actions/tasks.ts`: Añadidas dos nuevas Server Actions con validación Zod, transacciones atómicas y activity logging.
+  - **Schemas de Validación:**
+    - `deleteTaskSchema`: Valida UUID del taskId.
+    - `updateTaskMetadataSchema`: Valida taskId (UUID), title opcional (1-200 chars), description opcional (0-2000 chars). Incluye refinamiento Zod para garantizar que al menos un campo sea provisto.
+  - **deleteTask:**
+    - Verifica autenticación con Clerk.
+    - Fetch de la tarea para verificar existencia y capturar metadata antes de borrado.
+    - Transacción atómica: Inserta registro en `activity` con action `'deleted'` y metadata (title, status, assigneeId) ANTES de ejecutar el DELETE.
+    - El DELETE en DB usa CASCADE (definido en schema) para eliminar automáticamente registros relacionados en `activity`.
+    - Revalidación de rutas (/, /kanban, /backlog).
+  - **updateTaskMetadata:**
+    - Permite actualización parcial de title y/o description.
+    - Fetch de la tarea para obtener valores previos (oldTitle, oldDescription).
+    - Construye objeto `updateData` dinámicamente incluyendo solo campos provistos.
+    - Transacción atómica: UPDATE de la tarea + INSERT en activity con metadata completa (old/new values, fieldsUpdated flags).
+    - Revalidación de rutas (/, /kanban, /backlog).
+  - **Patrón de Activity Logging:**
+    - `deleteTask`: Logs ANTES del DELETE para preservar referencia al taskId antes de CASCADE.
+    - `updateTaskMetadata`: Logs metadata con comparación old vs new para trazabilidad completa de cambios.
+  - **Build Status:** ✅ Lint pasó (1 warning pre-existente). Build completado exitosamente en 1043ms con Turbopack. Tests existentes (9/9) siguen pasando. TypeScript compila sin errores.

@@ -36,7 +36,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **2.4** Implementar Unit Tests para Lógica de Estados
   - Usar Vitest.
   - Testear que la lógica de "Single In-Progress task" funcione correctamente.
-- [ ] **2.5** Server Action: `deleteTask` y `updateTaskMetadata`
+- [x] **2.5** Server Action: `deleteTask` y `updateTaskMetadata`
   - Implementar borrado y edición de título/descripción.
 
 ### Fase 3: Visual Visibility (Team View)
