@@ -1,19 +1,24 @@
 import { getKanbanData } from '@/app/actions/kanban';
-import { KanbanColumn } from '@/components/kanban-column';
+import { KanbanBoard } from '@/components/kanban-board';
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic';
 
 /**
- * Kanban Board Page - Displays tasks organized in 4 columns by status
+ * Kanban Board Page - Displays tasks organized in 4 columns by status with drag and drop
  * 
  * Following React Best Practices:
- * - Server Component for data fetching (no client-side waterfalls)
+ * - Server Component for data fetching (no client-side waterfalls - Best Practice 1.1)
  * - Single query fetches all tasks with related data
- * - Pure presentational child components
+ * - Delegates drag and drop logic to client component (KanbanBoard)
+ * 
+ * Architecture:
+ * - Server Component fetches data once on page load
+ * - KanbanBoard client component wraps columns with DndContext
+ * - Updates are handled by server actions with revalidation
  */
 export default async function KanbanPage() {
-  // Fetch kanban data server-side
+  // Fetch kanban data server-side (no client-side waterfalls)
   const kanbanData = await getKanbanData();
 
   return (
@@ -22,33 +27,12 @@ export default async function KanbanPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Kanban Board</h2>
         <p className="text-neutral-600 dark:text-neutral-400">
-          Organize and track your tasks across four stages
+          Organize and track your tasks across four stages - Drag to move tasks
         </p>
       </div>
 
-      {/* Kanban Board - 4 columns */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KanbanColumn
-          title="Backlog"
-          tasks={kanbanData.backlog}
-          statusColor="neutral"
-        />
-        <KanbanColumn
-          title="To Do"
-          tasks={kanbanData.todo}
-          statusColor="blue"
-        />
-        <KanbanColumn
-          title="In Progress"
-          tasks={kanbanData.in_progress}
-          statusColor="amber"
-        />
-        <KanbanColumn
-          title="Done"
-          tasks={kanbanData.done}
-          statusColor="green"
-        />
-      </div>
+      {/* Kanban Board with Drag and Drop */}
+      <KanbanBoard initialData={kanbanData} />
     </div>
   );
 }

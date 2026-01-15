@@ -1,9 +1,14 @@
+'use client';
+
 import Image from 'next/image';
 import { Clock, User } from 'lucide-react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
 type TaskCardProps = {
   task: KanbanTaskData;
+  isDragging?: boolean;
 };
 
 /**
@@ -29,16 +34,36 @@ function getRelativeTime(date: Date): string {
 }
 
 /**
- * TaskCard component - Renders a single task in the Kanban board
+ * TaskCard component - Renders a single task in the Kanban board (Draggable)
  * 
  * Following React Best Practices:
- * - Pure presentational component (no data fetching)
+ * - Client Component for drag interaction
  * - Next.js Image component for avatar optimization (Best Practice 2.1)
  * - Static JSX structure hoisted (Best Practice 6.3)
+ * - Uses @dnd-kit/core for drag and drop
  */
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, isDragging = false }: TaskCardProps) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
+
+  // Apply transform for smooth dragging animation
+  const style = transform
+    ? {
+        transform: CSS.Translate.toString(transform),
+      }
+    : undefined;
+
   return (
-    <div className="group rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`group cursor-grab rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 ${
+        isDragging ? 'opacity-50' : ''
+      }`}
+    >
       {/* Task title */}
       <h4 className="mb-2 font-medium text-neutral-900 dark:text-neutral-100">
         {task.title}

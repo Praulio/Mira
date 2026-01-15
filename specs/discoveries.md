@@ -305,3 +305,41 @@
     - Cada columna muestra placeholder "No tasks" con border dashed cuando no hay tareas en ese status.
     - `getKanbanData()` retorna estructura vacía en caso de error (try-catch con console.error).
   - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1403.8ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard/kanban` renderiza correctamente con 4 columnas.
+- **2026-01-15:** Sesión 4.2: Integración de @dnd-kit para Drag and Drop.
+  - **Dependencias instaladas:**
+    - `@dnd-kit/core@6.3.1`: Core library para drag and drop context y hooks.
+    - `@dnd-kit/sortable@10.0.0`: Componentes sortable para listas ordenables.
+    - `@dnd-kit/utilities@3.2.2`: Utilities para transformaciones CSS y helpers.
+  - **Archivos creados:**
+    - `components/kanban-board.tsx`: Client Component wrapper que maneja la lógica de drag and drop con DndContext.
+  - **Archivos actualizados:**
+    - `components/task-card.tsx`: Convertido a Client Component con hook `useDraggable()`. Añadido prop `isDragging` para styling visual durante drag.
+    - `components/kanban-column.tsx`: Convertido a Client Component con hook `useDroppable()`. Añadido prop `id` para identificación de drop zone. Feedback visual con border azul cuando `isOver`.
+    - `app/(dashboard)/dashboard/kanban/page.tsx`: Actualizado para usar `<KanbanBoard />` wrapper en vez de renderizar columnas directamente.
+  - **Arquitectura de DnD:**
+    - **Patrón Híbrido Server + Client:** Page.tsx sigue siendo Server Component para data fetching (evita client-side waterfalls - Best Practice 1.1), pero delega lógica de drag and drop a Client Component.
+    - **DndContext Provider:** Envuelve las 4 columnas del Kanban con sensors y collision detection configurados.
+    - **Sensors:** Usa `PointerSensor` con `activationConstraint: { distance: 5 }` para prevenir drags accidentales en clicks normales.
+    - **Collision Detection:** Usa `closestCorners` algorithm de @dnd-kit para determinar drop target más cercano.
+  - **Flujo de Drag and Drop:**
+    1. **onDragStart:** Encuentra la task siendo arrastrada y la guarda en state (`activeTask`) para mostrar en DragOverlay.
+    2. **onDragEnd:** Identifica columna de destino (`over.id`), verifica si status cambió, y ejecuta `updateTaskStatus()` server action si es necesario.
+    3. **DragOverlay:** Muestra clon de la task con rotación y opacidad durante el drag para mejor UX.
+  - **Server Action Integration:**
+    - Usa `updateTaskStatus()` existente (implementado en Task 2.3) para actualizar status de task en DB.
+    - La Server Action maneja la transacción atómica y la lógica de "Single In-Progress Task".
+    - `revalidatePath()` en la Server Action actualiza automáticamente el UI después del drop (sin necesidad de refetch manual).
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **Best Practice 5.5:** Lazy state initialization con `useState<KanbanTaskData | null>(null)` (no crea objeto en cada render).
+    - **Best Practice 2.1:** Mantiene uso de Next.js Image component en TaskCard.
+    - **Best Practice 6.3:** Static JSX structure hoisted en componentes.
+    - **Best Practice 1.1:** No crea client-side waterfalls - toda la data viene de Server Component initial fetch.
+  - **Visual Feedback:**
+    - TaskCard muestra `cursor-grab` en hover para indicar que es draggable.
+    - KanbanColumn muestra border azul y background azul transparente cuando task está sobre ella (`isOver` state).
+    - DragOverlay muestra clon de task con `rotate-3` y `opacity-80` durante drag.
+  - **Edge Cases Manejados:**
+    - Si task se dropea fuera de una droppable area (`!over`), no hace nada (vuelve a posición original).
+    - Si task se dropea en la misma columna donde estaba (`task.status === newStatus`), no hace update innecesario.
+    - Error logging en consola si `updateTaskStatus()` falla (TODO en código: mostrar toast en Task 4.3).
+  - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1284.5ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Drag and drop funcional implementado (E2E testing pendiente en Task 5.4).

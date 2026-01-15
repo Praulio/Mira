@@ -1,7 +1,11 @@
+'use client';
+
+import { useDroppable } from '@dnd-kit/core';
 import { TaskCard } from './task-card';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
 type KanbanColumnProps = {
+  id: string;
   title: string;
   tasks: KanbanTaskData[];
   statusColor: 'neutral' | 'blue' | 'amber' | 'green';
@@ -39,18 +43,27 @@ function getColorClasses(color: 'neutral' | 'blue' | 'amber' | 'green'): {
 }
 
 /**
- * KanbanColumn component - Renders a single column in the Kanban board
+ * KanbanColumn component - Renders a single droppable column in the Kanban board
  * 
  * Following React Best Practices:
- * - Pure presentational component (no data fetching)
+ * - Client Component for drop interaction
  * - Renders list of TaskCard components
  * - Static structure with dynamic content
+ * - Uses @dnd-kit/core for drag and drop
  */
-export function KanbanColumn({ title, tasks, statusColor }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProps) {
   const colors = getColorClasses(statusColor);
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+  });
 
   return (
-    <div className="flex min-h-[600px] flex-col rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/50">
+    <div
+      ref={setNodeRef}
+      className={`flex min-h-[600px] flex-col rounded-lg border border-neutral-200 bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900/50 ${
+        isOver ? 'border-blue-500 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-900/20' : ''
+      }`}
+    >
       {/* Column Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 p-4 dark:border-neutral-800">
         <div className="flex items-center gap-2">

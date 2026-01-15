@@ -54,7 +54,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 ### Fase 4: Kanban & Drag (UX)
 - [x] **4.1** Tablero Kanban Base
   - Renderizar 4 columnas fijas: Backlog, To Do, In Progress, Done.
-- [ ] **4.2** Integración de `@dnd-kit`
+- [x] **4.2** Integración de `@dnd-kit`
   - Implementar drag and drop entre columnas.
 - [ ] **4.3** Optimistic UI para Kanban
   - Asegurar que el cambio visual sea instantáneo antes de que termine la Server Action.
