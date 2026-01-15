@@ -48,7 +48,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **3.3** Lógica de Datos para Team View
   - Fetch de los 8 usuarios con sus tareas `IN_PROGRESS`.
   - Manejo de estados vacíos y carga (Skeletons).
-- [ ] **3.4** Implementar Polling para el Dashboard
+- [x] **3.4** Implementar Polling para el Dashboard
   - Usar `setInterval` o `swr/react-query` para refrescar el dashboard cada 30s.
 
 ### Fase 4: Kanban & Drag (UX)

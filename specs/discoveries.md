@@ -251,3 +251,26 @@
     - La página siempre renderiza 8 slots usando `Array.from({ length: 8 })` y `teamSlots[i] || null`.
     - `TeamSlot` component maneja gracefully el caso `data === null` mostrando estado "Empty" con icono User.
   - **Build Status:** ✅ Lint pasó sin warnings ni errores. Build completado exitosamente en 1247.7ms con Turbopack. TypeScript compila sin errores. Ruta `/dashboard` genera correctamente con loading state.
+- **2026-01-15:** Sesión 3.4: Polling para Team View Dashboard.
+  - **Archivo creado:**
+    - `components/team-view-auto-refresh.tsx`: Client Component que implementa auto-refresh cada 30 segundos usando `setInterval` y `router.refresh()`.
+  - **Patrón de Polling Implementado:**
+    - **Híbrido Server + Client:** Mantiene Server Component para data fetching (evita client-side waterfalls), pero usa Client Component para polling logic.
+    - **router.refresh():** Método de Next.js que re-ejecuta el Server Component sin recargar la página completa. Esto permite mantener los beneficios de Server Components (no exponer DB queries al cliente) mientras se actualiza la data periódicamente.
+    - **Interval de 30s:** Constante `POLL_INTERVAL = 30_000` ms configurable.
+    - **Cleanup automático:** `useEffect` retorna función de cleanup que ejecuta `clearInterval()` al desmontar el componente, evitando memory leaks.
+  - **Optimizaciones de Performance (React Best Practices):**
+    - **Best Practice 5.5:** Lazy state initialization con `useState(() => new Date())` para evitar crear objeto Date en cada render.
+    - **Best Practice 5.3:** Dependencies array mínimo en useEffect (solo `[router]`).
+    - **Best Practice 4.2:** Alternativa a SWR - usa router.refresh() nativo de Next.js en vez de librería externa, reduciendo bundle size.
+    - **Zero visual footprint:** Componente retorna `null`, es puramente side-effect (no afecta layout).
+  - **Logging de Debug:**
+    - Console.log condicional solo en `NODE_ENV === 'development'` con timestamp de último refresh.
+    - Útil para verificar manualmente que el polling esté funcionando en dev tools.
+  - **Integración en Dashboard:**
+    - `app/(dashboard)/dashboard/page.tsx` actualizado para importar y renderizar `<TeamViewAutoRefresh />` como primer hijo.
+    - Comentarios en código actualizados para documentar el patrón de auto-refresh.
+  - **Verificación Manual Requerida:**
+    - Para testear en Chrome: Ejecutar `npm run dev`, abrir `/dashboard`, verificar en console logs cada 30s.
+    - Observar que las tareas in_progress se actualizan automáticamente si se modifican en otra pestaña o por otro usuario.
+  - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1408.7ms con Turbopack. TypeScript compila sin errores. Componente client importado correctamente en Server Component.
