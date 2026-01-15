@@ -91,3 +91,23 @@
     - Inserción en tabla `activity` con action `'created'` y metadata con título y assigneeId.
   - **Bug Resuelto:** Error TypeScript inicial al usar `validationResult.error.errors[0]` en Zod 4.x. La propiedad correcta es `validationResult.error.issues[0]` en versiones modernas de Zod.
   - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts). Build completado exitosamente en 829ms. TypeScript compila sin errores.
+- **2026-01-15:** Sesión 2.3: Server Action - updateTaskStatus (Lógica Crítica).
+  - **Archivo actualizado:**
+    - `app/actions/tasks.ts`: Añadida función `updateTaskStatus` con transacción atómica para implementar la regla de "Single In-Progress Task".
+  - **Imports adicionales:** `eq` y `and` de `drizzle-orm` para queries condicionales.
+  - **Schema de Validación:**
+    - `taskId`: String UUID requerido.
+    - `newStatus`: Enum con valores válidos ('backlog', 'todo', 'in_progress', 'done').
+  - **Lógica de Single In-Progress Task:**
+    1. Fetch de la tarea actual para obtener su assigneeId y status previo.
+    2. Transacción atómica con `db.transaction()`:
+       - Si `newStatus === 'in_progress'` y la tarea tiene assigneeId, ejecuta un UPDATE masivo moviendo TODAS las tareas `in_progress` del mismo assignee a `todo`.
+       - Actualiza la tarea target con el nuevo status.
+       - Inserta registro en tabla `activity` con action `'status_changed'` y metadata conteniendo oldStatus, newStatus y taskTitle.
+    3. Revalidación de rutas (/, /kanban, /backlog).
+  - **Patrón de Transacción:** Uso de `db.transaction(async (tx) => {})` de Drizzle para garantizar atomicidad. Si cualquier operación falla, todas se revierten automáticamente.
+  - **Manejo de Edge Cases:**
+    - Si la tarea no existe, retorna error `'Task not found'` antes de ejecutar la transacción.
+    - Si la tarea no tiene assigneeId, no ejecuta la lógica de single-in-progress (permite múltiples tareas in_progress no asignadas).
+  - **Activity Logging:** Metadata incluye `oldStatus`, `newStatus` y `taskTitle` para trazabilidad completa de cambios de estado.
+  - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts). Build completado exitosamente en 981ms con Turbopack. TypeScript compila sin errores. Función exportada correctamente como Server Action.

@@ -30,7 +30,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
 - [x] **2.2** Server Action: `createTask`
   - Validar con Zod.
   - Insertar en DB y revalidatePath.
-- [ ] **2.3** Server Action: `updateTaskStatus` (Lógica Crítica)
+- [x] **2.3** Server Action: `updateTaskStatus` (Lógica Crítica)
   - Implementar transacción atómica.
   - Si el nuevo estado es `IN_PROGRESS`, mover cualquier otra tarea `IN_PROGRESS` del usuario a `TODO`.
 - [ ] **2.4** Implementar Unit Tests para Lógica de Estados
