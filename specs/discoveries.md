@@ -111,3 +111,35 @@
     - Si la tarea no tiene assigneeId, no ejecuta la lógica de single-in-progress (permite múltiples tareas in_progress no asignadas).
   - **Activity Logging:** Metadata incluye `oldStatus`, `newStatus` y `taskTitle` para trazabilidad completa de cambios de estado.
   - **Build Status:** ✅ Lint pasó con 1 warning no relacionado (middleware.ts). Build completado exitosamente en 981ms con Turbopack. TypeScript compila sin errores. Función exportada correctamente como Server Action.
+- **2026-01-15:** Sesión 2.4: Unit Tests para Lógica de Estados.
+  - **Dependencias instaladas:**
+    - `vitest@4.0.17`: Framework de testing rápido compatible con Vite/Next.js.
+    - `@vitest/ui@4.0.17`: Interfaz web para visualización de tests.
+    - `happy-dom@20.3.0`: Environment DOM ligero para tests (más rápido que jsdom).
+  - **Archivos creados:**
+    - `vitest.config.ts`: Configuración de Vitest con environment `happy-dom` y alias `@/` para imports absolutos.
+    - `app/actions/__tests__/tasks.test.ts`: Suite de 9 tests unitarios para `updateTaskStatus`.
+  - **Scripts añadidos:**
+    - `test`: Ejecuta tests en modo CI (single run).
+    - `test:watch`: Ejecuta tests en modo watch.
+    - `test:ui`: Abre interfaz web de Vitest.
+  - **Cobertura de Tests (9 tests, 100% passed):**
+    1. **Authentication:** Rechaza requests sin autenticación.
+    2. **Input Validation:** Rechaza UUIDs inválidos y status no permitidos.
+    3. **Single In-Progress Logic (CRITICAL):**
+       - Mueve otras tareas `in_progress` a `todo` cuando se activa una nueva.
+       - NO mueve tareas si el nuevo status no es `in_progress` (ej: moving to `done`).
+       - Maneja tareas sin assigneeId gracefully (skip lógica single-in-progress).
+    4. **Error Handling:** Retorna error cuando la tarea no existe.
+    5. **Transaction Errors:** Maneja fallos de DB con error message amigable.
+    6. **Activity Logging:** Verifica que se inserte registro en tabla `activity`.
+  - **Patrón de Testing:**
+    - Mocking de módulos externos: `@clerk/nextjs/server`, `next/cache`, `@/db`.
+    - Uso de tipos explícitos para mocks (`type MockTx`) en vez de `any` para cumplir con linting.
+    - `beforeEach` para resetear mocks y configurar estado default (usuario autenticado).
+    - `afterEach` para limpiar mocks.
+  - **Bug Resuelto durante Lint:**
+    - Variables no utilizadas `otherTaskId1` y `otherTaskId2` removidas.
+    - Tipos `any` reemplazados por tipo explícito `MockTx` con definición de propiedades.
+    - Parámetro `table` no utilizado removido de mock de `insert()`.
+  - **Build Status:** ✅ 9/9 tests passed. Lint pasó (solo 1 warning pre-existente en middleware.ts). Build completado exitosamente en 1049ms. TypeScript compila sin errores.
