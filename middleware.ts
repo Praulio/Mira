@@ -1,6 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
 // Check if we have valid Clerk keys
 const hasValidClerkKeys = 
@@ -12,6 +11,7 @@ const hasValidClerkKeys =
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/',
 ])
 
 // Create middleware based on whether we have valid Clerk keys
@@ -21,8 +21,8 @@ const middleware = hasValidClerkKeys
         await auth.protect()
       }
     })
-  : (request: NextRequest) => {
-      // Bypass auth if no valid Clerk keys
+  : () => {
+      // Bypass auth if no valid Clerk keys (development mode)
       return NextResponse.next()
     }
 

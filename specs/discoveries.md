@@ -165,3 +165,40 @@
     - `deleteTask`: Logs ANTES del DELETE para preservar referencia al taskId antes de CASCADE.
     - `updateTaskMetadata`: Logs metadata con comparación old vs new para trazabilidad completa de cambios.
   - **Build Status:** ✅ Lint pasó (1 warning pre-existente). Build completado exitosamente en 1043ms con Turbopack. Tests existentes (9/9) siguen pasando. TypeScript compila sin errores.
+- **2026-01-15:** Sesión 3.1: Layout Principal y Navigation.
+  - **Shadcn/ui Instalado:**
+    - Ejecutado `npx shadcn@latest init` con estilo "new-york", baseColor "neutral", y modo RSC habilitado.
+    - Configuración generada en `components.json` con aliases para `@/components`, `@/lib`, `@/hooks`.
+    - Instalado componente `button` de shadcn.
+    - Archivo creado: `lib/utils.ts` con función helper `cn()` (classNames merge con tailwind-merge).
+  - **Estructura de Rutas:**
+    - Creado route group `app/(dashboard)` para páginas autenticadas.
+    - Directorio `app/(dashboard)/dashboard` para rutas principales.
+  - **Componentes creados:**
+    - `components/sidebar.tsx`: Sidebar fijo de 64px con navegación hacia 4 vistas (Team View, Kanban, Backlog, Activity). Incluye highlighting del item activo basado en `usePathname()`.
+    - `components/user-nav.tsx`: Wrapper client component para `UserButton` de Clerk con configuración de avatarBox.
+    - `app/(dashboard)/layout.tsx`: Layout con sidebar fijo y área de contenido con top bar (título + UserButton). Usa `pl-64` para compensar sidebar fijo.
+  - **Páginas placeholder creadas:**
+    - `app/(dashboard)/dashboard/page.tsx`: Team View con grid de 8 slots vacíos (preparado para Task 3.2).
+    - `app/(dashboard)/dashboard/kanban/page.tsx`: Kanban con 4 columnas placeholder (preparado para Task 4.1).
+    - `app/(dashboard)/dashboard/backlog/page.tsx`: Backlog con lista vertical placeholder.
+    - `app/(dashboard)/dashboard/activity/page.tsx`: Activity feed con 10 items placeholder (preparado para Task 5.1).
+  - **Rutas configuradas:**
+    - `/dashboard` → Team View (8-slot grid).
+    - `/dashboard/kanban` → Kanban Board.
+    - `/dashboard/backlog` → Backlog List.
+    - `/dashboard/activity` → Activity Feed.
+    - `/` → Redirige a `/dashboard` si autenticado, o `/sign-in` si no.
+  - **Patrón de Dynamic Rendering:**
+    - Todas las páginas del dashboard incluyen `export const dynamic = 'force-dynamic'` para evitar pre-rendering durante build, ya que requieren autenticación y datos de usuario.
+    - Esto permite que el build pase exitosamente incluso sin Clerk keys válidas (usando el patrón condicional de ClerkProvider del layout raíz).
+  - **Diseño implementado:**
+    - Dark mode por defecto con colores neutral.
+    - Sidebar con logo "M", navegación con iconos Lucide y descripciones de cada vista.
+    - Footer en sidebar con versión "Mira Tasker v1.0.0".
+    - Top bar sticky con título y UserButton.
+  - **Bug Resuelto:**
+    - Error de build: `UserButton can only be used within <ClerkProvider />`. Solución: Extraer UserButton a componente client separado (`user-nav.tsx`) e importarlo en el layout server component.
+    - Warning de eslint: Variable `request` no utilizada en middleware.ts. Solución: Removido import `NextRequest` y parámetro del fallback middleware.
+    - Agregado `/` a rutas públicas en middleware para permitir acceso durante build.
+  - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 932ms con Turbopack. 9 rutas generadas correctamente (/, sign-in, sign-up, dashboard, kanban, backlog, activity, api/webhooks, 404). TypeScript compila sin errores.

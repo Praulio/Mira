@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Ultra-minimalist task management for 8-person teams",
 };
 
-// Check if we have valid Clerk keys (not placeholders)
+// Check if we have valid Clerk keys
 const hasValidClerkKeys = 
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== 'pk_test_placeholder' &&
@@ -29,21 +29,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const content = (
+  return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {hasValidClerkKeys ? (
+          <ClerkProvider>{children}</ClerkProvider>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );
-
-  // Only wrap with ClerkProvider if we have valid keys
-  if (hasValidClerkKeys) {
-    return <ClerkProvider>{content}</ClerkProvider>;
-  }
-
-  // During development/build without keys, render without Clerk
-  return content;
 }

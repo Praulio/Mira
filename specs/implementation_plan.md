@@ -40,7 +40,7 @@ Este plan detalla la construcción de Mira Tasker, una herramienta de gestión d
   - Implementar borrado y edición de título/descripción.
 
 ### Fase 3: Visual Visibility (Team View)
-- [ ] **3.1** Layout Principal y Navigation
+- [x] **3.1** Layout Principal y Navigation
   - Crear Sidebar y contenedor principal con Shadcn.
 - [ ] **3.2** Grilla de Team View (The 8 Slots)
   - Crear componente `TeamSlot.tsx`.
