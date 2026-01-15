@@ -427,3 +427,20 @@
     - ⚠️ Verificar que loading skeleton aparece durante fetch inicial.
     - ⚠️ Verificar que empty state aparece cuando no hay activity events.
   - **Build Status:** ✅ Lint pasó sin warnings. Build completado exitosamente en 1276.7ms con Turbopack. TypeScript compila sin errores. 9/9 unit tests pasaron. Ruta `/dashboard/activity` generada correctamente en production build.
+- **2026-01-15:** Sesión 5.2: Logging de Actividad (Verification).
+  - **Status:** ✅ Task 5.2 ya estaba completada en sesiones previas (2.2, 2.3, 2.5).
+  - **Verificación realizada:**
+    - Revisión de `app/actions/tasks.ts`: Los 4 server actions (createTask, updateTaskStatus, deleteTask, updateTaskMetadata) tienen logging de actividad implementado correctamente.
+    - Revisión de `db/schema.ts`: Tabla `activity` definida con campos correctos (id, taskId, userId, action, metadata, createdAt).
+    - Revisión de `db/migrations/0001_brave_moonstone.sql`: Migración correcta con enum `activity_action`, foreign keys CASCADE, e índices optimizados.
+    - Revisión de `app/actions/__tests__/tasks.test.ts`: Test suite incluye test específico para verificar activity logging en `updateTaskStatus`.
+  - **Patrones de Activity Logging confirmados:**
+    - **createTask:** Logs action `'created'` con metadata `{ title, assigneeId }`.
+    - **updateTaskStatus:** Logs action `'status_changed'` con metadata `{ oldStatus, newStatus, taskTitle }` dentro de transacción atómica.
+    - **deleteTask:** Logs action `'deleted'` con metadata `{ title, status, assigneeId }` ANTES del DELETE para preservar referencia.
+    - **updateTaskMetadata:** Logs action `'updated'` con metadata `{ oldTitle, newTitle, oldDescription, newDescription, fieldsUpdated }`.
+  - **Cobertura de Actions:**
+    - ✅ Todos los server actions de Fase 2 insertan registro en tabla `activity`.
+    - ✅ Todas las transacciones atómicas incluyen activity logging como parte del transaction block.
+    - ✅ Activity feed (Task 5.1) consume correctamente los datos de la tabla `activity`.
+  - **Build Status:** ✅ Lint pasó sin errores. Build completado exitosamente en 1429.5ms con Turbopack (Next.js 16.1.2). TypeScript compila sin errores. 9/9 unit tests pasaron. Task 5.2 verificada como completa.
