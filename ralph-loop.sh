@@ -43,8 +43,10 @@ while true; do
 
     echo -e "${BLUE}Iteración $ITERATION:${NC} $NEXT_TASK"
     
-    # Ejecución via Droid Exec
-    droid exec --auto medium -f "$PROMPT_FILE" >> "$LOG_FILE" 2>&1
+    # Ejecución via Droid Exec (Factory Edition)
+    # --skip-permissions-unsafe: Permite ejecución autónoma total
+    # --model: Usamos Sonnet 4.5 por su precisión y velocidad en tareas de código
+    droid exec -f "$PROMPT_FILE" --skip-permissions-unsafe --model claude-sonnet-4-5-20250929 >> "$LOG_FILE" 2>&1
 
     echo -e "${GREEN}✓${NC} Iteración $ITERATION completada. Esperando 3s..."
     sleep 3
