@@ -101,6 +101,47 @@ body {
 ```
 - **Ventajas:** Mantiene JSX legible, aprovecha Tailwind JIT para arbitrary values simples, usa inline styles solo cuando es necesario
 
+### CSS Custom Class Pattern for Multi-Property Effects with Pseudo-elements
+- **Archivo:** `app/globals.css` + `components/kanban-column.tsx` (gradient headers)
+- **Qué:** Para efectos que requieren múltiples propiedades CSS complejas Y pseudo-elements (::before, ::after), crear clase custom completa en globals.css en lugar de usar Tailwind arbitrary values o inline styles
+- **Cuándo usarlo:** Cuando el efecto requiere:
+  - Múltiples propiedades CSS complejas (linear-gradients, backdrop-filter, positioning)
+  - Pseudo-elements con su propio styling (::after, ::before)
+  - Efectos reutilizables que se aplicarán a múltiples elementos similares
+- **Estrategia:**
+  1. Definir clase completa en globals.css con todas las propiedades y pseudo-elements
+  2. Aplicar clase en componente junto con clases de Tailwind para layout (flex, items-center, p-4)
+  3. Mantener clases de Tailwind para propiedades que no entran en conflicto con la clase custom
+- **Ejemplo:**
+```css
+/* globals.css */
+.kanban-column-header {
+  background: linear-gradient(135deg, var(--glass-medium) 0%, var(--glass-dark) 100%);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border-bottom: 2px solid var(--accent-primary);
+  position: relative;
+}
+.kanban-column-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-primary) 20%, var(--accent-secondary) 80%, transparent 100%);
+  filter: blur(4px);
+}
+```
+```tsx
+{/* Component */}
+<div className="kanban-column-header flex items-center justify-between p-4">
+  {/* content */}
+</div>
+```
+- **Ventajas:** Encapsula lógica compleja en clase reutilizable, permite uso de pseudo-elements (imposible con inline styles), mantiene componente limpio, CSS más fácil de mantener y debuggear
+- **Cuándo NO usarlo:** Para efectos dinámicos que cambian según state/props (usar patrón híbrido con inline styles en su lugar)
+
 ## Soluciones a Problemas
 
 > Documenta soluciones no obvias o bugs que resolviste.
@@ -130,3 +171,4 @@ body {
 - **2026-01-16 - Sesión 5 (Tarea 3.2):** Implementados glow effects premium en team-slot.tsx para slots con tarea activa. Cambios: (1) radial-gradient background con var(--glow-cyan) + var(--glass-light), (2) backdrop-blur-[80px] saturate-[200%], (3) border con var(--accent-primary), (4) multi-layer box-shadow con glow effect, (5) pulse-glow animation 3s infinite. Patrón híbrido descubierto: Tailwind arbitrary values para propiedades simples + inline styles para efectos complejos (gradients, shadows multi-capa, var() references). Build exitoso. Glow effects premium listos - siguiente tarea es rotating ring indicator (3.3).
 - **2026-01-16 - Sesión 6 (Tarea 3.3):** Implementado rotating ring indicator en team-slot.tsx para avatares con tarea activa. Cambios: (1) CSS agregado a globals.css: clase `.active-task-ring` con `position: relative` y pseudo-element `::before` con conic-gradient animado usando mask-composite para crear efecto de "ring" hueco que rota 360° en 4s, (2) Agregada clase condicional `active-task-ring` al wrapper del avatar solo cuando `inProgressTask` existe. Técnica de mask-composite: usa dos linear-gradients con xor/exclude para crear efecto de "donut" donde el gradient es visible solo en el borde exterior. Filter blur(2px) agrega glow effect al ring. Build exitoso. Rotating ring indicator completo - siguiente tarea es task-card hover effects (4.1).
 - **2026-01-16 - Sesión 7 (Tarea 4.1):** Implementados hover effects premium en task-card.tsx. Cambios: (1) Base state: background var(--glass-dark), border var(--border-subtle), backdrop-blur-[40px], (2) Hover state: background var(--glass-medium), border var(--accent-primary), backdrop-blur-[60px] saturate-[180%], transform translateY(-2px), multi-layer box-shadow con var(--glow-cyan), (3) Transición: duration-300 con cubic-bezier(0.4,0,0.2,1). Patrón usado: Híbrido con event handlers onMouseEnter/onMouseLeave para controlar background y borderColor dinámicamente, evitando conflictos con estados de dragging/deleting. Limpiadas warnings de imports no usados (Image, Clock, Edit3, ExternalLink). Build exitoso. Hover effects premium completos - siguiente tarea es kanban-column gradient headers (5.1).
+- **2026-01-16 - Sesión 8 (Tarea 5.1):** Implementados gradient headers premium en kanban-column.tsx. Cambios: (1) Agregada clase `.kanban-column-header` en globals.css con: linear-gradient(135deg) de glass-medium a glass-dark, backdrop-filter blur(50px) con prefijo -webkit, border-bottom 2px solid accent-primary, position relative, (2) Pseudo-element ::after con gradient blur effect: positioned absolute en bottom -2px, linear-gradient horizontal (transparent → accent-primary → accent-secondary → transparent), filter blur(4px) para efecto glow, (3) Aplicada clase al header div en kanban-column.tsx, removiendo clases Tailwind redundantes (border-b border-border). Patrón CSS Custom Class: Para efectos multi-propiedad complejos con pseudo-elements, mejor agregar clase completa en globals.css que usar Tailwind arbitrary values o inline styles. Build exitoso. Gradient headers completos - siguiente tarea es typography gradient text (6.1).

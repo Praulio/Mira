@@ -233,3 +233,30 @@
   animation: rotate-ring 4s linear infinite;
   filter: blur(2px);
 }
+
+/* Kanban Column Header - Gradient Premium Effect */
+.kanban-column-header {
+  background:
+    linear-gradient(135deg,
+      var(--glass-medium) 0%,
+      var(--glass-dark) 100%);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border-bottom: 2px solid var(--accent-primary);
+  position: relative;
+}
+
+.kanban-column-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--accent-primary) 20%,
+    var(--accent-secondary) 80%,
+    transparent 100%);
+  filter: blur(4px);
+}

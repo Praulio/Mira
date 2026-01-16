@@ -62,7 +62,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 5: Component Enhancements - Kanban (~20 min)
 
-- [ ] **5.1** Mejorar kanban-column.tsx con gradient headers
+- [x] **5.1** Mejorar kanban-column.tsx con gradient headers
   - Archivo: `components/kanban-column.tsx`
   - Cambio: Actualizar header de columna
   - Background: linear-gradient de glass-medium a glass-dark
