@@ -22,6 +22,25 @@ body {
 }
 ```
 
+### Glass Effect Utility Classes - 3-Level System
+- **Archivo:** `app/globals.css` (@layer base)
+- **Qué:** Sistema de clases utility para glassmorphism con 3 niveles de intensidad progresiva
+- **Cuándo usarlo:** Para cualquier elemento que necesite efecto glass. Elegir nivel según profundidad visual deseada
+- **Niveles:**
+  - `.glass-dark`: blur(40px) - Para elementos base/lejanos
+  - `.glass-medium`: blur(60px) - Para elementos intermedios/hover states
+  - `.glass-light`: blur(80px) - Para elementos activos/al frente
+- **Nota importante:** Incluir prefijo `-webkit-backdrop-filter` para compatibilidad Safari
+- **Ejemplo:**
+```css
+.glass-medium {
+  background: var(--glass-medium);
+  backdrop-filter: blur(60px) saturate(180%);
+  -webkit-backdrop-filter: blur(60px) saturate(180%);
+  border: 1px solid var(--border-default);
+}
+```
+
 ## Soluciones a Problemas
 
 > Documenta soluciones no obvias o bugs que resolviste.
@@ -46,3 +65,4 @@ body {
 - **2026-01-16:** Inicio de Midnight Premium Dark Mode feature.
 - **2026-01-16 - Sesión 1 (Tarea 1.1):** Actualización completa de variables OKLch en globals.css. Agregadas todas las nuevas variables del sistema dark mode (base layers, glass layers, borders, accents, status, text hierarchy, glow effects) mientras se preservan las variables shadcn/ui existentes para compatibilidad. Build exitoso sin errores relacionados. Variables listas para uso en fases siguientes.
 - **2026-01-16 - Sesión 2 (Tarea 2.1):** Implementados gradientes radiales multi-capa en body. Reemplazada regla simple `@apply bg-background` con sistema de 3 capas: 2 radial-gradients + var(--bg-base). Agregado `background-attachment: fixed` para efecto parallax. Build exitoso. Background system listo - siguiente paso es agregar clases utility para glass effects.
+- **2026-01-16 - Sesión 3 (Tarea 2.2):** Agregadas clases utility para glass effects (.glass-dark, .glass-medium, .glass-light) en globals.css dentro de @layer base. Cada clase combina: background semi-transparente + backdrop-filter con blur progresivo (40/60/80px) + saturate + border sutil. Incluido prefijo -webkit-backdrop-filter para Safari. Build exitoso. Sistema de glass effects completo y listo para uso en componentes.

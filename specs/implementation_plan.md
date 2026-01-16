@@ -23,7 +23,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
   - Incluir: `background-attachment: fixed` para efecto parallax
   - Referencia: `specs/midnight-dark-mode.md` sección 2
 
-- [ ] **2.2** Agregar clases utility para glass effects
+- [x] **2.2** Agregar clases utility para glass effects
   - Archivo: `app/globals.css`
   - Cambio: Crear clases `.glass-dark`, `.glass-medium`, `.glass-light`
   - Cada una con background + backdrop-filter + border correspondiente
