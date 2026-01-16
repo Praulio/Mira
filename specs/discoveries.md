@@ -7,13 +7,19 @@
 
 > Agrega aquí patrones reutilizables que descubras durante la implementación.
 
-### [Nombre del Patrón]
-- **Archivo:** `[ruta/al/archivo]`
-- **Qué:** [descripción breve]
-- **Cuándo usarlo:** [contexto]
+### Multi-Layer Radial Gradients for Deep Space Effect
+- **Archivo:** `app/globals.css` (body rule)
+- **Qué:** Sistema de capas de gradientes radiales para crear profundidad tridimensional en el background
+- **Cuándo usarlo:** Para backgrounds principales que necesitan sensación de "floating in space"
 - **Ejemplo:**
 ```css
-/* código mínimo */
+body {
+  background:
+    radial-gradient(ellipse at 20% 20%, oklch(0.18 0.04 250 / 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, oklch(0.16 0.05 280 / 0.25) 0%, transparent 50%),
+    var(--bg-base);
+  background-attachment: fixed; /* Critical for parallax-like effect */
+}
 ```
 
 ## Soluciones a Problemas
@@ -39,3 +45,4 @@
 
 - **2026-01-16:** Inicio de Midnight Premium Dark Mode feature.
 - **2026-01-16 - Sesión 1 (Tarea 1.1):** Actualización completa de variables OKLch en globals.css. Agregadas todas las nuevas variables del sistema dark mode (base layers, glass layers, borders, accents, status, text hierarchy, glow effects) mientras se preservan las variables shadcn/ui existentes para compatibilidad. Build exitoso sin errores relacionados. Variables listas para uso en fases siguientes.
+- **2026-01-16 - Sesión 2 (Tarea 2.1):** Implementados gradientes radiales multi-capa en body. Reemplazada regla simple `@apply bg-background` con sistema de 3 capas: 2 radial-gradients + var(--bg-base). Agregado `background-attachment: fixed` para efecto parallax. Build exitoso. Background system listo - siguiente paso es agregar clases utility para glass effects.
