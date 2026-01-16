@@ -55,7 +55,7 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
 
       {/* User Info Header */}
       <div className="relative z-10 p-5 pb-3 flex items-center gap-4">
-        <div className="relative">
+        <div className={`relative ${inProgressTask ? 'active-task-ring' : ''}`}>
           <div className={`h-16 w-16 rounded-full p-1 transition-all duration-500 ${
             inProgressTask ? 'bg-gradient-to-tr from-primary to-cyan-400 rotate-12' : 'bg-white/10'
           }`}>

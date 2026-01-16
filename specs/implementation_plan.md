@@ -43,7 +43,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
   - Clase objetivo: slots con `task` (usuarios con tarea activa)
   - Referencia: `specs/midnight-dark-mode.md` sección 3 (Team Slot - estado activo)
 
-- [ ] **3.3** Implementar rotating ring indicator
+- [x] **3.3** Implementar rotating ring indicator
   - Archivo: `components/team-slot.tsx`
   - Cambio: Agregar wrapper div con clase `active-task-ring` alrededor del avatar
   - Agregar: CSS para pseudo-element `::before` con conic-gradient
