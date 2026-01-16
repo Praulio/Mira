@@ -31,7 +31,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 3: Component Enhancements - Team Slot (~30 min)
 
-- [ ] **3.1** Agregar keyframes de animación en globals.css
+- [x] **3.1** Agregar keyframes de animación en globals.css
   - Archivo: `app/globals.css`
   - Cambio: Agregar `@keyframes pulse-glow` y `@keyframes rotate-ring`
   - Referencia: `specs/midnight-dark-mode.md` sección 3 (Team Slot)
