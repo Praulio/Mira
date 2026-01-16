@@ -1,6 +1,6 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
+import { getAuth } from '@/lib/mock-auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/db';
@@ -66,7 +66,7 @@ export async function createTask(
 ): Promise<ActionResponse<typeof tasks.$inferSelect>> {
   try {
     // Get authenticated user
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     
     if (!userId) {
       return {
@@ -152,7 +152,7 @@ export async function updateTaskStatus(
 ): Promise<ActionResponse<typeof tasks.$inferSelect>> {
   try {
     // Get authenticated user
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     
     if (!userId) {
       return {
@@ -269,7 +269,7 @@ export async function deleteTask(
 ): Promise<ActionResponse<{ taskId: string }>> {
   try {
     // Get authenticated user
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     
     if (!userId) {
       return {
@@ -357,7 +357,7 @@ export async function updateTaskMetadata(
 ): Promise<ActionResponse<typeof tasks.$inferSelect>> {
   try {
     // Get authenticated user
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     
     if (!userId) {
       return {

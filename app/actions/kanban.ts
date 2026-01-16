@@ -1,8 +1,10 @@
 'use server';
 
+import { getAuth } from '@/lib/mock-auth';
 import { db } from '@/db';
 import { users, tasks } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { redirect } from 'next/navigation';
 
 /**
  * Type for a task in the Kanban view with related user data
@@ -47,6 +49,12 @@ export type KanbanData = {
  * - Returns minimal serializable data across RSC boundary
  */
 export async function getKanbanData(): Promise<KanbanData> {
+  const { userId } = await getAuth();
+  
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   try {
     // Single query with JOINs to fetch all tasks with assignee and creator data
     // Using LEFT JOIN for assignee (nullable) and INNER JOIN for creator (required)

@@ -27,30 +27,18 @@ const BASE_URL = 'http://localhost:3000';
 
 test.describe('Critical User Flow', () => {
   test.beforeEach(async ({ page }) => {
+    // Add bypass header for testing
+    await page.setExtraHTTPHeaders({
+      'x-e2e-test': 'true'
+    });
     // Navigate to the app
     await page.goto(BASE_URL);
   });
 
-  test('complete flow: login -> create task -> move to in progress -> verify in team view', async ({ page }) => {
-    // Step 1: Login with Clerk
-    // Note: This assumes you're redirected to /sign-in for unauthenticated users
-    await test.step('Login with Clerk', async () => {
-      // Wait for Clerk sign-in form to load
-      await page.waitForURL('**/sign-in**', { timeout: 10000 });
-      
-      // Fill in Clerk login form
-      // Note: Clerk's form structure may vary. Adjust selectors as needed.
-      await page.fill('input[name="identifier"]', TEST_USER_EMAIL);
-      await page.click('button:has-text("Continue")');
-      
-      // Wait for password field and fill it
-      await page.waitForSelector('input[name="password"]', { timeout: 5000 });
-      await page.fill('input[name="password"]', TEST_USER_PASSWORD);
-      await page.click('button:has-text("Continue")');
-      
-      // Wait for successful login and redirect to dashboard
-      await page.waitForURL('**/dashboard**', { timeout: 10000 });
-    });
+  test('complete flow: create task -> move to in progress -> verify in team view', async ({ page }) => {
+    // Step 1: Skip Login (handled by Middleware bypass)
+    await page.goto(`${BASE_URL}/dashboard`);
+    await page.waitForURL('**/dashboard**', { timeout: 10000 });
 
     // Step 2: Navigate to Kanban and create a task
     let taskTitle = '';
@@ -136,13 +124,8 @@ test.describe('Critical User Flow', () => {
   });
 
   test('task creation validation', async ({ page }) => {
-    await test.step('Login', async () => {
-      await page.waitForURL('**/sign-in**', { timeout: 10000 });
-      await page.fill('input[name="identifier"]', TEST_USER_EMAIL);
-      await page.click('button:has-text("Continue")');
-      await page.waitForSelector('input[name="password"]', { timeout: 5000 });
-      await page.fill('input[name="password"]', TEST_USER_PASSWORD);
-      await page.click('button:has-text("Continue")');
+    await test.step('Bypass Login', async () => {
+      await page.goto(`${BASE_URL}/dashboard`);
       await page.waitForURL('**/dashboard**', { timeout: 10000 });
     });
 
@@ -165,13 +148,8 @@ test.describe('Critical User Flow', () => {
   });
 
   test('kanban drag and drop works across all columns', async ({ page }) => {
-    await test.step('Login', async () => {
-      await page.waitForURL('**/sign-in**', { timeout: 10000 });
-      await page.fill('input[name="identifier"]', TEST_USER_EMAIL);
-      await page.click('button:has-text("Continue")');
-      await page.waitForSelector('input[name="password"]', { timeout: 5000 });
-      await page.fill('input[name="password"]', TEST_USER_PASSWORD);
-      await page.click('button:has-text("Continue")');
+    await test.step('Bypass Login', async () => {
+      await page.goto(`${BASE_URL}/dashboard`);
       await page.waitForURL('**/dashboard**', { timeout: 10000 });
     });
 

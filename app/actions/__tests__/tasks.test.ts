@@ -53,7 +53,7 @@ describe('updateTaskStatus - Single In-Progress Task Logic', () => {
     vi.clearAllMocks();
     
     // Default: user is authenticated
-    (auth as Mock).mockResolvedValue({ userId: mockUserId });
+    (auth as unknown as Mock).mockResolvedValue({ userId: mockUserId });
   });
 
   afterEach(() => {
@@ -62,7 +62,7 @@ describe('updateTaskStatus - Single In-Progress Task Logic', () => {
 
   describe('Authentication', () => {
     it('should reject unauthenticated requests', async () => {
-      (auth as Mock).mockResolvedValue({ userId: null });
+      (auth as unknown as Mock).mockResolvedValue({ userId: null });
 
       const result = await updateTaskStatus({
         taskId: '123e4567-e89b-12d3-a456-426614174000',

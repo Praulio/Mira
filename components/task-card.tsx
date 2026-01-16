@@ -63,47 +63,45 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
       data-testid={`task-card-${task.id}`}
       data-task-id={task.id}
       data-task-status={task.status}
-      className={`group cursor-grab rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 ${
-        isDragging ? 'opacity-50' : ''
+      className={`group cursor-grab rounded-xl border border-white/10 bg-card/40 p-4 shadow-lg backdrop-blur-md transition-all hover:border-white/20 hover:bg-card/60 hover:shadow-xl dark:border-white/5 dark:bg-neutral-800/40 ${
+        isDragging ? 'z-50 scale-105 opacity-50' : ''
       }`}
     >
       {/* Task title */}
-      <h4 className="mb-2 font-medium text-neutral-900 dark:text-neutral-100">
+      <h4 className="mb-2 font-semibold text-foreground tracking-tight">
         {task.title}
       </h4>
 
       {/* Task description (if exists) */}
       {task.description && (
-        <p className="mb-3 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {task.description}
         </p>
       )}
 
       {/* Footer: Assignee and time */}
-      <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
+      <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
         {/* Assignee */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {task.assignee ? (
-            <>
+            <div className="relative h-5 w-5">
               <Image
                 src={task.assignee.imageUrl || '/placeholder-avatar.png'}
                 alt={task.assignee.name}
-                width={20}
-                height={20}
-                className="rounded-full"
+                fill
+                className="rounded-full object-cover ring-1 ring-white/10"
               />
-              <span className="truncate">{task.assignee.name}</span>
-            </>
+            </div>
           ) : (
-            <>
-              <User className="h-4 w-4" />
-              <span>Unassigned</span>
-            </>
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <User className="h-3 w-3" />
+            </div>
           )}
+          <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
         </div>
 
         {/* Time updated */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 opacity-60">
           <Clock className="h-3 w-3" />
           <span>{getRelativeTime(task.updatedAt)}</span>
         </div>

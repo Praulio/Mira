@@ -52,7 +52,6 @@ function getColorClasses(color: 'neutral' | 'blue' | 'amber' | 'green'): {
  * - Uses @dnd-kit/core for drag and drop
  */
 export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProps) {
-  const colors = getColorClasses(statusColor);
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -62,18 +61,22 @@ export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProp
       ref={setNodeRef}
       data-testid={`kanban-column-${id}`}
       data-column-id={id}
-      className={`flex min-h-[600px] flex-col rounded-lg border border-neutral-200 bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900/50 ${
-        isOver ? 'border-blue-500 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-900/20' : ''
+      className={`flex min-h-[600px] flex-col rounded-lg border border-border bg-card/50 transition-colors ${
+        isOver ? 'border-primary bg-primary/5' : ''
       }`}
     >
       {/* Column Header */}
-      <div className="flex items-center justify-between border-b border-neutral-200 p-4 dark:border-neutral-800">
+      <div className="flex items-center justify-between border-b border-border p-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-300">
+          <div 
+            className="h-2 w-2 rounded-full" 
+            style={{ backgroundColor: `var(--status-${id.replace('_', '')})` }}
+          />
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-foreground/80">
             {title}
           </h3>
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${colors.badge}`}
+            className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
           >
             {tasks.length}
           </span>

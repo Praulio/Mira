@@ -49,38 +49,38 @@ export function CreateTaskDialog() {
       <button
         onClick={() => setIsOpen(true)}
         data-testid="create-task-button"
-        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-600 dark:hover:bg-blue-700"
+        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20"
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-4 w-4 stroke-[3px]" />
         New Task
       </button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-card/40 p-8 shadow-2xl backdrop-blur-2xl">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Create New Task
           </h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="rounded-lg p-1 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+            className="rounded-full p-2 text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
             <label
               htmlFor="title"
-              className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
             >
-              Title <span className="text-red-500">*</span>
+              Title <span className="text-primary">*</span>
             </label>
             <input
               id="title"
@@ -89,15 +89,15 @@ export function CreateTaskDialog() {
               required
               maxLength={200}
               data-testid="task-title-input"
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
-              placeholder="Enter task title..."
+              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              placeholder="What needs to be done?"
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="description"
-              className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
             >
               Description
             </label>
@@ -107,18 +107,18 @@ export function CreateTaskDialog() {
               rows={3}
               maxLength={2000}
               data-testid="task-description-input"
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
-              placeholder="Enter task description (optional)..."
+              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              placeholder="Add some details..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
               disabled={isSubmitting}
-              className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="rounded-xl px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-white/5 disabled:opacity-50"
             >
               Cancel
             </button>
@@ -126,7 +126,7 @@ export function CreateTaskDialog() {
               type="submit"
               disabled={isSubmitting}
               data-testid="submit-task-button"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-black text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
             >
               {isSubmitting ? 'Creating...' : 'Create Task'}
             </button>

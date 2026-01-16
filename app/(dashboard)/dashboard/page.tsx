@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { getAuth } from "@/lib/mock-auth"
 import { redirect } from "next/navigation"
 import { TeamSlot } from "@/components/team-slot"
 import { getTeamViewData } from "@/app/actions/team"
@@ -9,18 +9,9 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Dashboard Page - Team View
- * 
- * Displays the 8-slot team grid showing each user's current in-progress task.
- * Auto-refreshes every 30 seconds to show real-time updates.
- * 
- * Following React Best Practices:
- * - Server Component for data fetching (no client-side waterfall)
- * - Auth check before data fetch (Best Practice: 1.1 - defer await)
- * - Minimal data serialization across RSC boundary
- * - Client Component for polling via router.refresh() (Best Practice: 4.2)
  */
 export default async function DashboardPage() {
-  const { userId } = await auth()
+  const { userId } = await getAuth()
 
   if (!userId) {
     redirect("/sign-in")

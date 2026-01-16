@@ -37,20 +37,20 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/5 bg-sidebar/40 backdrop-blur-xl">
       <div className="flex h-full flex-col gap-2">
         {/* Header */}
-        <div className="flex h-16 items-center border-b border-neutral-200 px-6 dark:border-neutral-800">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 dark:bg-neutral-100">
-              <span className="text-sm font-bold text-white dark:text-neutral-900">M</span>
+        <div className="flex h-16 items-center border-b border-white/5 px-6">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/60 shadow-lg shadow-primary/20">
+              <span className="text-sm font-black text-primary-foreground">M</span>
             </div>
-            <span className="text-lg font-semibold">Mira</span>
+            <span className="text-xl font-bold tracking-tight text-foreground">Mira</span>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 py-2">
+        <nav className="flex-1 space-y-1.5 px-4 py-6">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
@@ -60,16 +60,16 @@ export function Sidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3 px-3 py-6 text-sm font-medium transition-colors",
+                    "w-full justify-start gap-4 px-4 py-7 text-sm font-medium transition-all duration-300 rounded-xl",
                     isActive
-                      ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50"
-                      : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
+                      ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.1)]"
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <div className="flex flex-col items-start">
-                    <span>{item.title}</span>
-                    <span className="text-xs font-normal text-neutral-500 dark:text-neutral-500">
+                  <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span className={cn(isActive ? "font-bold" : "font-semibold")}>{item.title}</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider opacity-60">
                       {item.description}
                     </span>
                   </div>
@@ -80,8 +80,8 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-neutral-200 px-3 py-3 dark:border-neutral-800">
-          <p className="text-xs text-neutral-500">
+        <div className="border-t border-white/5 px-6 py-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
             Mira Tasker v1.0.0
           </p>
         </div>

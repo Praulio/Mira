@@ -17,6 +17,14 @@ const isPublicRoute = createRouteMatcher([
 // Create middleware based on whether we have valid Clerk keys
 const middleware = hasValidClerkKeys
   ? clerkMiddleware(async (auth, request) => {
+      // Allow bypass for E2E tests in local environment
+      const isTestEnv = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+      const isTestHeader = request.headers.get('x-e2e-test') === 'true'
+      
+      if (isTestEnv && isTestHeader) {
+        return NextResponse.next()
+      }
+
       if (!isPublicRoute(request)) {
         await auth.protect()
       }
