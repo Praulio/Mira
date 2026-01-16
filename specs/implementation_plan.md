@@ -52,7 +52,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 4: Component Enhancements - Task Card (~15 min)
 
-- [ ] **4.1** Mejorar task-card.tsx con hover effects
+- [x] **4.1** Mejorar task-card.tsx con hover effects
   - Archivo: `components/task-card.tsx`
   - Cambio: Actualizar clases base y hover
   - Base: glass-dark background, blur(40px), border-subtle

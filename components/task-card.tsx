@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { Clock, User, MoreVertical, Trash2, Edit3, ExternalLink } from 'lucide-react';
+import { User, MoreVertical, Trash2 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
@@ -44,7 +43,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
   }
 
   // Handle opening detail
-  function handleCardClick(e: React.MouseEvent) {
+  function handleCardClick() {
     if (showMenu) return;
     setShowDetail(true);
   }
@@ -56,20 +55,44 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
       }
     : undefined;
 
+  // Merge transform and custom styles
+  const cardStyle = {
+    ...style,
+    ...(isDragging || isDeleting 
+      ? {} 
+      : {
+          background: 'var(--glass-dark)',
+          border: '1px solid var(--border-subtle)',
+        }
+    ),
+  };
+
   return (
     <>
       <div
         ref={setNodeRef}
-        style={style}
+        style={cardStyle}
         {...listeners}
         {...attributes}
         onClick={handleCardClick}
         data-testid={`task-card-${task.id}`}
         data-task-id={task.id}
         data-task-status={task.status}
-        className={`group relative cursor-grab rounded-xl border border-white/10 bg-card/40 p-4 shadow-lg backdrop-blur-md transition-all hover:border-white/20 hover:bg-card/60 hover:shadow-xl dark:border-white/5 dark:bg-neutral-800/40 ${
+        className={`group relative cursor-grab rounded-xl p-4 backdrop-blur-[40px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:backdrop-blur-[60px] hover:saturate-[180%] hover:-translate-y-0.5 hover:shadow-[0_0_30px_var(--glow-cyan),0_12px_40px_oklch(0.10_0.02_250/0.5)] ${
           isDragging ? 'z-50 scale-105 opacity-50' : ''
         } ${isDeleting ? 'scale-95 opacity-20' : ''}`}
+        onMouseEnter={(e) => {
+          if (!isDragging && !isDeleting) {
+            e.currentTarget.style.background = 'var(--glass-medium)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isDragging && !isDeleting) {
+            e.currentTarget.style.background = 'var(--glass-dark)';
+            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+          }
+        }}
       >
         {/* Quick Menu Button */}
         <div className="absolute right-2 top-2 z-10">
