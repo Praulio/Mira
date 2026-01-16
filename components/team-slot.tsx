@@ -37,11 +37,16 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
       data-testid={`team-slot-${user.id}`}
       data-user-id={user.id}
       data-has-active-task={!!inProgressTask}
-      className={`group relative flex h-56 flex-col overflow-hidden rounded-2xl border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
+      className={`group relative flex h-56 flex-col overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
         inProgressTask 
-          ? 'border-primary/30 bg-primary/5 shadow-primary/5' 
-          : 'border-white/10 bg-white/5'
-      } backdrop-blur-xl`}
+          ? 'backdrop-blur-[80px] saturate-[200%] animate-[pulse-glow_3s_ease-in-out_infinite]' 
+          : 'border border-white/10 bg-white/5 backdrop-blur-xl'
+      }`}
+      style={inProgressTask ? {
+        background: 'radial-gradient(circle at 50% 50%, var(--glow-cyan) 0%, transparent 70%), var(--glass-light)',
+        border: '1px solid var(--accent-primary)',
+        boxShadow: '0 0 40px var(--glow-cyan), 0 8px 32px oklch(0.10 0.02 250 / 0.6), inset 0 1px 0 oklch(0.80 0.15 220 / 0.2)'
+      } : undefined}
     >
       {/* Background decoration */}
       {inProgressTask && (

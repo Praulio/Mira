@@ -77,6 +77,30 @@ body {
 }
 ```
 
+### Hybrid Approach: Tailwind Arbitrary Values + Inline Styles
+- **Archivo:** `components/team-slot.tsx` (implementación de glow effects)
+- **Qué:** Combinar Tailwind arbitrary values para propiedades simples con inline styles para propiedades complejas multi-valor
+- **Cuándo usarlo:** Cuando necesitas aplicar efectos premium complejos (radial gradients, multi-layer box-shadows, var() references) que son difíciles de expresar en Tailwind
+- **Estrategia:**
+  - Tailwind para: `backdrop-blur-[80px]`, `saturate-[200%]`, `animate-[keyframe_duration_timing_infinite]`
+  - Inline styles para: complex gradients, box-shadows con múltiples capas, borders con var() CSS variables
+- **Ejemplo:**
+```tsx
+<div 
+  className={`... ${
+    isActive 
+      ? 'backdrop-blur-[80px] saturate-[200%] animate-[pulse-glow_3s_ease-in-out_infinite]' 
+      : 'border border-white/10 bg-white/5 backdrop-blur-xl'
+  }`}
+  style={isActive ? {
+    background: 'radial-gradient(circle at 50% 50%, var(--glow-cyan) 0%, transparent 70%), var(--glass-light)',
+    border: '1px solid var(--accent-primary)',
+    boxShadow: '0 0 40px var(--glow-cyan), 0 8px 32px oklch(0.10 0.02 250 / 0.6), inset 0 1px 0 oklch(0.80 0.15 220 / 0.2)'
+  } : undefined}
+>
+```
+- **Ventajas:** Mantiene JSX legible, aprovecha Tailwind JIT para arbitrary values simples, usa inline styles solo cuando es necesario
+
 ## Soluciones a Problemas
 
 > Documenta soluciones no obvias o bugs que resolviste.
@@ -103,3 +127,4 @@ body {
 - **2026-01-16 - Sesión 2 (Tarea 2.1):** Implementados gradientes radiales multi-capa en body. Reemplazada regla simple `@apply bg-background` con sistema de 3 capas: 2 radial-gradients + var(--bg-base). Agregado `background-attachment: fixed` para efecto parallax. Build exitoso. Background system listo - siguiente paso es agregar clases utility para glass effects.
 - **2026-01-16 - Sesión 3 (Tarea 2.2):** Agregadas clases utility para glass effects (.glass-dark, .glass-medium, .glass-light) en globals.css dentro de @layer base. Cada clase combina: background semi-transparente + backdrop-filter con blur progresivo (40/60/80px) + saturate + border sutil. Incluido prefijo -webkit-backdrop-filter para Safari. Build exitoso. Sistema de glass effects completo y listo para uso en componentes.
 - **2026-01-16 - Sesión 4 (Tarea 3.1):** Agregados keyframes de animación (@keyframes pulse-glow y @keyframes rotate-ring) en globals.css después del @layer base. pulse-glow: animación de box-shadow pulsante (40px→60px blur) para glow effects en active states. rotate-ring: rotación 360° continua para ring indicators. Build exitoso. Keyframes listos para aplicarse en team-slot.tsx en próxima tarea.
+- **2026-01-16 - Sesión 5 (Tarea 3.2):** Implementados glow effects premium en team-slot.tsx para slots con tarea activa. Cambios: (1) radial-gradient background con var(--glow-cyan) + var(--glass-light), (2) backdrop-blur-[80px] saturate-[200%], (3) border con var(--accent-primary), (4) multi-layer box-shadow con glow effect, (5) pulse-glow animation 3s infinite. Patrón híbrido descubierto: Tailwind arbitrary values para propiedades simples + inline styles para efectos complejos (gradients, shadows multi-capa, var() references). Build exitoso. Glow effects premium listos - siguiente tarea es rotating ring indicator (3.3).

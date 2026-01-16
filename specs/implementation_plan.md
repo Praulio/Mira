@@ -36,7 +36,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
   - Cambio: Agregar `@keyframes pulse-glow` y `@keyframes rotate-ring`
   - Referencia: `specs/midnight-dark-mode.md` sección 3 (Team Slot)
 
-- [ ] **3.2** Mejorar team-slot.tsx con glow effects
+- [x] **3.2** Mejorar team-slot.tsx con glow effects
   - Archivo: `components/team-slot.tsx`
   - Cambio: Actualizar clases de Tailwind para slots activos
   - Agregar: radial-gradient background, stronger backdrop-blur, pulse-glow animation
