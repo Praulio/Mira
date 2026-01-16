@@ -78,7 +78,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
   - Incluir: gradient background, background-clip, text-fill-color
   - Referencia: `specs/midnight-dark-mode.md` sección 4
 
-- [ ] **6.2** Aplicar gradient text a headers del dashboard
+- [x] **6.2** Aplicar gradient text a headers del dashboard
   - Archivo: `app/(dashboard)/dashboard/page.tsx`
   - Cambio: Agregar clase `dashboard-title` al título principal
   - Buscar: `<h1>` o elemento con "Team Pulse" u otros títulos principales

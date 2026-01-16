@@ -35,7 +35,7 @@ export default async function DashboardPage() {
       <TeamViewAutoRefresh />
 
       <div className="flex flex-col gap-1">
-        <h2 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+        <h2 className="dashboard-title">
           Team Pulse
         </h2>
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
