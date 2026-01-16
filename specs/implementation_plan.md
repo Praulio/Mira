@@ -72,7 +72,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 6: Typography & Headers (~15 min)
 
-- [ ] **6.1** Agregar clases para gradient text en globals.css
+- [x] **6.1** Agregar clases para gradient text en globals.css
   - Archivo: `app/globals.css`
   - Cambio: Crear clase `.dashboard-title`
   - Incluir: gradient background, background-clip, text-fill-color

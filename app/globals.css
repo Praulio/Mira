@@ -260,3 +260,21 @@
     transparent 100%);
   filter: blur(4px);
 }
+
+/* Typography Enhancement - Gradient Text */
+.dashboard-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg,
+    var(--text-primary) 0%,
+    var(--accent-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-header {
+  color: var(--text-primary);
+  text-shadow: 0 2px 8px oklch(0.10 0.02 250 / 0.5);
+}
