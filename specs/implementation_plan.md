@@ -9,7 +9,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 1: Base Color System (~15 min)
 
-- [ ] **1.1** Actualizar variables de color en globals.css
+- [x] **1.1** Actualizar variables de color en globals.css
   - Archivo: `app/globals.css`
   - Cambio: Reemplazar todas las variables en `:root` con las nuevas variables OKLch dark mode
   - Incluir: Base layers, glass layers, borders, accents, status, text, glow effects

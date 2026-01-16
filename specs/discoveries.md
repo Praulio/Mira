@@ -38,3 +38,4 @@
 ## Notas de Sesión
 
 - **2026-01-16:** Inicio de Midnight Premium Dark Mode feature.
+- **2026-01-16 - Sesión 1 (Tarea 1.1):** Actualización completa de variables OKLch en globals.css. Agregadas todas las nuevas variables del sistema dark mode (base layers, glass layers, borders, accents, status, text hierarchy, glow effects) mientras se preservan las variables shadcn/ui existentes para compatibilidad. Build exitoso sin errores relacionados. Variables listas para uso en fases siguientes.
