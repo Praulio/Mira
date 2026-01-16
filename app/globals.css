@@ -204,6 +204,17 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Rotating Ring Indicator - Active Task Visual */
 .active-task-ring {
   position: relative;

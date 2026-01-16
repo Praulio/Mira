@@ -86,7 +86,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 7: Page Load Animations (~15 min)
 
-- [ ] **7.1** Agregar keyframe fade-in-up en globals.css
+- [x] **7.1** Agregar keyframe fade-in-up en globals.css
   - Archivo: `app/globals.css`
   - Cambio: Agregar `@keyframes fade-in-up` con opacity + transform
   - Referencia: `specs/midnight-dark-mode.md` sección 5
