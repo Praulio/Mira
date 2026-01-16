@@ -2,6 +2,7 @@ import { getAuth } from "@/lib/mock-auth"
 import { redirect } from "next/navigation"
 import { TeamSlot } from "@/components/team-slot"
 import { getTeamViewData } from "@/app/actions/team"
+import { syncCurrentUser } from "@/app/actions/users"
 import { TeamViewAutoRefresh } from "@/components/team-view-auto-refresh"
 
 // Force dynamic rendering since this requires authentication
@@ -17,6 +18,9 @@ export default async function DashboardPage() {
     redirect("/sign-in")
   }
 
+  // Sync current user to ensure name and image are real
+  await syncCurrentUser()
+
   // Fetch team data (users + their in-progress tasks)
   const teamSlots = await getTeamViewData()
 
@@ -26,19 +30,21 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-700">
       {/* Auto-refresh component (client-side polling every 30s) */}
       <TeamViewAutoRefresh />
 
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Team View</h2>
-        <p className="text-neutral-600 dark:text-neutral-400">
-          See what everyone on your team is working on right now
+      <div className="flex flex-col gap-1">
+        <h2 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+          Team Pulse
+        </h2>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+          Real-time availability and focus
         </p>
       </div>
 
-      {/* 8-slot team grid: 1 column on mobile, 2 on tablet, 4 on desktop (2x4 grid) */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* 8-slot team grid */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {slotsToRender.map((slotData, index) => (
           <TeamSlot
             key={slotData?.user.id || `empty-${index}`}
