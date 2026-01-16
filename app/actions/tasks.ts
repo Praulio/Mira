@@ -117,6 +117,19 @@ export async function createTask(
       },
     });
 
+    // If assigned at creation, log assignment activity too
+    if (newTask.assigneeId) {
+      await db.insert(activity).values({
+        taskId: newTask.id,
+        userId,
+        action: 'assigned',
+        metadata: {
+          assigneeId: newTask.assigneeId,
+          taskTitle: newTask.title,
+        },
+      });
+    }
+
     // Revalidate relevant paths
     revalidatePath('/');
     revalidatePath('/kanban');
@@ -443,15 +456,83 @@ export async function updateTaskMetadata(
     revalidatePath('/kanban');
     revalidatePath('/backlog');
 
-    return {
-      success: true,
-      data: result,
-    };
+    return { success: true, data: result };
   } catch (error) {
     console.error('Error updating task metadata:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while updating the task',
-    };
+    return { success: false, error: 'Failed to update task details' };
   }
 }
+
+/**
+ * Server Action: Assign a task to a user
+ * 
+ * Updates the assignee of a task. If the task is 'in_progress', it moves
+ * any other 'in_progress' tasks for the NEW assignee back to 'todo'.
+ */
+export async function assignTask(
+  taskId: string,
+  newAssigneeId: string | null
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    const { userId: currentUserId } = await getAuth();
+    
+    if (!currentUserId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    // Fetch current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return { success: false, error: 'Task not found' };
+    }
+
+    const result = await db.transaction(async (tx) => {
+      // If task is in_progress and we are assigning to someone,
+      // clear other in_progress tasks for that person
+      if (currentTask.status === 'in_progress' && newAssigneeId) {
+        await tx
+          .update(tasks)
+          .set({ status: 'todo', updatedAt: new Date() })
+          .where(
+            and(
+              eq(tasks.assigneeId, newAssigneeId),
+              eq(tasks.status, 'in_progress')
+            )
+          );
+      }
+
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({ assigneeId: newAssigneeId, updatedAt: new Date() })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      // Log activity
+      await tx.insert(activity).values({
+        taskId: taskId,
+        userId: currentUserId,
+        action: 'assigned',
+        metadata: {
+          oldAssigneeId: currentTask.assigneeId,
+          newAssigneeId: newAssigneeId,
+          taskTitle: currentTask.title,
+        },
+      });
+
+      return updatedTask;
+    });
+
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error assigning task:', error);
+    return { success: false, error: 'Failed to assign task' };
+  }
+}
+

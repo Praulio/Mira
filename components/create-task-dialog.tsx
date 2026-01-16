@@ -1,22 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, X, User as UserIcon, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { createTask } from '@/app/actions/tasks';
+import { getTeamUsers } from '@/app/actions/users';
 
 /**
  * CreateTaskDialog - Simple dialog for creating new tasks
- * 
- * Following React Best Practices:
- * - Client Component for form interaction
- * - Minimal state management (Best Practice 5.1)
- * - Lazy state initialization (Best Practice 5.5)
- * - Server Action for data mutation
  */
 export function CreateTaskDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
+
+  // Fetch team users when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      getTeamUsers().then(setTeamUsers);
+    }
+  }, [isOpen]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,6 +34,7 @@ export function CreateTaskDialog() {
     const result = await createTask({
       title,
       description: description || undefined,
+      assigneeId: selectedAssigneeId || undefined,
     });
 
     setIsSubmitting(false);
@@ -37,6 +42,7 @@ export function CreateTaskDialog() {
     if (result.success) {
       toast.success('Task created successfully');
       setIsOpen(false);
+      setSelectedAssigneeId(null);
       // Reset form
       (e.target as HTMLFormElement).reset();
     } else {
@@ -110,6 +116,50 @@ export function CreateTaskDialog() {
               className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
               placeholder="Add some details..."
             />
+          </div>
+
+          {/* Assignee Selector */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Assign to
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {teamUsers.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => setSelectedAssigneeId(selectedAssigneeId === user.id ? null : user.id)}
+                  className={`group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
+                    selectedAssigneeId === user.id 
+                      ? 'bg-primary/20 ring-1 ring-primary/50' 
+                      : 'hover:bg-white/5'
+                  }`}
+                >
+                  <div className="relative h-10 w-10">
+                    <img
+                      src={user.imageUrl || '/placeholder-avatar.png'}
+                      alt={user.name}
+                      className={`h-full w-full rounded-full object-cover ring-2 transition-all ${
+                        selectedAssigneeId === user.id ? 'ring-primary' : 'ring-transparent'
+                      }`}
+                    />
+                    {selectedAssigneeId === user.id && (
+                      <div className="absolute -right-1 -top-1 rounded-full bg-primary p-0.5 text-primary-foreground shadow-lg">
+                        <Check className="h-3 w-3 stroke-[4px]" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-bold truncate w-full text-center opacity-80 group-hover:opacity-100">
+                    {user.name.split(' ')[0]}
+                  </span>
+                </button>
+              ))}
+              {teamUsers.length === 0 && (
+                <p className="col-span-4 text-center py-4 text-xs text-muted-foreground italic">
+                  No team members found
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Actions */}

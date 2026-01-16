@@ -16,6 +16,10 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
 }));
 
+vi.mock('@/lib/mock-auth', () => ({
+  getAuth: vi.fn(),
+}));
+
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
@@ -41,7 +45,7 @@ vi.mock('@/db/schema', () => ({
 
 // Import after mocking
 import { updateTaskStatus } from '../tasks';
-import { auth } from '@clerk/nextjs/server';
+import { getAuth } from '@/lib/mock-auth';
 import { db } from '@/db';
 
 describe('updateTaskStatus - Single In-Progress Task Logic', () => {
@@ -53,7 +57,7 @@ describe('updateTaskStatus - Single In-Progress Task Logic', () => {
     vi.clearAllMocks();
     
     // Default: user is authenticated
-    (auth as unknown as Mock).mockResolvedValue({ userId: mockUserId });
+    (getAuth as unknown as Mock).mockResolvedValue({ userId: mockUserId });
   });
 
   afterEach(() => {
@@ -62,7 +66,7 @@ describe('updateTaskStatus - Single In-Progress Task Logic', () => {
 
   describe('Authentication', () => {
     it('should reject unauthenticated requests', async () => {
-      (auth as unknown as Mock).mockResolvedValue({ userId: null });
+      (getAuth as unknown as Mock).mockResolvedValue({ userId: null });
 
       const result = await updateTaskStatus({
         taskId: '123e4567-e89b-12d3-a456-426614174000',
