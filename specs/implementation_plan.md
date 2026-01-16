@@ -100,7 +100,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
 
 ### Fase 8: Testing & Polish (~20 min)
 
-- [ ] **8.1** Testing visual completo
+- [x] **8.1** Testing visual completo
   - Navegar a `/dashboard` y verificar background gradients + staggered animation
   - Verificar hover states en task cards con transform + glow
   - Verificar active slots con glow cyan pulsante
