@@ -289,3 +289,17 @@
   color: var(--text-primary);
   text-shadow: 0 2px 8px oklch(0.10 0.02 250 / 0.5);
 }
+
+/* Dashboard Grid - Staggered Animation */
+.dashboard-grid > * {
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.dashboard-grid > *:nth-child(1) { animation-delay: 0.05s; }
+.dashboard-grid > *:nth-child(2) { animation-delay: 0.10s; }
+.dashboard-grid > *:nth-child(3) { animation-delay: 0.15s; }
+.dashboard-grid > *:nth-child(4) { animation-delay: 0.20s; }
+.dashboard-grid > *:nth-child(5) { animation-delay: 0.25s; }
+.dashboard-grid > *:nth-child(6) { animation-delay: 0.30s; }
+.dashboard-grid > *:nth-child(7) { animation-delay: 0.35s; }
+.dashboard-grid > *:nth-child(8) { animation-delay: 0.40s; }

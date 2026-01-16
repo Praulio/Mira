@@ -91,7 +91,7 @@ Transformación visual completa a dark mode premium con glassmorphism, glow effe
   - Cambio: Agregar `@keyframes fade-in-up` con opacity + transform
   - Referencia: `specs/midnight-dark-mode.md` sección 5
 
-- [ ] **7.2** Aplicar staggered animation al dashboard grid
+- [x] **7.2** Aplicar staggered animation al dashboard grid
   - Archivo: `app/(dashboard)/dashboard/page.tsx`
   - Cambio: Agregar clase `dashboard-grid` al contenedor de los 8 team slots
   - CSS: Crear regla en globals.css para `.dashboard-grid > *` con animation + delays
