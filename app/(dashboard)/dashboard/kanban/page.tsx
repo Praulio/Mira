@@ -27,9 +27,9 @@ export default async function KanbanPage() {
       {/* Header with Create Task button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Kanban Board</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Tablero Kanban</h2>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Organize and track your tasks across four stages - Drag to move tasks
+            Organiza y rastrea tus tareas a través de cuatro etapas - Arrastra para mover tareas
           </p>
         </div>
         <CreateTaskDialog />

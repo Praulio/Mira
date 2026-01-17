@@ -40,13 +40,13 @@ export function CreateTaskDialog() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Task created successfully');
+      toast.success('Tarea creada exitosamente');
       setIsOpen(false);
       setSelectedAssigneeId(null);
       // Reset form
       (e.target as HTMLFormElement).reset();
     } else {
-      toast.error(result.error || 'Failed to create task');
+      toast.error(result.error || 'Error al crear la tarea');
     }
   }
 
@@ -58,7 +58,7 @@ export function CreateTaskDialog() {
         className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20"
       >
         <Plus className="h-4 w-4 stroke-[3px]" />
-        New Task
+        Nueva Tarea
       </button>
     );
   }
@@ -69,7 +69,7 @@ export function CreateTaskDialog() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight text-foreground">
-            Create New Task
+            Crear Nueva Tarea
           </h2>
           <button
             onClick={() => setIsOpen(false)}
@@ -86,7 +86,7 @@ export function CreateTaskDialog() {
               htmlFor="title"
               className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
             >
-              Title <span className="text-primary">*</span>
+              Título <span className="text-primary">*</span>
             </label>
             <input
               id="title"
@@ -96,7 +96,7 @@ export function CreateTaskDialog() {
               maxLength={200}
               data-testid="task-title-input"
               className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-              placeholder="What needs to be done?"
+              placeholder="¿Qué hay que hacer?"
             />
           </div>
 
@@ -105,7 +105,7 @@ export function CreateTaskDialog() {
               htmlFor="description"
               className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
             >
-              Description
+              Descripción
             </label>
             <textarea
               id="description"
@@ -114,14 +114,14 @@ export function CreateTaskDialog() {
               maxLength={2000}
               data-testid="task-description-input"
               className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-              placeholder="Add some details..."
+              placeholder="Agrega algunos detalles..."
             />
           </div>
 
           {/* Assignee Selector */}
           <div className="space-y-3">
             <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Assign to
+              Asignar a
             </label>
             <div className="grid grid-cols-4 gap-2">
               {teamUsers.map((user) => (
@@ -156,7 +156,7 @@ export function CreateTaskDialog() {
               ))}
               {teamUsers.length === 0 && (
                 <p className="col-span-4 text-center py-4 text-xs text-muted-foreground italic">
-                  No team members found
+                  No se encontraron miembros del equipo
                 </p>
               )}
             </div>
@@ -170,7 +170,7 @@ export function CreateTaskDialog() {
               disabled={isSubmitting}
               className="rounded-xl px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-white/5 disabled:opacity-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
@@ -178,7 +178,7 @@ export function CreateTaskDialog() {
               data-testid="submit-task-button"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-black text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
             >
-              {isSubmitting ? 'Creating...' : 'Create Task'}
+              {isSubmitting ? 'Creando...' : 'Crear Tarea'}
             </button>
           </div>
         </form>

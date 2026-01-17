@@ -18,9 +18,9 @@ export default async function ActivityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Activity Feed</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Feed de Actividad</h2>
         <p className="text-neutral-600 dark:text-neutral-400">
-          Recent changes across all tasks
+          Cambios recientes en todas las tareas
         </p>
       </div>
 
@@ -39,10 +39,10 @@ export default async function ActivityPage() {
               <Activity className="h-8 w-8 text-neutral-400" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-              No activity yet
+              Aún no hay actividad
             </h3>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-              Task activity will appear here as your team works
+              La actividad de tareas aparecerá aquí cuando el equipo trabaje
             </p>
           </div>
         )}

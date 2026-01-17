@@ -5,9 +5,9 @@ export default function BacklogPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Backlog</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Pila de Tareas</h2>
         <p className="text-neutral-600 dark:text-neutral-400">
-          Prioritize upcoming work
+          Prioriza el trabajo pendiente
         </p>
       </div>
 

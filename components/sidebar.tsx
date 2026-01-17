@@ -8,28 +8,28 @@ import { Button } from "@/components/ui/button"
 
 const navItems = [
   {
-    title: "Team View",
+    title: "Vista de Equipo",
     href: "/dashboard",
     icon: LayoutGrid,
-    description: "See what everyone is working on",
+    description: "Ve en qué trabaja el equipo",
   },
   {
-    title: "Kanban",
+    title: "Tablero Kanban",
     href: "/dashboard/kanban",
     icon: Columns3,
-    description: "Drag and drop tasks",
+    description: "Arrastra y suelta tareas",
   },
   {
-    title: "Backlog",
+    title: "Pila de Tareas",
     href: "/dashboard/backlog",
     icon: ListTodo,
-    description: "Prioritize upcoming work",
+    description: "Prioriza trabajo pendiente",
   },
   {
-    title: "Activity",
+    title: "Actividad",
     href: "/dashboard/activity",
     icon: Activity,
-    description: "Recent changes",
+    description: "Cambios recientes",
   },
 ]
 

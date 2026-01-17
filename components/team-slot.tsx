@@ -18,8 +18,8 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-white/10 bg-white/5 opacity-30">
             <User className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Slot {slotNumber}</p>
-          <p className="text-xs font-bold text-muted-foreground/60">Available</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Espacio {slotNumber}</p>
+          <p className="text-xs font-bold text-muted-foreground/60">Disponible</p>
         </div>
       </div>
     );
@@ -33,13 +33,13 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
     : null;
 
   return (
-    <div 
+    <div
       data-testid={`team-slot-${user.id}`}
       data-user-id={user.id}
       data-has-active-task={!!inProgressTask}
       className={`group relative flex h-56 flex-col overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
-        inProgressTask 
-          ? 'backdrop-blur-[80px] saturate-[200%] animate-[pulse-glow_3s_ease-in-out_infinite]' 
+        inProgressTask
+          ? 'backdrop-blur-[80px] saturate-[200%]'
           : 'border border-white/10 bg-white/5 backdrop-blur-xl'
       }`}
       style={inProgressTask ? {
@@ -50,20 +50,20 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
     >
       {/* Background decoration */}
       {inProgressTask && (
-        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/10 blur-3xl animate-pulse" />
+        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/10 blur-3xl" />
       )}
 
       {/* User Info Header */}
       <div className="relative z-10 p-5 pb-3 flex items-center gap-4">
-        <div className={`relative ${inProgressTask ? 'active-task-ring' : ''}`}>
+        <div className="relative">
           <div className={`h-16 w-16 rounded-full p-1 transition-all duration-500 ${
-            inProgressTask ? 'bg-gradient-to-tr from-primary to-cyan-400 rotate-12' : 'bg-white/10'
+            inProgressTask ? 'bg-gradient-to-tr from-primary to-cyan-400' : 'bg-white/10'
           }`}>
             <img
               src={user.imageUrl || '/placeholder-avatar.png'}
               alt={user.name}
               className={`h-full w-full rounded-full object-cover transition-all duration-500 ${
-                inProgressTask ? '-rotate-12 scale-105' : ''
+                inProgressTask ? 'scale-105' : ''
               }`}
             />
           </div>
@@ -92,10 +92,9 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-primary">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
                 </span>
-                Working On
+                Trabajando en
               </span>
               {timeElapsed && (
                 <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/60 uppercase">
@@ -111,7 +110,7 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
         ) : (
           <div className="flex items-center gap-3 rounded-xl border border-dashed border-white/10 p-3 opacity-50">
             <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Idle • No task assigned</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">Inactivo • Sin tarea asignada</p>
           </div>
         )}
       </div>
@@ -120,14 +119,14 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
 }
 
 /**
- * Calculate human-readable time elapsed
+ * Calcular tiempo transcurrido legible
  */
 function getTimeElapsed(startDate: Date): string {
   const now = new Date();
   const elapsed = now.getTime() - new Date(startDate).getTime();
   const minutes = Math.floor(elapsed / 1000 / 60);
-  
-  if (minutes < 1) return 'Just now';
+
+  if (minutes < 1) return 'Ahora mismo';
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h`;

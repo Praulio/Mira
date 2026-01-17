@@ -100,7 +100,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
 
     if (!task) {
       console.error('Task not found:', taskId);
-      toast.error('Task not found');
+      toast.error('Tarea no encontrada');
       return;
     }
 
@@ -148,11 +148,11 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       });
 
       // Show error notification
-      toast.error(result.error || 'Failed to update task status');
+      toast.error(result.error || 'Error al actualizar el estado de la tarea');
       console.error('Failed to update task status:', result.error);
     } else {
       // Show success feedback
-      toast.success('Task moved successfully');
+      toast.success('Tarea movida exitosamente');
     }
   }
 
@@ -167,25 +167,25 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KanbanColumn
           id="backlog"
-          title="Backlog"
+          title="Pila de Tareas"
           tasks={kanbanData.backlog}
           statusColor="neutral"
         />
         <KanbanColumn
           id="todo"
-          title="To Do"
+          title="Por Hacer"
           tasks={kanbanData.todo}
           statusColor="blue"
         />
         <KanbanColumn
           id="in_progress"
-          title="In Progress"
+          title="En Progreso"
           tasks={kanbanData.in_progress}
           statusColor="amber"
         />
         <KanbanColumn
           id="done"
-          title="Done"
+          title="Completado"
           tasks={kanbanData.done}
           statusColor="green"
         />

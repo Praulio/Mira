@@ -90,7 +90,7 @@ export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProp
         ) : (
           <div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900">
             <p className="text-sm text-neutral-500 dark:text-neutral-500">
-              No tasks
+              Sin tareas
             </p>
           </div>
         )}

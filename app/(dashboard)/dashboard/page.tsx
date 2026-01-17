@@ -36,10 +36,10 @@ export default async function DashboardPage() {
 
       <div className="flex flex-col gap-1">
         <h2 className="dashboard-title">
-          Team Pulse
+          Pulso del Equipo
         </h2>
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-          Real-time availability and focus
+          Disponibilidad y enfoque en tiempo real
         </p>
       </div>
 

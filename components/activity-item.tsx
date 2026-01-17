@@ -33,8 +33,8 @@ function getActionIcon(action: ActivityData['action']) {
 }
 
 /**
- * Format activity message based on action and metadata
- * 
+ * Formatear mensaje de actividad basado en la acción y metadatos
+ *
  * Best Practice 7.8: Early returns in switch statement
  */
 function getActivityMessage(activity: ActivityData): string {
@@ -42,80 +42,80 @@ function getActivityMessage(activity: ActivityData): string {
 
   switch (action) {
     case 'created':
-      return task 
-        ? `created task "${task.title}"`
-        : 'created a task'
-    
+      return task
+        ? `creó la tarea "${task.title}"`
+        : 'creó una tarea'
+
     case 'status_changed': {
       const oldStatus = metadata?.oldStatus as string | undefined
       const newStatus = metadata?.newStatus as string | undefined
       const taskTitle = metadata?.taskTitle as string | undefined
-      
+
       if (oldStatus && newStatus && taskTitle) {
-        return `moved "${taskTitle}" from ${formatStatus(oldStatus)} to ${formatStatus(newStatus)}`
+        return `movió "${taskTitle}" de ${formatStatus(oldStatus)} a ${formatStatus(newStatus)}`
       }
-      return task 
-        ? `changed status of "${task.title}"`
-        : 'changed task status'
+      return task
+        ? `cambió el estado de "${task.title}"`
+        : 'cambió el estado de una tarea'
     }
-    
+
     case 'assigned':
       return task
-        ? `assigned "${task.title}" to someone`
-        : 'assigned a task'
-    
+        ? `asignó "${task.title}" a alguien`
+        : 'asignó una tarea'
+
     case 'updated': {
       const taskTitle = metadata?.taskTitle as string | undefined
       const titleUpdated = metadata?.titleUpdated as boolean | undefined
       const descriptionUpdated = metadata?.descriptionUpdated as boolean | undefined
-      
+
       if (taskTitle) {
         if (titleUpdated && descriptionUpdated) {
-          return `updated title and description of "${taskTitle}"`
+          return `actualizó el título y descripción de "${taskTitle}"`
         }
         if (titleUpdated) {
-          return `updated title of "${taskTitle}"`
+          return `actualizó el título de "${taskTitle}"`
         }
         if (descriptionUpdated) {
-          return `updated description of "${taskTitle}"`
+          return `actualizó la descripción de "${taskTitle}"`
         }
-        return `updated "${taskTitle}"`
+        return `actualizó "${taskTitle}"`
       }
       return task
-        ? `updated "${task.title}"`
-        : 'updated a task'
+        ? `actualizó "${task.title}"`
+        : 'actualizó una tarea'
     }
-    
+
     case 'deleted': {
       const taskTitle = metadata?.title as string | undefined
       return taskTitle
-        ? `deleted task "${taskTitle}"`
-        : 'deleted a task'
+        ? `eliminó la tarea "${taskTitle}"`
+        : 'eliminó una tarea'
     }
   }
 }
 
 /**
- * Format status enum to human-readable string
+ * Formatear estado enum a cadena legible
  */
 function formatStatus(status: string): string {
   switch (status) {
     case 'backlog':
-      return 'Backlog'
+      return 'Pila de Tareas'
     case 'todo':
-      return 'To Do'
+      return 'Por Hacer'
     case 'in_progress':
-      return 'In Progress'
+      return 'En Progreso'
     case 'done':
-      return 'Done'
+      return 'Completado'
     default:
       return status
   }
 }
 
 /**
- * Format relative time (e.g., "2 hours ago")
- * 
+ * Formatear tiempo relativo (ej. "hace 2 horas")
+ *
  * Best Practice 7.8: Early returns for cleaner code
  */
 function getRelativeTime(date: Date): string {
@@ -126,12 +126,12 @@ function getRelativeTime(date: Date): string {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffSecs < 60) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  
-  return date.toLocaleDateString()
+  if (diffSecs < 60) return 'ahora mismo'
+  if (diffMins < 60) return `hace ${diffMins}m`
+  if (diffHours < 24) return `hace ${diffHours}h`
+  if (diffDays < 7) return `hace ${diffDays}d`
+
+  return date.toLocaleDateString('es-ES')
 }
 
 /**
