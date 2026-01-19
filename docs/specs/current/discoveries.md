@@ -221,3 +221,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Menú tiene 2 opciones: toggle crítico (con validación server-side de 1 por usuario) y eliminar
 - Los mensajes de toast están en español siguiendo convención del proyecto
 - Próxima tarea: componente BacklogList con DndContext (4.2)
+
+### Session 12 - 2026-01-19
+**Task:** 4.2 - Componente BacklogList con DndContext
+**Files:** `components/backlog-list.tsx` (nuevo)
+**Patterns:**
+- `SortableContext` + `verticalListSortingStrategy`: para listas verticales reordenables con animaciones suaves
+- `arrayMove` de @dnd-kit/sortable: función helper inmutable para reordenar arrays en React state
+- `closestCenter` vs `closestCorners`: center es mejor para listas verticales, corners para grids/tableros
+- Estado local sin persistencia: el spec indica que el orden visual no persiste, así que usamos useState sin server action
+**Notes:**
+- El componente recibe `initialTasks` pero el estado es local - refresh resetea al orden original (críticas primero + fecha)
+- DragOverlay muestra la card siendo arrastrada con `rotate-2 scale-105` para feedback visual
+- Empty state incluido con mensaje "No hay tareas en el backlog" y sugerencia de crear una nueva
+- Próxima tarea: actualizar backlog/page.tsx (4.3)
