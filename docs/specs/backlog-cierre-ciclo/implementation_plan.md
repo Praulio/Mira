@@ -25,7 +25,7 @@ Validación Fase 0:
   - Comportamiento: boolean para crítico, timestamp para fecha, text/jsonb para datos
   - Referencia: ver `db/schema.ts` líneas 40-53, agregar `boolean` al import
 
-- [ ] **1.2** Agregar 'completed' y 'mentioned' a activityActionEnum
+- [x] **1.2** Agregar 'completed' y 'mentioned' a activityActionEnum
   - Output: Enum con 7 valores totales
   - Referencia: ver `db/schema.ts` líneas 16-22
 
