@@ -7,7 +7,7 @@ Fecha: 2026-01-19
 
 ## Fase 0: Activation & Setup
 
-- [ ] **0.1** Instalar canvas-confetti y crear lib/confetti.ts
+- [x] **0.1** Instalar canvas-confetti y crear lib/confetti.ts
   - Output: `lib/confetti.ts` exporta `fireConfetti()` y `playCelebrationSound()`
   - Comportamiento: Confetti desde ambos lados, respeta prefers-reduced-motion
   - Referencia: `pnpm add canvas-confetti @types/canvas-confetti`
