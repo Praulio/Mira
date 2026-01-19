@@ -40,7 +40,7 @@ Validación Fase 1:
 
 ## Fase 2: Server Actions
 
-- [ ] **2.1** Action toggleTaskCritical en tasks.ts
+- [x] **2.1** Action toggleTaskCritical en tasks.ts
   - Input: `{ taskId: string }`
   - Output: `ActionResponse` con task actualizada o error si ya tiene crítica
   - Comportamiento: Toggle isCritical, valida máximo 1 por usuario
