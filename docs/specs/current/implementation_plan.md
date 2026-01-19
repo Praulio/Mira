@@ -66,7 +66,7 @@ Validación Fase 2:
 
 ## Fase 3: Complete Task Modal
 
-- [ ] **3.1** Componente MentionInput
+- [x] **3.1** Componente MentionInput
   - Props: `{ value, onChange, placeholder }`
   - Render: Textarea que detecta "@" y muestra dropdown de usuarios
   - Comportamiento: Inserta `@[name](userId)` al seleccionar, extrae mentions
