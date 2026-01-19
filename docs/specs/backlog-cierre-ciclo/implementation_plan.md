@@ -46,7 +46,7 @@ Validación Fase 1:
   - Comportamiento: Toggle isCritical, valida máximo 1 por usuario
   - Referencia: ver patrón de `updateTaskStatus` en `app/actions/tasks.ts`
 
-- [ ] **2.2** Action completeTask en tasks.ts
+- [x] **2.2** Action completeTask en tasks.ts
   - Input: `{ taskId, notes?, links?, mentions? }`
   - Output: Task con status='done', datos de completion guardados
   - Comportamiento: Crea activity 'completed' + 'mentioned' por cada mención
