@@ -142,7 +142,7 @@ Validación Fase 5:
   - Comportamiento: Cambia URL param ?filter=completed|mentions
   - Referencia: usar `useSearchParams` y `useRouter`
 
-- [ ] **6.2** Actualizar activity/page.tsx para usar filtros
+- [x] **6.2** Actualizar activity/page.tsx para usar filtros
   - Input: searchParams.filter
   - Output: ActivityFilters en header + getActivityFeed con filtro
   - Comportamiento: Empty states específicos por filtro
