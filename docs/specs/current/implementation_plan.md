@@ -92,7 +92,7 @@ Validación Fase 3:
 
 ## Fase 4: Backlog Page
 
-- [ ] **4.1** Componente BacklogTaskCard
+- [x] **4.1** Componente BacklogTaskCard
   - Props: `{ task }` con isCritical
   - Render: Card con borde rojo si crítico, badge "CRÍTICO", grip handle, menú
   - Comportamiento: Click abre detail, star toggle crítico, trash elimina
