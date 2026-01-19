@@ -134,3 +134,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Mensaje de error en español siguiendo convención del proyecto
 - No se crea activity log para cambio de crítico (no especificado en spec)
 - Próxima tarea: crear completeTask action (2.2)
+
+### Session 6 - 2026-01-19
+**Task:** 2.2 - Action completeTask en tasks.ts
+**Files:** `app/actions/tasks.ts`
+**Patterns:**
+- Para menciones, crear actividad 'mentioned' con `userId` del mencionado (no del que menciona)
+- Guardar `mentionedBy` en metadata para poder mostrar "X te mencionó"
+- Revalidar `/activity` además de las otras rutas
+- Schema Zod con `.max()` en arrays: `z.array(z.string().url()).max(10)`
+**Notes:**
+- La action valida URLs con Zod antes de guardar en DB
+- Límite de 2000 caracteres en notas (consistente con description)
+- Las menciones son array de IDs de usuario (no el formato @[name](id) que es solo para UI)
+- Próxima tarea: agregar filtro a getActivityFeed (2.3)

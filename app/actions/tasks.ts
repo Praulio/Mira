@@ -48,6 +48,16 @@ const toggleCriticalSchema = z.object({
 });
 
 /**
+ * Zod schema for task completion
+ */
+const completeTaskSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+  notes: z.string().max(2000, 'Notes must be 2000 characters or less').optional(),
+  links: z.array(z.string().url('Invalid URL')).max(10, 'Maximum 10 links').optional(),
+  mentions: z.array(z.string()).optional(),
+});
+
+/**
  * Zod schema for task metadata update (title/description)
  */
 const updateTaskMetadataSchema = z.object({
@@ -645,6 +655,127 @@ export async function toggleTaskCritical(
     return {
       success: false,
       error: 'An unexpected error occurred while updating the task',
+    };
+  }
+}
+
+/**
+ * Server Action: Complete a task
+ *
+ * Marks a task as 'done' with optional completion notes, links, and mentions.
+ * Creates activity records for the completion and for each mentioned user.
+ *
+ * @param input - Task completion data (taskId, notes?, links?, mentions?)
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function completeTask(
+  input: z.infer<typeof completeTaskSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to complete tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = completeTaskSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, notes, links, mentions } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Execute completion in transaction
+    const result = await db.transaction(async (tx) => {
+      // Update task to done with completion data
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          status: 'done',
+          completedAt: new Date(),
+          completionNotes: notes || null,
+          completionLinks: links || null,
+          completionMentions: mentions || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to complete task');
+      }
+
+      // Log completion activity
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'completed',
+        metadata: {
+          taskTitle: updatedTask.title,
+          notes: notes || null,
+          links: links || null,
+          mentions: mentions || null,
+          previousStatus: currentTask.status,
+        },
+      });
+
+      // Create 'mentioned' activity for each mentioned user
+      if (mentions && mentions.length > 0) {
+        for (const mentionedUserId of mentions) {
+          await tx.insert(activity).values({
+            taskId: updatedTask.id,
+            userId: mentionedUserId,
+            action: 'mentioned',
+            metadata: {
+              taskTitle: updatedTask.title,
+              mentionedBy: userId,
+              notes: notes || null,
+            },
+          });
+        }
+      }
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+    revalidatePath('/activity');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error completing task:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while completing the task',
     };
   }
 }
