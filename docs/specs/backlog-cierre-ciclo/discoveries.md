@@ -148,3 +148,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Límite de 2000 caracteres en notas (consistente con description)
 - Las menciones son array de IDs de usuario (no el formato @[name](id) que es solo para UI)
 - Próxima tarea: agregar filtro a getActivityFeed (2.3)
+
+### Session 7 - 2026-01-19
+**Task:** 2.3 - Agregar filtro a getActivityFeed en activity.ts
+**Files:** `app/actions/activity.ts`
+**Patterns:**
+- `and()` de drizzle-orm combina múltiples condiciones WHERE
+- Parámetro con default (`filter = 'all'`) mantiene compatibilidad con llamadas existentes
+- Para 'mentions': buscar `action='mentioned' AND userId=currentUser` porque las menciones se crean con el userId del mencionado
+- `.where(undefined)` no agrega WHERE - permite queries condicionales elegantes
+**Notes:**
+- Se exporta nuevo tipo `ActivityFilter` para uso en componentes de UI
+- El filtro 'completed' solo busca `action='completed'`, no incluye otras acciones
+- El filtro 'mentions' requiere auth - si no hay usuario retorna array vacío
+- Próxima tarea: componente MentionInput (3.1)

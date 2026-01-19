@@ -2,7 +2,13 @@
 
 import { db } from '@/db'
 import { activity, users, tasks } from '@/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
+import { getAuth } from '@/lib/mock-auth'
+
+/**
+ * Filter type for activity feed
+ */
+export type ActivityFilter = 'all' | 'completed' | 'mentions'
 
 /**
  * Activity data with user and task information
@@ -26,14 +32,33 @@ export type ActivityData = {
 
 /**
  * Fetch the last 20 activity events with user and task info
- * 
+ *
  * Performance optimizations:
  * - Uses LEFT JOIN to fetch user and task data in single query (Best Practice 1.4)
  * - Ordered by createdAt DESC with limit 20 for recent events
  * - Indexed query on activity.created_at (defined in schema)
+ *
+ * @param filter - Filter type: 'all' (default), 'completed', or 'mentions'
  */
-export async function getActivityFeed(): Promise<ActivityData[]> {
+export async function getActivityFeed(filter: ActivityFilter = 'all'): Promise<ActivityData[]> {
   try {
+    // Build where clause based on filter
+    let whereClause = undefined
+
+    if (filter === 'completed') {
+      whereClause = eq(activity.action, 'completed')
+    } else if (filter === 'mentions') {
+      const { userId } = await getAuth()
+      if (!userId) {
+        return []
+      }
+      // 'mentioned' activities are created with userId of the mentioned person
+      whereClause = and(
+        eq(activity.action, 'mentioned'),
+        eq(activity.userId, userId)
+      )
+    }
+
     // Fetch activity with user and task data in one query
     const activityData = await db
       .select({
@@ -51,6 +76,7 @@ export async function getActivityFeed(): Promise<ActivityData[]> {
       .from(activity)
       .leftJoin(users, eq(activity.userId, users.id))
       .leftJoin(tasks, eq(activity.taskId, tasks.id))
+      .where(whereClause)
       .orderBy(desc(activity.createdAt))
       .limit(20)
 
