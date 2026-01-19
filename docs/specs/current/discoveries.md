@@ -320,3 +320,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Las notas aparecen tanto para action 'completed' como 'mentioned' (ambos tienen `notes` en metadata)
 - El helper `getDomain()` extrae hostname y remueve 'www.' para URLs más legibles
 - Próxima tarea: agregar botón Completar en TaskDetailDialog (7.1)
+
+### Session 19 - 2026-01-19
+**Task:** 7.1 - Agregar botón Completar en TaskDetailDialog
+**Files:** `components/task-detail-dialog.tsx`
+**Patterns:**
+- Conditional rendering para acciones contextuales: `{task.status !== 'done' && <button>}` oculta botones irrelevantes según el estado
+- Callback de éxito encadenado: `handleCompleteSuccess` cierra el CompleteTaskModal Y el TaskDetailDialog para un flujo limpio
+- Z-index stacking: el CompleteTaskModal (z-50) se renderiza dentro del TaskDetailDialog (z-50) pero Radix Portal lo lleva al body
+**Notes:**
+- El botón de completar tiene estilos hover verdes para diferenciar de la acción de eliminar (roja)
+- El modal de completar se monta condicionalmente solo cuando `showCompleteModal` es true
+- **🎉 ÚLTIMA TAREA del implementation plan - el feature "Backlog Funcional + Cierre de Ciclo" está COMPLETO**
+- Todas las 19 tareas en 8 fases implementadas exitosamente

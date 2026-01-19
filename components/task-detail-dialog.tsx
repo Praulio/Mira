@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Calendar, User, AlignLeft, Trash2, Check } from 'lucide-react';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTaskMetadata, assignTask, deleteTask } from '@/app/actions/tasks';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
+import { CompleteTaskModal } from './complete-task-modal';
 
 type TaskDetailDialogProps = {
   task: KanbanTaskData;
@@ -27,6 +28,7 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   const [assigneeId, setAssigneeId] = useState(task.assignee?.id || null);
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
@@ -76,6 +78,13 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     }
   }
 
+  function handleCompleteSuccess() {
+    // Close both the complete modal and the detail dialog
+    setShowCompleteModal(false);
+    router.refresh();
+    onClose();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-card/40 p-0 shadow-2xl backdrop-blur-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -88,6 +97,15 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {task.status !== 'done' && (
+              <button
+                onClick={() => setShowCompleteModal(true)}
+                className="rounded-full p-2 text-muted-foreground transition-all hover:bg-green-500/10 hover:text-green-400"
+                title="Completar tarea"
+              >
+                <PartyPopper className="h-5 w-5" />
+              </button>
+            )}
             <button
               onClick={handleDelete}
               className="rounded-full p-2 text-muted-foreground transition-all hover:bg-red-500/10 hover:text-red-400"
@@ -195,6 +213,16 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
           </button>
         </div>
       </div>
+
+      {/* Complete Task Modal */}
+      {showCompleteModal && (
+        <CompleteTaskModal
+          task={task}
+          isOpen={showCompleteModal}
+          onClose={() => setShowCompleteModal(false)}
+          onComplete={handleCompleteSuccess}
+        />
+      )}
     </div>
   );
 }
