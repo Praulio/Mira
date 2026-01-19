@@ -118,7 +118,7 @@ Validación Fase 4:
 
 ## Fase 5: Kanban Integration
 
-- [ ] **5.1** Agregar estado y modal en KanbanBoard
+- [x] **5.1** Agregar estado y modal en KanbanBoard
   - Output: Estado `showCompleteModal` y `pendingCompleteTask`
   - Comportamiento: En handleDragEnd, si newStatus='done' → abre modal en vez de update directo
   - Referencia: ver `components/kanban-board.tsx` línea handleDragEnd
