@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { KanbanColumn } from './kanban-column';
 import { TaskCard } from './task-card';
+import { CompleteTaskModal } from './complete-task-modal';
 import type { KanbanData, KanbanTaskData } from '@/app/actions/kanban';
 import { updateTaskStatus } from '@/app/actions/tasks';
 
@@ -46,6 +47,13 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
   // State for optimistic UI updates
   // Following Best Practice 5.5: Lazy state initialization
   const [kanbanData, setKanbanData] = useState<KanbanData>(initialData);
+
+  // State for complete task modal (Fase 5.1)
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [pendingCompleteTask, setPendingCompleteTask] = useState<{
+    task: KanbanTaskData;
+    oldStatus: 'backlog' | 'todo' | 'in_progress' | 'done';
+  } | null>(null);
 
   // Sincronizar estado local cuando el servidor envíe datos nuevos
   useEffect(() => {
@@ -124,7 +132,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     setKanbanData((prev) => {
       // Remove task from old column
       const oldColumnTasks = prev[oldStatus].filter((t) => t.id !== taskId);
-      
+
       // Add task to new column
       const updatedTask = { ...task, status: newStatus };
       const newColumnTasks = [...prev[newStatus], updatedTask];
@@ -136,6 +144,13 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       };
     });
 
+    // If dropping to "done", open complete modal instead of direct update
+    if (newStatus === 'done') {
+      setPendingCompleteTask({ task, oldStatus });
+      setShowCompleteModal(true);
+      return;
+    }
+
     // Call server action to persist the change
     const result = await updateTaskStatus({ taskId, newStatus });
 
@@ -144,7 +159,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       setKanbanData((prev) => {
         // Remove task from new column
         const newColumnTasks = prev[newStatus].filter((t) => t.id !== taskId);
-        
+
         // Restore task to old column
         const oldColumnTasks = [...prev[oldStatus], task];
 

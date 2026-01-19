@@ -249,3 +249,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El header muestra contador de tareas estilizado con glassmorphism
 - El componente `BacklogList` recibe `initialTasks` y maneja el drag & drop visual
 - Próxima tarea: agregar estado y modal en KanbanBoard (5.1)
+
+### Session 14 - 2026-01-19
+**Task:** 5.1 - Agregar estado y modal en KanbanBoard
+**Files:** `components/kanban-board.tsx`
+**Patterns:**
+- Interceptación de drag to done: en `handleDragEnd`, detectar `newStatus === 'done'` y abrir modal en vez de update directo
+- Guardar `{ task, oldStatus }` juntos en estado para poder revertir si el usuario cancela
+- El estado optimista se aplica ANTES de abrir el modal - UX fluida mientras el usuario interactúa con el modal
+- El return temprano después de `setShowCompleteModal(true)` evita el update directo a la DB
+**Notes:**
+- Se importa `CompleteTaskModal` pero aún no se renderiza (tarea 5.2)
+- `pendingCompleteTask` tiene tipo explícito con los 4 posibles status
+- Las variables están declaradas pero marcadas como unused por ESLint (se usarán en 5.2)
+- Próxima tarea: handlers para modal en KanbanBoard (5.2)
