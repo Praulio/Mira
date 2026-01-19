@@ -1,17 +1,24 @@
 #!/bin/bash
 # Ralph Loop v3.2 - Infinite Agentic Loop
-# Uso: ./ralph-loop.sh [spec-folder]
-# Ejemplo: ./ralph-loop.sh docs/specs/game-days
+# Uso: ./ralph-loop.sh [spec-name]
+# Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo
 #
-# Si no se pasa argumento, usa specs/ por defecto (compatible con estructura existente)
+# El spec debe existir en docs/specs/[spec-name]/
 #
 # Alertas de sonido via Claude Code hooks (~/.claude/hooks/ralph-detector.py)
 # Server restart: El agente puede escribir a /tmp/ralph-restart-server para reiniciar
 
 set -e  # Exit on error
 
-# Directorio de spec (argumento o default)
-SPEC_DIR="${1:-specs}"
+# Nombre del spec (requerido)
+SPEC_NAME="$1"
+if [ -z "$SPEC_NAME" ]; then
+    echo -e "\033[0;31m[ERROR] Especifica el nombre del spec\033[0m"
+    echo "Uso: ./ralph-loop.sh [spec-name]"
+    echo "Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo"
+    exit 1
+fi
+SPEC_DIR="docs/specs/$SPEC_NAME"
 PROMPT_FILE="$SPEC_DIR/prompt.md"
 IMPL_PLAN="$SPEC_DIR/implementation_plan.md"
 LOG_FILE="ralph-log.txt"
@@ -19,8 +26,8 @@ LOG_FILE="ralph-log.txt"
 # Validar que existen los archivos
 if [ ! -f "$PROMPT_FILE" ]; then
     echo -e "\033[0;31m[ERROR] No existe: $PROMPT_FILE\033[0m"
-    echo "Uso: ./ralph-loop.sh [spec-folder]"
-    echo "Ejemplo: ./ralph-loop.sh docs/specs/my-feature"
+    echo "Uso: ./ralph-loop.sh [spec-name]"
+    echo "Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo"
     exit 1
 fi
 
