@@ -104,7 +104,7 @@ Validación Fase 3:
   - Comportamiento: Drag reordena visualmente (no persiste), usa verticalListSortingStrategy
   - Referencia: ver `components/kanban-board.tsx` para DndContext
 
-- [ ] **4.3** Actualizar backlog/page.tsx
+- [x] **4.3** Actualizar backlog/page.tsx
   - Output: Server component que fetch tasks status='backlog' ordenadas críticas primero
   - Render: Header con contador + BacklogList
   - Referencia: ver `app/(dashboard)/dashboard/activity/page.tsx`
