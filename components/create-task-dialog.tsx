@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, X, User as UserIcon, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { createTask } from '@/app/actions/tasks';
@@ -10,6 +11,7 @@ import { getTeamUsers } from '@/app/actions/users';
  * CreateTaskDialog - Simple dialog for creating new tasks
  */
 export function CreateTaskDialog() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
@@ -45,6 +47,7 @@ export function CreateTaskDialog() {
       setSelectedAssigneeId(null);
       // Reset form
       (e.target as HTMLFormElement).reset();
+      router.refresh();
     } else {
       toast.error(result.error || 'Error al crear la tarea');
     }

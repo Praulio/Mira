@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Calendar, User, AlignLeft, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTaskMetadata, assignTask, deleteTask } from '@/app/actions/tasks';
@@ -14,6 +15,7 @@ type TaskDetailDialogProps = {
 };
 
 export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
@@ -60,6 +62,7 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
     toast.success('Task updated');
     setIsSaving(false);
     setIsEditing(false);
+    router.refresh();
   }
 
   async function handleDelete() {
@@ -67,6 +70,7 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
     const result = await deleteTask({ taskId: task.id });
     if (result.success) {
       toast.success('Task deleted');
+      router.refresh();
       onClose();
     } else {
       toast.error(result.error || 'Failed to delete');

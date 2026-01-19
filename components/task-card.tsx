@@ -4,6 +4,7 @@ import { User, MoreVertical, Trash2 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { deleteTask } from '@/app/actions/tasks';
 import { TaskDetailDialog } from './task-detail-dialog';
@@ -18,6 +19,7 @@ type TaskCardProps = {
  * TaskCard component - Renders a single task in the Kanban board
  */
 export function TaskCard({ task, isDragging = false }: TaskCardProps) {
+  const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -37,6 +39,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
 
     if (result.success) {
       toast.success('Task deleted');
+      router.refresh();
     } else {
       toast.error(result.error || 'Failed to delete task');
     }

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutGrid, Columns3, ListTodo, Activity } from "lucide-react"
+import { LayoutGrid, Columns3, ListTodo, Activity, Eye } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -43,7 +43,7 @@ export function Sidebar() {
         <div className="flex h-16 items-center border-b border-white/5 px-6">
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/60 shadow-lg shadow-primary/20">
-              <span className="text-sm font-black text-primary-foreground">M</span>
+              <Eye className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <span className="text-xl font-bold tracking-tight text-foreground">Mira</span>
           </Link>

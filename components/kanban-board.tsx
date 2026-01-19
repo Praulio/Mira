@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   DndContext,
   DragEndEvent,
@@ -37,12 +38,19 @@ type KanbanBoardProps = {
  * - Implements optimistic updates: UI changes immediately, reverts on error
  */
 export function KanbanBoard({ initialData }: KanbanBoardProps) {
+  const router = useRouter();
+
   // State for drag overlay
   const [activeTask, setActiveTask] = useState<KanbanTaskData | null>(null);
-  
+
   // State for optimistic UI updates
   // Following Best Practice 5.5: Lazy state initialization
   const [kanbanData, setKanbanData] = useState<KanbanData>(initialData);
+
+  // Sincronizar estado local cuando el servidor envíe datos nuevos
+  useEffect(() => {
+    setKanbanData(initialData);
+  }, [initialData]);
 
   // Configure sensors for drag detection
   // PointerSensor requires 5px movement to start drag (prevents accidental drags on click)
@@ -153,6 +161,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     } else {
       // Show success feedback
       toast.success('Tarea movida exitosamente');
+      router.refresh();
     }
   }
 
