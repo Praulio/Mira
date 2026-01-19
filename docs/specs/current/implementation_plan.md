@@ -137,7 +137,7 @@ Validación Fase 5:
 
 ## Fase 6: Activity Filters
 
-- [ ] **6.1** Componente ActivityFilters
+- [x] **6.1** Componente ActivityFilters
   - Render: Tabs "Todos | Completados | Mis Menciones"
   - Comportamiento: Cambia URL param ?filter=completed|mentions
   - Referencia: usar `useSearchParams` y `useRouter`
