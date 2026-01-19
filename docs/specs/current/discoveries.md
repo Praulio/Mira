@@ -235,3 +235,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - DragOverlay muestra la card siendo arrastrada con `rotate-2 scale-105` para feedback visual
 - Empty state incluido con mensaje "No hay tareas en el backlog" y sugerencia de crear una nueva
 - Próxima tarea: actualizar backlog/page.tsx (4.3)
+
+### Session 13 - 2026-01-19
+**Task:** 4.3 - Actualizar backlog/page.tsx
+**Files:** `app/(dashboard)/dashboard/backlog/page.tsx`, `app/actions/kanban.ts`, `components/backlog-task-card.tsx`
+**Patterns:**
+- `getBacklogTasks()` agregada a `kanban.ts` siguiendo el mismo patrón que `getKanbanData()`
+- Ordenamiento en Drizzle: `orderBy(desc(tasks.isCritical), asc(tasks.createdAt))` - críticas primero, luego FIFO por fecha
+- Tipo centralizado: `BacklogTaskData` ahora exportado desde `kanban.ts`, re-exportado en `backlog-task-card.tsx`
+- Contador de tareas con pluralización: `{tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}`
+**Notes:**
+- La página es un Server Component async que fetcha datos directamente
+- El header muestra contador de tareas estilizado con glassmorphism
+- El componente `BacklogList` recibe `initialTasks` y maneja el drag & drop visual
+- Próxima tarea: agregar estado y modal en KanbanBoard (5.1)

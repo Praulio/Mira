@@ -8,14 +8,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { deleteTask, toggleTaskCritical } from '@/app/actions/tasks';
 import { TaskDetailDialog } from './task-detail-dialog';
-import type { KanbanTaskData } from '@/app/actions/kanban';
+import type { BacklogTaskData } from '@/app/actions/kanban';
 
-/**
- * Extended task type for backlog that includes isCritical field
- */
-export type BacklogTaskData = KanbanTaskData & {
-  isCritical: boolean;
-};
+// Re-export the type for convenience
+export type { BacklogTaskData };
 
 type BacklogTaskCardProps = {
   task: BacklogTaskData;

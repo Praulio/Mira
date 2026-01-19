@@ -3,7 +3,7 @@
 import { getAuth } from '@/lib/mock-auth';
 import { db } from '@/db';
 import { users, tasks } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, asc } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
 /**
@@ -132,5 +132,88 @@ export async function getKanbanData(): Promise<KanbanData> {
       in_progress: [],
       done: [],
     };
+  }
+}
+
+/**
+ * Type for a task in the Backlog view (extends KanbanTaskData with isCritical)
+ */
+export type BacklogTaskData = KanbanTaskData & {
+  isCritical: boolean;
+};
+
+/**
+ * Fetch tasks in backlog status, ordered by critical first, then by creation date
+ *
+ * Returns tasks filtered to status='backlog', sorted to show critical tasks at the top,
+ * followed by non-critical tasks ordered by creation date (oldest first for FIFO).
+ */
+export async function getBacklogTasks(): Promise<BacklogTaskData[]> {
+  const { userId } = await getAuth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
+  try {
+    // Fetch backlog tasks ordered by: isCritical DESC (true first), createdAt ASC (oldest first)
+    const backlogTasks = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        isCritical: tasks.isCritical,
+        assigneeId: tasks.assigneeId,
+        assigneeName: users.name,
+        assigneeImageUrl: users.imageUrl,
+        creatorId: tasks.creatorId,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+      })
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assigneeId, users.id))
+      .where(eq(tasks.status, 'backlog'))
+      .orderBy(desc(tasks.isCritical), asc(tasks.createdAt));
+
+    // Fetch creator data separately (same pattern as getKanbanData)
+    const tasksWithCreators = await Promise.all(
+      backlogTasks.map(async (task) => {
+        const [creator] = await db
+          .select({
+            id: users.id,
+            name: users.name,
+          })
+          .from(users)
+          .where(eq(users.id, task.creatorId))
+          .limit(1);
+
+        return {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          isCritical: task.isCritical,
+          assignee: task.assigneeId
+            ? {
+                id: task.assigneeId,
+                name: task.assigneeName!,
+                imageUrl: task.assigneeImageUrl,
+              }
+            : null,
+          creator: {
+            id: creator.id,
+            name: creator.name,
+          },
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+        } as BacklogTaskData;
+      })
+    );
+
+    return tasksWithCreators;
+  } catch (error) {
+    console.error('Error fetching backlog tasks:', error);
+    return [];
   }
 }
