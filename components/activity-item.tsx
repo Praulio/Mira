@@ -6,9 +6,22 @@ import {
   Edit3,
   Trash2,
   PartyPopper,
-  AtSign
+  AtSign,
+  Link as LinkIcon,
+  ExternalLink
 } from 'lucide-react'
 import type { ActivityData } from '@/app/actions/activity'
+
+/**
+ * Extract domain from URL for display
+ */
+function getDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace('www.', '')
+  } catch {
+    return url
+  }
+}
 
 type ActivityItemProps = {
   activity: ActivityData
@@ -153,8 +166,42 @@ function getRelativeTime(date: Date): string {
 }
 
 /**
+ * Render completion notes in a blockquote style
+ */
+function CompletionNotes({ notes }: { notes: string }) {
+  return (
+    <blockquote className="mt-2 border-l-2 border-neutral-300 dark:border-neutral-600 pl-3 text-sm text-neutral-600 dark:text-neutral-400 italic">
+      {notes}
+    </blockquote>
+  )
+}
+
+/**
+ * Render completion links as clickable chips
+ */
+function CompletionLinks({ links }: { links: string[] }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {links.map((link, index) => (
+        <a
+          key={index}
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 px-3 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span className="max-w-[150px] truncate">{getDomain(link)}</span>
+          <ExternalLink className="h-3 w-3 opacity-50" />
+        </a>
+      ))}
+    </div>
+  )
+}
+
+/**
  * Activity Item component - displays a single activity event
- * 
+ *
  * Best Practice 3.2: Pure presentational component (minimal serialization)
  * Best Practice 2.1: Uses Next.js Image component for optimization
  */
@@ -162,6 +209,10 @@ export function ActivityItem({ activity }: ActivityItemProps) {
   const message = getActivityMessage(activity)
   const relativeTime = getRelativeTime(activity.createdAt)
   const icon = getActionIcon(activity.action)
+
+  // Extract completion data for 'completed' and 'mentioned' actions
+  const completionNotes = activity.metadata?.notes as string | undefined
+  const completionLinks = activity.metadata?.links as string[] | undefined
 
   return (
     <div className="flex items-start gap-4 p-4">
@@ -185,7 +236,7 @@ export function ActivityItem({ activity }: ActivityItemProps) {
           ) : (
             <div className="h-5 w-5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
           )}
-          
+
           {/* Message */}
           <p className="text-sm">
             <span className="font-medium text-neutral-900 dark:text-neutral-100">
@@ -197,7 +248,15 @@ export function ActivityItem({ activity }: ActivityItemProps) {
             </span>
           </p>
         </div>
-        
+
+        {/* Completion notes (for completed/mentioned actions) */}
+        {completionNotes && <CompletionNotes notes={completionNotes} />}
+
+        {/* Completion links (for completed actions) */}
+        {completionLinks && completionLinks.length > 0 && (
+          <CompletionLinks links={completionLinks} />
+        )}
+
         {/* Timestamp */}
         <p className="text-xs text-neutral-500 dark:text-neutral-500">
           {relativeTime}

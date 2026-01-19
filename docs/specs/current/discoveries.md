@@ -305,3 +305,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - La página ahora pasa el filtro validado a `getActivityFeed(filter)` para filtrado server-side
 - Cada filtro tiene su empty state específico: "No hay tareas completadas" / "No tienes menciones"
 - Próxima tarea: actualizar ActivityItem para mostrar completion data (6.3)
+
+### Session 18 - 2026-01-19
+**Task:** 6.3 - Actualizar ActivityItem para mostrar completion data
+**Files:** `components/activity-item.tsx`
+**Patterns:**
+- Type assertion para metadata: `activity.metadata?.notes as string | undefined` para acceso seguro a campos tipados como `unknown`
+- URL parsing con fallback: `try { new URL(url).hostname } catch { return url }` para mostrar dominio legible con seguridad
+- Sub-componentes helper: `CompletionNotes` y `CompletionLinks` extraídos como funciones separadas para mantener el componente principal limpio
+- Estilos de blockquote: `border-l-2 pl-3 italic` para notas visualmente distintivas del mensaje principal
+**Notes:**
+- Se agregaron imports de `Link as LinkIcon` y `ExternalLink` de lucide-react
+- Los links se muestran como chips clickeables con hover state y `target="_blank"`
+- Las notas aparecen tanto para action 'completed' como 'mentioned' (ambos tienen `notes` en metadata)
+- El helper `getDomain()` extrae hostname y remueve 'www.' para URLs más legibles
+- Próxima tarea: agregar botón Completar en TaskDetailDialog (7.1)
