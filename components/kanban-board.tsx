@@ -89,6 +89,39 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     }
   }
 
+  // Handle complete modal close - revert optimistic update if cancelled
+  function handleCompleteModalClose() {
+    if (pendingCompleteTask) {
+      const { task, oldStatus } = pendingCompleteTask;
+
+      // Revert the optimistic update
+      setKanbanData((prev) => {
+        // Remove task from done column
+        const doneColumnTasks = prev.done.filter((t) => t.id !== task.id);
+
+        // Restore task to old column
+        const oldColumnTasks = [...prev[oldStatus], task];
+
+        return {
+          ...prev,
+          done: doneColumnTasks,
+          [oldStatus]: oldColumnTasks,
+        };
+      });
+    }
+
+    // Close modal and clear pending task
+    setShowCompleteModal(false);
+    setPendingCompleteTask(null);
+  }
+
+  // Handle complete success - close modal and refresh data
+  function handleCompleteSuccess() {
+    setShowCompleteModal(false);
+    setPendingCompleteTask(null);
+    router.refresh();
+  }
+
   // Handle drag end - update task status if dropped in different column
   // Implements optimistic UI: updates immediately, reverts on error
   async function handleDragEnd(event: DragEndEvent) {
@@ -223,6 +256,16 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* Complete Task Modal - opens when task dropped to Done */}
+      {pendingCompleteTask && (
+        <CompleteTaskModal
+          task={pendingCompleteTask.task}
+          isOpen={showCompleteModal}
+          onClose={handleCompleteModalClose}
+          onComplete={handleCompleteSuccess}
+        />
+      )}
     </DndContext>
   );
 }

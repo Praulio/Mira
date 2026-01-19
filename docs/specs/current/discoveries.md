@@ -263,3 +263,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - `pendingCompleteTask` tiene tipo explícito con los 4 posibles status
 - Las variables están declaradas pero marcadas como unused por ESLint (se usarán en 5.2)
 - Próxima tarea: handlers para modal en KanbanBoard (5.2)
+
+### Session 15 - 2026-01-19
+**Task:** 5.2 - Handlers para modal en KanbanBoard
+**Files:** `components/kanban-board.tsx`
+**Patterns:**
+- Revertir estado optimista: cuando el usuario cancela, usar el `oldStatus` guardado para devolver la tarea a su columna original
+- Renderizar modal dentro de DndContext está OK: Radix Portal lleva el modal al body del DOM, independiente del contexto DnD
+- Conditional rendering con `&&`: `{pendingCompleteTask && <CompleteTaskModal ... />}` evita pasar props undefined
+- Separar handlers de close y success: `onClose` revierte cambios, `onComplete` solo cierra y refresca (el modal ya hizo el update)
+**Notes:**
+- `handleCompleteModalClose()` revierte el estado optimista moviendo la tarea de 'done' de vuelta a `oldStatus`
+- `handleCompleteSuccess()` solo cierra modal y hace `router.refresh()` - no necesita update porque `completeTask` ya lo hizo
+- El modal se renderiza solo cuando `pendingCompleteTask` existe para evitar errores de props undefined
+- Próxima tarea: componente ActivityFilters (6.1)
