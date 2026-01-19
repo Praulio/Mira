@@ -178,3 +178,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El dropdown se cierra automáticamente al hacer click fuera (event listener en document)
 - Props simples: `{ value, onChange, placeholder }` - controlled component pattern
 - Próxima tarea: componente LinkInput (3.2)
+
+### Session 9 - 2026-01-19
+**Task:** 3.2 - Componente LinkInput
+**Files:** `components/link-input.tsx` (nuevo)
+**Patterns:**
+- `new URL()` para validación: más robusto que regex, valida formato y estructura según estándares web
+- Auto-prefix `https://`: si no hay protocolo, agregarlo automáticamente mejora UX sin comprometer validación
+- `getDomain()` helper: extraer hostname para mostrar URLs de forma legible en chips
+- `group-hover:` para mostrar botón de eliminar solo al hover del contenedor padre
+**Notes:**
+- Componente controlado: recibe `links[]` y notifica cambios con `onChange`
+- Validación inline con estado de error que se limpia al escribir
+- Detecta duplicados y muestra mensaje apropiado
+- Enter en input dispara handleAdd automáticamente
+- Próxima tarea: componente CompleteTaskModal (3.3)
