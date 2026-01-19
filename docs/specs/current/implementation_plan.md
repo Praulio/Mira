@@ -78,7 +78,7 @@ Validación Fase 2:
   - Comportamiento: Valida URL, auto-agrega https://, máximo 10 links
   - Referencia: ver styling de `components/ui/input.tsx`
 
-- [ ] **3.3** Componente CompleteTaskModal
+- [x] **3.3** Componente CompleteTaskModal
   - Props: `{ task, isOpen, onClose, onComplete }`
   - Render: Dialog con MentionInput + LinkInput + botones Cancelar/Completar
   - Comportamiento: Llama completeTask, dispara confetti, confirma si hay contenido
