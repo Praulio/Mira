@@ -20,7 +20,7 @@ Validación Fase 0:
 
 ## Fase 1: Database Schema
 
-- [ ] **1.1** Agregar campos de completion a tabla tasks en schema.ts
+- [x] **1.1** Agregar campos de completion a tabla tasks en schema.ts
   - Output: Campos `isCritical`, `completedAt`, `completionNotes`, `completionLinks`, `completionMentions`
   - Comportamiento: boolean para crítico, timestamp para fecha, text/jsonb para datos
   - Referencia: ver `db/schema.ts` líneas 40-53, agregar `boolean` al import
