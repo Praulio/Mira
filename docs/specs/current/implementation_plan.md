@@ -98,7 +98,7 @@ Validación Fase 3:
   - Comportamiento: Click abre detail, star toggle crítico, trash elimina
   - Referencia: ver `components/task-card.tsx` para diseño base
 
-- [ ] **4.2** Componente BacklogList con DndContext
+- [x] **4.2** Componente BacklogList con DndContext
   - Props: `{ initialTasks[] }`
   - Render: Lista sortable de BacklogTaskCard, empty state si vacía
   - Comportamiento: Drag reordena visualmente (no persiste), usa verticalListSortingStrategy
