@@ -121,3 +121,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - La migración 0002 contiene: 2 nuevos valores de enum + 5 nuevas columnas en tasks
 - El nombre de migración (`0002_true_luminals.sql`) es auto-generado por Drizzle
 - Próxima tarea: crear toggleTaskCritical action (2.1)
+
+### Session 5 - 2026-01-19
+**Task:** 2.1 - Action toggleTaskCritical en tasks.ts
+**Files:** `app/actions/tasks.ts`
+**Patterns:**
+- Validación de "1 crítica por usuario" requiere query adicional antes del update
+- El check se hace solo al activar (`!currentTask.isCritical`), no al desactivar
+- Usar `creatorId` (no `assigneeId`) para la regla de unicidad - el creador es el dueño del backlog personal
+**Notes:**
+- Zod schema simple: solo requiere taskId UUID
+- Mensaje de error en español siguiendo convención del proyecto
+- No se crea activity log para cambio de crítico (no especificado en spec)
+- Próxima tarea: crear completeTask action (2.2)

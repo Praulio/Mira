@@ -41,6 +41,13 @@ const deleteTaskSchema = z.object({
 });
 
 /**
+ * Zod schema for toggle critical
+ */
+const toggleCriticalSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+});
+
+/**
  * Zod schema for task metadata update (title/description)
  */
 const updateTaskMetadataSchema = z.object({
@@ -533,6 +540,112 @@ export async function assignTask(
   } catch (error) {
     console.error('Error assigning task:', error);
     return { success: false, error: 'Failed to assign task' };
+  }
+}
+
+/**
+ * Server Action: Toggle task critical status
+ *
+ * Toggles the isCritical flag on a task.
+ * Rule: Only 1 critical task per user is allowed.
+ * If turning ON critical and user already has a critical task, returns error.
+ *
+ * @param input - Task ID to toggle
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function toggleTaskCritical(
+  input: z.infer<typeof toggleCriticalSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to update tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = toggleCriticalSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // If we are turning ON critical, check if user already has a critical task
+    if (!currentTask.isCritical) {
+      const [existingCritical] = await db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.creatorId, userId),
+            eq(tasks.isCritical, true)
+          )
+        )
+        .limit(1);
+
+      if (existingCritical) {
+        return {
+          success: false,
+          error: 'Ya tienes una tarea crítica. Desmarca la actual primero.',
+        };
+      }
+    }
+
+    // Toggle the critical flag
+    const [updatedTask] = await db
+      .update(tasks)
+      .set({
+        isCritical: !currentTask.isCritical,
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, taskId))
+      .returning();
+
+    if (!updatedTask) {
+      return {
+        success: false,
+        error: 'Failed to update task',
+      };
+    }
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: updatedTask,
+    };
+  } catch (error) {
+    console.error('Error toggling task critical:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating the task',
+    };
   }
 }
 
