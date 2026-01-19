@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, uuid, pgEnum, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, uuid, pgEnum, jsonb, index, boolean } from 'drizzle-orm/pg-core';
 
 /**
  * Enum for task status
@@ -44,6 +44,11 @@ export const tasks = pgTable('tasks', {
   status: taskStatusEnum('status').notNull().default('backlog'),
   assigneeId: text('assignee_id').references(() => users.id, { onDelete: 'set null' }),
   creatorId: text('creator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  isCritical: boolean('is_critical').default(false).notNull(),
+  completedAt: timestamp('completed_at'),
+  completionNotes: text('completion_notes'),
+  completionLinks: jsonb('completion_links').$type<string[]>(),
+  completionMentions: jsonb('completion_mentions').$type<string[]>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({

@@ -14,9 +14,14 @@ type TaskDetailDialogProps = {
   onClose: () => void;
 };
 
+// Wrapper that uses key to reset form state when task changes
 export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProps) {
+  if (!isOpen) return null;
+  return <TaskDetailDialogInner key={task.id} task={task} onClose={onClose} />;
+}
+
+function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'isOpen'>) {
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [assigneeId, setAssigneeId] = useState(task.assignee?.id || null);
@@ -24,13 +29,8 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      getTeamUsers().then(setTeamUsers);
-      setTitle(task.title);
-      setDescription(task.description || '');
-      setAssigneeId(task.assignee?.id || null);
-    }
-  }, [isOpen, task]);
+    getTeamUsers().then(setTeamUsers);
+  }, []);
 
   async function handleSave() {
     setIsSaving(true);
@@ -61,7 +61,6 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
 
     toast.success('Task updated');
     setIsSaving(false);
-    setIsEditing(false);
     router.refresh();
   }
 
@@ -76,8 +75,6 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
       toast.error(result.error || 'Failed to delete');
     }
   }
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">

@@ -82,6 +82,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Web Audio API como alternativa ligera a archivos de sonido
 - `prefers-reduced-motion` para accesibilidad
 **Notes:**
-- Existe error de lint preexistente en `task-detail-dialog.tsx:29` (setState en effect)
-- Este error no bloquea el build, es warning convertido a error por la config
-- Considerar arreglarlo en tarea separada si causa problemas
+- Error de lint en `task-detail-dialog.tsx:29` fue arreglado en sesión 2
+
+### Session 2 - 2026-01-19
+**Task:** 1.1 - Agregar campos de completion a tabla tasks en schema.ts
+**Files:** `db/schema.ts`, `components/task-detail-dialog.tsx`
+**Patterns:**
+- `.$type<T>()` en Drizzle para tipar campos JSONB en TypeScript
+- Patrón "Key Reset": usar `key={task.id}` para resetear estado de form cuando cambia la entidad
+- Wrapper component pattern: componente exterior maneja open/close, interior maneja el form
+**Notes:**
+- Se corrigió error preexistente de "setState in effect" usando key pattern
+- Los campos JSONB con `.$type<string[]>()` dan type safety sin cambiar el SQL
+- Próxima tarea: agregar 'completed' y 'mentioned' al activityActionEnum (1.2)
