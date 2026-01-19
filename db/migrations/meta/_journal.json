@@ -15,6 +15,13 @@
       "when": 1768516420968,
       "tag": "0001_brave_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768856635766,
+      "tag": "0002_true_luminals",
+      "breakpoints": true
     }
   ]
 }

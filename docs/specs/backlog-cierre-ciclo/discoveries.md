@@ -108,3 +108,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Se agregaron íconos: `PartyPopper` (completed), `AtSign` (mentioned)
 - Se agregaron mensajes en español: "completó la tarea" y "te mencionó en"
 - Próxima tarea: generar y aplicar migración (1.3)
+
+### Session 4 - 2026-01-19
+**Task:** 1.3 - Generar y aplicar migración
+**Files:** `db/migrations/0002_true_luminals.sql` (nuevo)
+**Patterns:**
+- `pnpm drizzle-kit generate` crea archivos SQL versionados automáticamente desde el schema
+- `pnpm drizzle-kit push --force` aplica cambios sin prompt interactivo
+- Cargar variables de entorno manualmente para CLI: `export $(cat .env.local | grep -v '^#' | xargs)`
+- El archivo `.env.local` es el estándar en Next.js para credenciales locales
+**Notes:**
+- La migración 0002 contiene: 2 nuevos valores de enum + 5 nuevas columnas en tasks
+- El nombre de migración (`0002_true_luminals.sql`) es auto-generado por Drizzle
+- Próxima tarea: crear toggleTaskCritical action (2.1)
