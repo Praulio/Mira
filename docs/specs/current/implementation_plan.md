@@ -72,7 +72,7 @@ Validación Fase 2:
   - Comportamiento: Inserta `@[name](userId)` al seleccionar, extrae mentions
   - Referencia: usar `getTeamUsers` de `app/actions/users.ts`
 
-- [ ] **3.2** Componente LinkInput
+- [x] **3.2** Componente LinkInput
   - Props: `{ links[], onChange, maxLinks? }`
   - Render: Input URL + botón + lista de links con X
   - Comportamiento: Valida URL, auto-agrega https://, máximo 10 links
