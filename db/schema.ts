@@ -18,7 +18,9 @@ export const activityActionEnum = pgEnum('activity_action', [
   'status_changed',
   'assigned',
   'updated',
-  'deleted'
+  'deleted',
+  'completed',
+  'mentioned'
 ]);
 
 /**

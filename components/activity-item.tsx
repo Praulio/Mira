@@ -1,10 +1,12 @@
 import Image from 'next/image'
-import { 
-  CheckCircle2, 
-  ArrowRightCircle, 
-  UserPlus, 
-  Edit3, 
-  Trash2 
+import {
+  CheckCircle2,
+  ArrowRightCircle,
+  UserPlus,
+  Edit3,
+  Trash2,
+  PartyPopper,
+  AtSign
 } from 'lucide-react'
 import type { ActivityData } from '@/app/actions/activity'
 
@@ -29,6 +31,10 @@ function getActionIcon(action: ActivityData['action']) {
       return <Edit3 className="h-5 w-5 text-amber-500" />
     case 'deleted':
       return <Trash2 className="h-5 w-5 text-red-500" />
+    case 'completed':
+      return <PartyPopper className="h-5 w-5 text-yellow-500" />
+    case 'mentioned':
+      return <AtSign className="h-5 w-5 text-cyan-500" />
   }
 }
 
@@ -91,6 +97,18 @@ function getActivityMessage(activity: ActivityData): string {
       return taskTitle
         ? `eliminó la tarea "${taskTitle}"`
         : 'eliminó una tarea'
+    }
+
+    case 'completed': {
+      return task
+        ? `completó la tarea "${task.title}"`
+        : 'completó una tarea'
+    }
+
+    case 'mentioned': {
+      return task
+        ? `te mencionó en "${task.title}"`
+        : 'te mencionó en una tarea'
     }
   }
 }

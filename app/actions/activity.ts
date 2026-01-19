@@ -9,7 +9,7 @@ import { desc, eq } from 'drizzle-orm'
  */
 export type ActivityData = {
   id: string
-  action: 'created' | 'status_changed' | 'assigned' | 'updated' | 'deleted'
+  action: 'created' | 'status_changed' | 'assigned' | 'updated' | 'deleted' | 'completed' | 'mentioned'
   metadata: Record<string, unknown> | null
   createdAt: Date
   user: {

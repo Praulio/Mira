@@ -95,3 +95,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Se corrigió error preexistente de "setState in effect" usando key pattern
 - Los campos JSONB con `.$type<string[]>()` dan type safety sin cambiar el SQL
 - Próxima tarea: agregar 'completed' y 'mentioned' al activityActionEnum (1.2)
+
+### Session 3 - 2026-01-19
+**Task:** 1.2 - Agregar 'completed' y 'mentioned' a activityActionEnum
+**Files:** `db/schema.ts`, `app/actions/activity.ts`, `components/activity-item.tsx`
+**Patterns:**
+- Al modificar un pgEnum, también hay que actualizar tipos manuales que lo usan (como `ActivityData`)
+- Switch exhaustiveness: TypeScript fuerza a cubrir todos los casos del union type
+- Agregar casos al switch de íconos y mensajes cuando se extiende un enum
+**Notes:**
+- El tipo `ActivityData.action` era un union literal hardcodeado, se actualizó para incluir nuevos valores
+- Se agregaron íconos: `PartyPopper` (completed), `AtSign` (mentioned)
+- Se agregaron mensajes en español: "completó la tarea" y "te mencionó en"
+- Próxima tarea: generar y aplicar migración (1.3)
