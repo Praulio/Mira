@@ -1,289 +1,134 @@
-# Task Template
+# Task Template (Simplificado)
 
-High-quality task structure for Ralph Loop specs. Tasks following this template score 5/5 on Spec Specificity.
+**Principio:** Describe el QUÉ con precisión, no el CÓMO.
 
----
-
-## Complete Task Template
-
-```markdown
-- [ ] **X.Y** [Brief, specific description - verb + object]
-
-📋 **Context:**
-- Why: [Business/technical reason this task exists]
-- Current state: [What exists now, or "Nothing - new file"]
-- Target state: [Clear description of desired outcome]
-
-📁 **Files:**
-- Primary: `path/to/main-file.ts`
-- Secondary: `path/to/other-file.ts` (if applicable)
-
-🔧 **Changes:**
-- Location: [Line ~XX or specific element/selector]
-- Strategy: [CSS class | Inline style | API call | Config update | etc.]
-- BEFORE:
-  ```[lang]
-  [Exact current code - copy from file]
-  ```
-- AFTER:
-  ```[lang]
-  [Exact expected code - what you want]
-  ```
-
-✅ **Validation:**
-- [ ] Build: `[command]` passes
-- [ ] Visual: [Specific criterion - "Button appears in header"]
-- [ ] Functional: [Test criterion - "Click triggers modal"]
-
-⚠️ **Pitfalls:**
-- [Common mistake 1]: [How to avoid]
-- [Common mistake 2]: [How to avoid]
-
-📖 **Reference:**
-- Spec section: [Link or section name]
-- Related task: [X.Y if dependent]
-```
+Las tareas deben ser **granulares pero simples**. Ralph decide la implementación.
 
 ---
 
-## Spec Specificity Score
+## Template Principal
 
-Evaluate each task against these criteria:
+```markdown
+- [ ] **X.Y** [Verbo + Objeto específico]
+  - Input: [qué recibe]
+  - Output: [qué produce]
+  - Comportamiento: [qué hace, 1-2 bullets]
+  - Referencia: [archivo existente como pattern]
+```
 
-| Criterion | Question | Points |
-|-----------|----------|--------|
-| BEFORE/AFTER | Does it have exact code snippets? | 1 |
-| Location | Does it specify line number or element? | 1 |
-| Strategy | Does it decide HOW to implement? | 1 |
-| Validation | Does it have specific pass/fail criteria? | 1 |
-| Context | Does it explain WHY this task exists? | 1 |
-
-**Scoring Guide:**
-
-| Score | Quality | Ralph Behavior |
-|-------|---------|----------------|
-| 5/5 | Excellent | Executes without ambiguity |
-| 4/5 | Good | Minor inference needed |
-| 3/5 | Acceptable | Some guessing required |
-| 2/5 | Poor | High chance of wrong output |
-| 0-1/5 | Unacceptable | Will almost certainly fail |
-
-**Target:** Average ≥4/5 across all tasks before starting.
+**Resultado esperado:** ~5 líneas por tarea. Plan total: ~150 líneas.
 
 ---
 
-## Examples
+## Templates por Tipo
 
-### Score 5/5 (Excellent)
+### Componente React
 
 ```markdown
-- [ ] **1.3** Add dark mode background variable to .dark selector
-
-📋 **Context:**
-- Why: Tailwind dark mode uses `.dark` selector on html element
-- Current state: Variables exist only in `:root` (line 15-45)
-- Target state: Dark variants in `.dark {}` block (line 117+)
-
-📁 **Files:**
-- Primary: `app/globals.css`
-
-🔧 **Changes:**
-- Location: `.dark {}` block, line ~117
-- Strategy: Add CSS custom property
-- BEFORE:
-  ```css
-  .dark {
-    --foreground: oklch(0.95 0.01 240);
-  }
-  ```
-- AFTER:
-  ```css
-  .dark {
-    --foreground: oklch(0.95 0.01 240);
-    --background: oklch(0.12 0.015 250);
-  }
-  ```
-
-✅ **Validation:**
-- [ ] Build: `pnpm build` passes
-- [ ] Visual: Background changes when `.dark` class on html
-
-⚠️ **Pitfalls:**
-- Don't add to `:root` - dark mode won't work
-- Check variable name matches what components use
+- [ ] **2.1** Componente CastSelector
+  - Props: { assets, characters, onCharactersChange, styleReference }
+  - Render: Grid de assets seleccionables + campo para nombrar personajes
+  - Comportamiento: Click en asset → agrega a characters con nombre editable
+  - Referencia: ver components/workflow/ad-studio/AssetSelector.tsx
 ```
 
-### Score 1/5 (Poor - Don't Do This)
+### API Endpoint
 
 ```markdown
-- [ ] **1.3** Update dark mode colors
-
-📁 **Files:**
-- `app/globals.css`
-
-🔧 **Changes:**
-- Update the CSS variables for dark mode
+- [ ] **1.4** POST /api/comic-studio/parse
+  - Input: { storyboardText: string, knownCharacters?: string[] }
+  - Output: { panels: ComicPanel[], meta: { panelCount, latencyMs } }
+  - Comportamiento: Usar Gemini para parsear texto libre → JSON estructurado
+  - Rate limiting por organización
+  - Referencia: ver /api/edit-image para patterns
 ```
 
-**Why it fails:**
-- ❌ No BEFORE/AFTER code
-- ❌ No line number
-- ❌ No strategy (which variables? what values?)
-- ❌ No validation criteria
-- ❌ No context
-
----
-
-## Variable Mapping Table
-
-When modifying existing configuration, include a mapping table:
+### Hook React
 
 ```markdown
-| Variable | Location | Current Value | New Value |
-|----------|----------|---------------|-----------|
-| `--background` | line ~117 | `oklch(0.12 0.015 240)` | `oklch(0.12 0.015 250)` |
-| `--foreground` | line ~118 | `oklch(0.95 0.01 240)` | `oklch(0.95 0.01 250)` |
-| `--primary` | line ~119 | `oklch(0.65 0.2 240)` | `oklch(0.70 0.18 250)` |
+- [ ] **3.2** Hook useComicWizard
+  - Input: organizationId, initialAssets?
+  - Output: { step, panels, characters, actions }
+  - Comportamiento: Wizard de 3 pasos (storyboard → cast → generate)
+  - Referencia: ver hooks/use-ad-studio-wizard.ts
 ```
 
-This eliminates all ambiguity about which values change.
-
----
-
-## Task Types and Templates
-
-### Type: New File
+### Migración DB
 
 ```markdown
-- [ ] **X.Y** Create [ComponentName] component
-
-📋 **Context:**
-- Why: [Need this component for feature X]
-- Current state: File doesn't exist
-- Target state: New component at `path/to/Component.tsx`
-
-📁 **Files:**
-- Primary: `components/[ComponentName].tsx` (new)
-
-🔧 **Changes:**
-- Location: New file
-- AFTER:
-  ```tsx
-  // Full component code here
-  export function ComponentName() {
-    return <div>...</div>
-  }
-  ```
-
-✅ **Validation:**
-- [ ] File exists at correct path
-- [ ] TypeScript compiles
-- [ ] Component renders without error
-```
-
-### Type: Modify Existing
-
-```markdown
-- [ ] **X.Y** Add [feature] to [Component]
-
-📋 **Context:**
-- Why: [Feature needed for X]
-- Current state: Component lacks [feature]
-- Target state: Component has [feature]
-
-📁 **Files:**
-- Primary: `components/[Component].tsx`
-
-🔧 **Changes:**
-- Location: [Function/line]
-- BEFORE:
-  ```tsx
-  [current code]
-  ```
-- AFTER:
-  ```tsx
-  [new code]
-  ```
-
-✅ **Validation:**
-- [ ] Existing functionality unchanged
-- [ ] New [feature] works
-```
-
-### Type: Configuration
-
-```markdown
-- [ ] **X.Y** Add [setting] to [config]
-
-📋 **Context:**
-- Why: [Setting needed for feature]
-- Current state: Setting doesn't exist
-- Target state: Setting configured in [file]
-
-📁 **Files:**
-- Primary: `[config-file]`
-
-🔧 **Changes:**
-- Location: [Section/key]
-- BEFORE:
-  ```json
-  {
-    "existingKey": "value"
-  }
-  ```
-- AFTER:
-  ```json
-  {
-    "existingKey": "value",
-    "newSetting": "value"
-  }
-  ```
-
-✅ **Validation:**
-- [ ] Config file valid (no syntax errors)
-- [ ] Setting takes effect
-```
-
-### Type: Database/Migration
-
-```markdown
-- [ ] **X.Y** Add [column/table] to database
-
-📋 **Context:**
-- Why: [Data needed for feature]
-- Current state: [Table/column] doesn't exist
-- Target state: Schema updated with [change]
-
-📁 **Files:**
-- Primary: `migrations/[timestamp]_[name].sql` (new)
-
-🔧 **Changes:**
-- Location: New migration file
-- AFTER:
-  ```sql
-  -- Migration SQL
-  ALTER TABLE users ADD COLUMN preferences JSONB;
-  ```
-
-✅ **Validation:**
-- [ ] Migration applies without error
-- [ ] Schema updated correctly
-- [ ] Existing data preserved
-
-⚠️ **Pitfalls:**
-- Always include rollback/down migration
-- Test with existing data
+- [ ] **4.1** Tabla comic_sessions
+  - Columns: id, org_id, panels (jsonb), characters (jsonb), status
+  - RLS: Política por org_id
+  - Referencia: ver migration de ad_studio_sessions
 ```
 
 ---
 
-## Checklist Before Writing Tasks
+## Anti-Patterns
 
-- [ ] Do I know the exact file(s)?
-- [ ] Do I know the exact location (line/element)?
-- [ ] Do I have the current code?
-- [ ] Do I have the target code?
-- [ ] Can I describe specific validation criteria?
-- [ ] Have I listed common pitfalls?
+### ❌ Muy Vago (Ralph no conecta)
 
-If any answer is "no", do more research before writing the task.
+```markdown
+- [ ] **1.4** Crear API de parseo
+```
+
+**Problema:** ¿Qué recibe? ¿Qué devuelve? ¿Qué modelo usar?
+
+### ❌ Muy Técnico (plan muy largo)
+
+```markdown
+- [ ] **1.4** Crear API route para parsear storyboard
+📋 Context: Why/Current/Target...
+📁 Files: app/api/comic-studio/parse/route.ts
+🔧 Changes:
+- BEFORE: [50 líneas]
+- AFTER: [100 líneas]
+✅ Validation:
+- [ ] Build passes    ← CONFUNDE A RALPH
+- [ ] Tests pass
+```
+
+**Problema:**
+- Plan de 1800 líneas → Ralph se pierde
+- Checkboxes de validación → regex los detecta como tareas
+
+### ✅ Correcto (granular pero simple)
+
+```markdown
+- [ ] **1.4** POST /api/comic-studio/parse
+  - Input: { storyboardText: string, knownCharacters?: string[] }
+  - Output: { panels: ComicPanel[], meta: { panelCount, latencyMs } }
+  - Usar Gemini para parsear texto libre → JSON estructurado
+  - Rate limiting por organización
+  - Referencia: ver /api/edit-image para patterns
+```
+
+**Resultado:** ~5 líneas. Ralph entiende el contrato, decide implementación.
+
+---
+
+## Validaciones (usar bullets, NO checkboxes)
+
+```markdown
+Validación Fase 1:
+• Build pasa: `pnpm build`
+• API responde JSON válido
+• Rate limiting funciona
+```
+
+**IMPORTANTE:** Usar `•` o `-` para validaciones, NUNCA `- [ ]`.
+El regex de Ralph (`^\- \[ \] \*\*[0-9]`) ignora bullets pero matchea checkboxes.
+
+---
+
+## Checklist Rápido
+
+Antes de escribir una tarea, verifica:
+
+• ¿Tiene verbo + objeto específico? (no "Update X")
+• ¿Input/Output o Props/Render están claros?
+• ¿Hay referencia a pattern existente?
+• ¿Las validaciones usan bullets, no checkboxes?
+• ¿Son ~5 líneas, no ~100?
+
+Si alguna respuesta es "no", simplifica o investiga más.

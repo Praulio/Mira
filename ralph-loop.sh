@@ -196,8 +196,8 @@ while true; do
     # Mostrar en terminal
     echo -e "${BLUE}[$(date '+%H:%M:%S')]${NC} ═══ ITERACIÓN $ITERATION ═══"
 
-    # Siguiente tarea
-    NEXT_TASK=$(grep -E "^\- \[ \]" "$IMPL_PLAN" 2>/dev/null | head -1)
+    # Siguiente tarea (solo tareas numeradas: - [ ] **X.Y**)
+    NEXT_TASK=$(grep -E "^\- \[ \] \*\*[0-9]" "$IMPL_PLAN" 2>/dev/null | head -1)
 
     if [ -z "$NEXT_TASK" ]; then
         echo -e "${GREEN}✅ ¡TODAS LAS TAREAS COMPLETADAS!${NC}"
