@@ -25,8 +25,8 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 ### Session 0 - 2026-01-19
 
 **Setup inicial**
-- Implementation plan generado con 29 tareas en 8 fases
-- Archivos de ejecución creados
+- Implementation plan regenerado con formato simplificado: 19 tareas en 8 fases
+- Formato nuevo: Input/Output/Comportamiento/Referencia (~5 líneas por tarea)
 - Spec completo con flujos de usuario y edge cases
 
 **Patrones identificados del codebase:**

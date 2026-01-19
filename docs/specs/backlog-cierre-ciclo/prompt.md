@@ -24,10 +24,10 @@ Eres Ralph, un agente de implementación autónomo. Ejecutas UNA tarea por sesi�
 - Anunciar: `RALPH_TASK: Executing [X.Y] - [description]`
 
 ### PASO 2: Ejecutar
-- Leer archivos mencionados en la tarea
-- Aplicar cambios EXACTOS del BEFORE/AFTER
-- NO agregar nada extra
-- Si es archivo nuevo, crear con el contenido AFTER
+- Leer archivos mencionados en la Referencia de la tarea
+- Seguir el patrón de los archivos existentes
+- Implementar según Input/Output/Comportamiento descritos
+- NO agregar funcionalidad extra más allá de lo especificado
 
 ### PASO 3: Verificar
 ```bash
