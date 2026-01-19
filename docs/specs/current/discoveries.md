@@ -277,3 +277,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - `handleCompleteSuccess()` solo cierra modal y hace `router.refresh()` - no necesita update porque `completeTask` ya lo hizo
 - El modal se renderiza solo cuando `pendingCompleteTask` existe para evitar errores de props undefined
 - Próxima tarea: componente ActivityFilters (6.1)
+
+### Session 16 - 2026-01-19
+**Task:** 6.1 - Componente ActivityFilters
+**Files:** `components/activity-filters.tsx` (nuevo)
+**Patterns:**
+- URL-based state con `useSearchParams`: mantiene el filtro en la URL para links compartibles y navegación con back button
+- `useTransition` para navegación: envolver `router.push()` en `startTransition` evita bloquear la UI durante el cambio
+- Borrar param vs establecer vacío: usar `params.delete('filter')` cuando el valor es default ('all') mantiene URLs limpias
+- Tipo importado con `as`: `searchParams.get('filter') as ActivityFilter` valida contra el tipo exportado de activity.ts
+**Notes:**
+- Los tabs usan estilos de pill/segmented control con bg-neutral-100/800 como fondo
+- El botón activo tiene shadow-sm y colores más prominentes
+- `isPending` se usa para deshabilitar botones durante la transición
+- Próxima tarea: actualizar activity/page.tsx para usar filtros (6.2)
