@@ -162,7 +162,7 @@ Validación Fase 6:
 
 ## Fase 7: Complete Button in Detail
 
-- [ ] **7.1** Agregar botón Completar en TaskDetailDialog
+- [x] **7.1** Agregar botón Completar en TaskDetailDialog
   - Output: Botón con PartyPopper en header (si status !== 'done')
   - Comportamiento: Click abre CompleteTaskModal, al completar cierra ambos dialogs
   - Referencia: importar CompleteTaskModal, agregar estado showCompleteModal
