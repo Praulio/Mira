@@ -123,7 +123,7 @@ Validación Fase 4:
   - Comportamiento: En handleDragEnd, si newStatus='done' → abre modal en vez de update directo
   - Referencia: ver `components/kanban-board.tsx` línea handleDragEnd
 
-- [ ] **5.2** Handlers para modal en KanbanBoard
+- [x] **5.2** Handlers para modal en KanbanBoard
   - Output: `handleCompleteModalClose` revierte si cancela, `handleCompleteSuccess` cierra y refresh
   - Comportamiento: Renderizar CompleteTaskModal después de DndContext
   - Referencia: importar `CompleteTaskModal` de `./complete-task-modal`
