@@ -29,7 +29,7 @@ Validación Fase 0:
   - Output: Enum con 7 valores totales
   - Referencia: ver `db/schema.ts` líneas 16-22
 
-- [ ] **1.3** Generar y aplicar migración
+- [x] **1.3** Generar y aplicar migración
   - Output: Migration aplicada con `pnpm drizzle-kit generate && pnpm drizzle-kit push`
 
 Validación Fase 1:
