@@ -291,3 +291,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El botón activo tiene shadow-sm y colores más prominentes
 - `isPending` se usa para deshabilitar botones durante la transición
 - Próxima tarea: actualizar activity/page.tsx para usar filtros (6.2)
+
+### Session 17 - 2026-01-19
+**Task:** 6.2 - Actualizar activity/page.tsx para usar filtros
+**Files:** `app/(dashboard)/dashboard/activity/page.tsx`
+**Patterns:**
+- `searchParams` es una Promise en Next.js 15+ que debe ser await-ed: `const params = await searchParams`
+- Validar parámetros de URL antes de usarlos: `validFilters.includes(params.filter)` previene valores maliciosos
+- Empty states contextuales: switch por filtro retorna `{ icon, title, description }` para cada caso
+- Componentes como valores: `icon: PartyPopper` permite renderizar dinámicamente con `<EmptyIcon />`
+**Notes:**
+- El componente `ActivityFilters` (de 6.1) se posiciona en el header con flex responsive
+- La página ahora pasa el filtro validado a `getActivityFeed(filter)` para filtrado server-side
+- Cada filtro tiene su empty state específico: "No hay tareas completadas" / "No tienes menciones"
+- Próxima tarea: actualizar ActivityItem para mostrar completion data (6.3)
