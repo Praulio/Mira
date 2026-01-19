@@ -1,24 +1,61 @@
 #!/bin/bash
-# Ralph Loop v3.2 - Infinite Agentic Loop
-# Uso: ./ralph-loop.sh [spec-name]
-# Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo
+# Ralph Loop v3.3 - Infinite Agentic Loop
+# Uso: ./ralph-loop.sh [--model sonnet|opus|haiku]
 #
-# El spec debe existir en docs/specs/[spec-name]/
+# El spec siempre está en docs/specs/current/
 #
 # Alertas de sonido via Claude Code hooks (~/.claude/hooks/ralph-detector.py)
 # Server restart: El agente puede escribir a /tmp/ralph-restart-server para reiniciar
 
 set -e  # Exit on error
 
-# Nombre del spec (requerido)
-SPEC_NAME="$1"
-if [ -z "$SPEC_NAME" ]; then
-    echo -e "\033[0;31m[ERROR] Especifica el nombre del spec\033[0m"
-    echo "Uso: ./ralph-loop.sh [spec-name]"
-    echo "Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo"
-    exit 1
+# ═══════════════════════════════════════════════════════════════
+# PARSEAR ARGUMENTOS
+# ═══════════════════════════════════════════════════════════════
+MODEL=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--model)
+            MODEL="$2"
+            shift 2
+            ;;
+        -h|--help)
+            echo "Ralph Loop v3.3"
+            echo ""
+            echo "Uso: ./ralph-loop.sh [opciones]"
+            echo ""
+            echo "Opciones:"
+            echo "  -m, --model MODEL   Modelo a usar (sonnet, opus, haiku)"
+            echo "  -h, --help          Mostrar esta ayuda"
+            echo ""
+            echo "El spec siempre está en docs/specs/current/"
+            exit 0
+            ;;
+        *)
+            echo -e "\033[0;31m[ERROR] Opción desconocida: $1\033[0m"
+            echo "Usa --help para ver opciones"
+            exit 1
+            ;;
+    esac
+done
+
+# Construir flag de modelo para Claude
+MODEL_FLAG=""
+if [ -n "$MODEL" ]; then
+    case $MODEL in
+        sonnet|opus|haiku)
+            MODEL_FLAG="--model $MODEL"
+            ;;
+        *)
+            echo -e "\033[0;31m[ERROR] Modelo inválido: $MODEL\033[0m"
+            echo "Modelos válidos: sonnet, opus, haiku"
+            exit 1
+            ;;
+    esac
 fi
-SPEC_DIR="docs/specs/$SPEC_NAME"
+
+# Ruta fija del spec
+SPEC_DIR="docs/specs/current"
 PROMPT_FILE="$SPEC_DIR/prompt.md"
 IMPL_PLAN="$SPEC_DIR/implementation_plan.md"
 LOG_FILE="ralph-log.txt"
@@ -26,8 +63,7 @@ LOG_FILE="ralph-log.txt"
 # Validar que existen los archivos
 if [ ! -f "$PROMPT_FILE" ]; then
     echo -e "\033[0;31m[ERROR] No existe: $PROMPT_FILE\033[0m"
-    echo "Uso: ./ralph-loop.sh [spec-name]"
-    echo "Ejemplo: ./ralph-loop.sh backlog-cierre-ciclo"
+    echo "Asegúrate de que tu spec esté en docs/specs/current/"
     exit 1
 fi
 
@@ -36,7 +72,6 @@ if [ ! -f "$IMPL_PLAN" ]; then
     exit 1
 fi
 
-echo -e "\033[0;34m[CONFIG] Usando spec folder: $SPEC_DIR\033[0m"
 ITERATION=0
 SERVER_PID=""
 MONITOR_PID=""
@@ -48,6 +83,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 # ═══════════════════════════════════════════════════════════════
@@ -171,27 +207,30 @@ echo -e "${BLUE}[MONITOR] Iniciando monitor de reinicio...${NC}"
 restart_monitor &
 MONITOR_PID=$!
 echo -e "${GREEN}[MONITOR] Monitor activo (PID: $MONITOR_PID)${NC}"
-echo -e "${BLUE}[MONITOR] El agente puede reiniciar con: echo restart > $RESTART_SIGNAL${NC}"
 
 # Header
 echo ""
 echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║                     RALPH LOOP v3.2                           ║"
+echo "║                     RALPH LOOP v3.3                           ║"
 echo "╠═══════════════════════════════════════════════════════════════╣"
+if [ -n "$MODEL" ]; then
+echo "║  Modelo:   ${CYAN}$MODEL${NC}                                            ║"
+else
+echo "║  Modelo:   default                                            ║"
+fi
 echo "║  Servidor: PID $SERVER_PID (puerto 3000)                      ║"
 echo "║  Monitor:  PID $MONITOR_PID (reinicio automático)             ║"
-echo "║  Spec Dir: $SPEC_DIR                                 ║"
-echo "║  Log: $LOG_FILE                                      ║"
-echo "║  Reinicio: echo restart > $RESTART_SIGNAL      ║"
-echo "║  Para detener: Ctrl+C (limpia automáticamente)               ║"
-echo "║  Para monitorear: tail -f $LOG_FILE                  ║"
+echo "║  Spec:     $SPEC_DIR/                                  ║"
+echo "║  Log:      $LOG_FILE                                      ║"
+echo "║  Para detener: Ctrl+C                                         ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 
 # Iniciar log
 echo "" >> "$LOG_FILE"
 echo "═══════════════════════════════════════════════════════════════" >> "$LOG_FILE"
-echo "RALPH LOOP v3.2 INICIADO: $(date)" >> "$LOG_FILE"
+echo "RALPH LOOP v3.3 INICIADO: $(date)" >> "$LOG_FILE"
+echo "Modelo: ${MODEL:-default}" >> "$LOG_FILE"
 echo "Spec Dir: $SPEC_DIR" >> "$LOG_FILE"
 echo "Servidor PID: $SERVER_PID" >> "$LOG_FILE"
 echo "═══════════════════════════════════════════════════════════════" >> "$LOG_FILE"
@@ -220,10 +259,10 @@ while true; do
     echo "Tarea: $NEXT_TASK" >> "$LOG_FILE"
 
     # Ejecutar Claude
-    echo -e "${BLUE}Ejecutando Claude...${NC}"
+    echo -e "${BLUE}Ejecutando Claude${MODEL:+ ($MODEL)}...${NC}"
 
     # Ejecutar Claude (sin timeout en Mac, ctrl+c para cancelar si se atora)
-    cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions >> "$LOG_FILE" 2>&1 || {
+    cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions $MODEL_FLAG >> "$LOG_FILE" 2>&1 || {
         echo -e "${YELLOW}[WARN] Claude terminó con código de salida $?${NC}"
     }
 

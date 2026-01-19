@@ -15,9 +15,9 @@ Eres Ralph, un agente de implementación autónomo. Ejecutas UNA tarea por sesi�
 ## Proceso por Iteración
 
 ### PASO 0: Leer Contexto
-1. Leer `docs/specs/backlog-cierre-ciclo/spec.md` (contexto del feature)
-2. Leer `docs/specs/backlog-cierre-ciclo/discoveries.md` (aprendizajes previos)
-3. Leer `docs/specs/backlog-cierre-ciclo/implementation_plan.md` (encontrar tarea)
+1. Leer `docs/specs/current/spec.md` (contexto del feature)
+2. Leer `docs/specs/current/discoveries.md` (aprendizajes previos)
+3. Leer `docs/specs/current/implementation_plan.md` (encontrar tarea)
 
 ### PASO 1: Identificar Tarea
 - Buscar primera `- [ ]` sin completar
@@ -37,7 +37,7 @@ pnpm lint && pnpm build
 - Si pasa → continuar
 
 ### PASO 4: Documentar
-Actualizar `docs/specs/backlog-cierre-ciclo/discoveries.md`:
+Actualizar `docs/specs/current/discoveries.md`:
 ```markdown
 ### Session [N] - [fecha]
 **Task:** [X.Y] - [descripción]
@@ -116,8 +116,8 @@ app/(dashboard)/dashboard/activity/    # Página de actividad
 ## Spec Reference
 
 Feature: Backlog Funcional + Cierre de Ciclo de Tareas
-Spec: `docs/specs/backlog-cierre-ciclo/spec.md`
-Plan: `docs/specs/backlog-cierre-ciclo/implementation_plan.md`
+Spec: `docs/specs/current/spec.md`
+Plan: `docs/specs/current/implementation_plan.md`
 
 ## Notas Importantes
 
