@@ -148,7 +148,7 @@ Validación Fase 5:
   - Comportamiento: Empty states específicos por filtro
   - Referencia: ver tipo `ActivityFilter` de activity.ts
 
-- [ ] **6.3** Actualizar ActivityItem para mostrar completion data
+- [x] **6.3** Actualizar ActivityItem para mostrar completion data
   - Output: Casos 'completed' y 'mentioned' en getActionIcon y getActivityMessage
   - Render: Notas en blockquote, links como chips clickeables
   - Referencia: agregar imports PartyPopper, AtSign, Link de lucide-react
