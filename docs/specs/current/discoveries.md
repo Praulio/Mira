@@ -207,3 +207,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Props incluyen `onComplete` callback opcional para notificar al componente padre después de completar
 - El texto está en español siguiendo convención del proyecto (Cancelar, Completar, etc.)
 - Próxima tarea: componente BacklogTaskCard (4.1)
+
+### Session 11 - 2026-01-19
+**Task:** 4.1 - Componente BacklogTaskCard
+**Files:** `components/backlog-task-card.tsx` (nuevo)
+**Patterns:**
+- `useSortable` vs `useDraggable`: usar `useSortable` para listas verticales reordenables, incluye automáticamente animaciones de reordenamiento
+- Grip handle separado: aplicar `listeners` y `attributes` SOLO al grip, no a toda la card - permite clicks sin iniciar drag
+- Tipo extendido: `BacklogTaskData = KanbanTaskData & { isCritical: boolean }` para agregar campo sin modificar tipo base
+- Estilos condicionales con template literals: clases de borde y sombra cambian según `task.isCritical`
+**Notes:**
+- El componente exporta `BacklogTaskData` para uso en BacklogList
+- Menú tiene 2 opciones: toggle crítico (con validación server-side de 1 por usuario) y eliminar
+- Los mensajes de toast están en español siguiendo convención del proyecto
+- Próxima tarea: componente BacklogList con DndContext (4.2)
