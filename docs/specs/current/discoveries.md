@@ -162,3 +162,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El filtro 'completed' solo busca `action='completed'`, no incluye otras acciones
 - El filtro 'mentions' requiere auth - si no hay usuario retorna array vacío
 - Próxima tarea: componente MentionInput (3.1)
+
+### Session 8 - 2026-01-19
+**Task:** 3.1 - Componente MentionInput
+**Files:** `components/mention-input.tsx` (nuevo)
+**Patterns:**
+- Trigger character detection: detectar "@" en textarea y mostrar dropdown posicionado
+- Formato de mención: `@[name](userId)` permite extraer IDs con regex simple
+- useCallback debe declararse antes de usarse en otros useCallbacks (hoisting issue en React hooks)
+- No usar `setSelectedIndex` en useEffect - resetear dentro del handler de onChange para evitar cascading renders
+- Regex para extraer IDs: `/@\[[^\]]+\]\(([^)]+)\)/g` captura el grupo de userId
+**Notes:**
+- El componente expone `extractMentionIds(text)` como helper para extraer IDs del texto
+- Navegación con teclado: ArrowUp/Down para seleccionar, Enter/Tab para confirmar, Escape para cerrar
+- El dropdown se cierra automáticamente al hacer click fuera (event listener en document)
+- Props simples: `{ value, onChange, placeholder }` - controlled component pattern
+- Próxima tarea: componente LinkInput (3.2)
