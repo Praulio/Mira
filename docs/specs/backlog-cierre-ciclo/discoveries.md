@@ -72,3 +72,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Próximos pasos:**
 - Ejecutar `./ralph-loop.sh backlog-cierre-ciclo`
 - Monitorear con `tail -f ralph-log.txt`
+
+### Session 1 - 2026-01-19
+**Task:** 0.1 - Instalar canvas-confetti y crear lib/confetti.ts
+**Files:** `lib/confetti.ts` (nuevo), `package.json` (dependencias)
+**Patterns:**
+- "use client" obligatorio para archivos que usan APIs del navegador
+- Guard `typeof window === "undefined"` para SSR safety
+- Web Audio API como alternativa ligera a archivos de sonido
+- `prefers-reduced-motion` para accesibilidad
+**Notes:**
+- Existe error de lint preexistente en `task-detail-dialog.tsx:29` (setState en effect)
+- Este error no bloquea el build, es warning convertido a error por la config
+- Considerar arreglarlo en tarea separada si causa problemas
