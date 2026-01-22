@@ -163,7 +163,7 @@ Validación Fase 4:
   - Comportamiento: Icono según mimeType, botón download link a API, delete con confirmación
   - Referencia: ver components/link-input.tsx para pattern de lista con delete
 
-- [ ] **5.3** Agregar icono clip en TaskCard
+- [x] **5.3** Agregar icono clip en TaskCard
   - Input: components/task-card.tsx footer
   - Output: Icono Paperclip + count si task tiene adjuntos
   - Comportamiento: Mostrar solo si attachmentCount > 0

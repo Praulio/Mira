@@ -1,6 +1,6 @@
 'use client';
 
-import { User, MoreVertical, Trash2, Clock } from 'lucide-react';
+import { User, MoreVertical, Trash2, Clock, Paperclip } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useEffect } from 'react';
@@ -150,7 +150,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           </p>
         )}
 
-        {/* Footer: Assignee and time */}
+        {/* Footer: Assignee, attachments and time */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {/* Assignee */}
           <div className="flex items-center gap-2">
@@ -170,26 +170,37 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
             <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
           </div>
 
-          {/* Duration or Status Indicator */}
-          {task.status === 'done' && task.startedAt ? (
-            // Completed task - show final duration in green
-            <div className="flex items-center gap-1 text-emerald-400">
-              <Clock className="h-3 w-3" />
-              <span>{formatDuration(task.startedAt, task.completedAt)}</span>
-            </div>
-          ) : task.status === 'in_progress' && task.startedAt ? (
-            // In progress - show live duration with amber pulse
-            <div className="flex items-center gap-1 text-amber-400 animate-pulse">
-              <Clock className="h-3 w-3" />
-              <span>{formatDuration(task.startedAt, null)}</span>
-            </div>
-          ) : (
-            // Default - show status dot
-            <div
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
-            />
-          )}
+          {/* Right side: attachments + duration/status */}
+          <div className="flex items-center gap-3">
+            {/* Attachment count */}
+            {task.attachmentCount > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground/70">
+                <Paperclip className="h-3 w-3" />
+                <span>{task.attachmentCount}</span>
+              </div>
+            )}
+
+            {/* Duration or Status Indicator */}
+            {task.status === 'done' && task.startedAt ? (
+              // Completed task - show final duration in green
+              <div className="flex items-center gap-1 text-emerald-400">
+                <Clock className="h-3 w-3" />
+                <span>{formatDuration(task.startedAt, task.completedAt)}</span>
+              </div>
+            ) : task.status === 'in_progress' && task.startedAt ? (
+              // In progress - show live duration with amber pulse
+              <div className="flex items-center gap-1 text-amber-400 animate-pulse">
+                <Clock className="h-3 w-3" />
+                <span>{formatDuration(task.startedAt, null)}</span>
+              </div>
+            ) : (
+              // Default - show status dot
+              <div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
+              />
+            )}
+          </div>
         </div>
       </div>
 

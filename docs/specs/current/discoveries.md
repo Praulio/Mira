@@ -334,3 +334,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Glassmorphism aplicado: bg-white/5, border-white/5, rounded-xl
 - Loader2 con animate-spin durante eliminación
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 18 - 2026-01-22
+**Task:** 5.3 - Agregar icono clip en TaskCard
+**Files:** components/task-card.tsx, app/actions/kanban.ts
+**Patterns:**
+- Subquery con `.as()` en Drizzle para counts: `db.select({...}).from(table).groupBy(col).as('alias')`
+- `coalesce(${subquery.count}, 0)` en Drizzle SQL para manejar LEFT JOIN con NULL values
+- Import adicional: `sql` de 'drizzle-orm' para subqueries con funciones SQL
+- Wrapper div `flex items-center gap-3` para agrupar indicadores en footer (attachments + duration)
+**Notes:**
+- attachmentCount agregado al tipo KanbanTaskData
+- Subquery hace LEFT JOIN a tasks para contar attachments por task
+- Icono Paperclip de lucide-react con contador solo visible cuando attachmentCount > 0
+- Color: text-muted-foreground/70 para no competir con indicadores de duración
+- Build y lint pasan sin errores (12 warnings preexistentes)
