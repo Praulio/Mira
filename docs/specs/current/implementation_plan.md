@@ -257,7 +257,7 @@ Validación Fase 7:
   - Output: Confirmación de validación de mime types y tamaños
   - Verificar: Mime types validados server-side, no path traversal, Content-Disposition headers seguros
 
-- [ ] **8.4** Review final de código
+- [x] **8.4** Review final de código
   - Input: Todos los archivos modificados/creados en este feature
   - Output: PR aprobado o lista de cambios requeridos
   - Comportamiento: Usar agente security-sentinel para scan automatizado + review manual
