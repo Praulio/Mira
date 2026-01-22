@@ -8,8 +8,6 @@ Mejorar el sistema de tareas del Kanban de Mira para permitir:
 
 Esto permite a los equipos medir productividad real y centralizar archivos de trabajo durante la ejecución de tareas.
 
----
-
 ## Feature 1: Tracking de Tiempos
 
 ### Flujo del Usuario
@@ -25,38 +23,36 @@ Esto permite a los equipos medir productividad real y centralizar archivos de tr
 
 **En el Task Card (Kanban):**
 - Mostrar duración resumida cuando la tarea está en Done (ej: "2h 30m")
-- Mientras está en In Progress, mostrar tiempo transcurrido en vivo (amber pulsante)
+- Mientras está en In Progress, mostrar tiempo transcurrido en vivo
 
 **En el Task Detail Modal:**
 - Mostrar `startedAt` (cuando pasó a In Progress) - solo lectura
 - Mostrar `completedAt` (fecha/hora de término) - **editable solo por el owner de la tarea**
 - Mostrar duración calculada prominentemente
 - Date/time picker para editar `completedAt`
-- Botón "Crear tarea derivada" para tareas en Done
 
 ### Reglas de Negocio
 
 1. `startedAt` se captura automáticamente al mover a "In Progress"
 2. `completedAt` se captura automáticamente al completar, pero es editable después
-3. **Solo el assignee o creator puede editar el `completedAt` de sus propias tareas**
+3. **Solo el assignee/owner puede editar el `completedAt` de sus propias tareas**
 4. Si una tarea completada necesita más trabajo → crear nueva tarea con campo `parentTaskId` referenciando la tarea original (thread de tareas)
 5. No se permite mover tareas de Done hacia atrás
-6. Si tarea vuelve de In Progress a backlog/todo, se resetea `startedAt` a null
 
 ### Campos Nuevos en DB
 
 ```
 startedAt: timestamp (nullable) - cuando pasó a In Progress
+completedAt: timestamp (nullable) - cuando se completó (editable)
 parentTaskId: uuid (nullable) - referencia a tarea padre si es derivada
 ```
-Nota: `completedAt` ya existe en el schema.
 
 ### Edge Cases
 
-- **Tarea creada directamente en In Progress**: `startedAt` = timestamp del momento
-- **Tarea movida de In Progress a Todo y luego de vuelta**: Se sobrescribe `startedAt` con el nuevo timestamp (reseteo)
-- **Tarea completada sin pasar por In Progress**: `startedAt` permanece null, duración = 0 o "-"
-- **Usuario quiere reabrir tarea completada**: No permitido vía drag, debe crear tarea derivada con `parentTaskId`
+- **Tarea creada directamente en In Progress**: `startedAt` = `createdAt`
+- **Tarea movida de In Progress a Todo y luego de vuelta**: Se sobrescribe `startedAt` con el nuevo timestamp
+- **Tarea completada sin pasar por In Progress**: `startedAt` = `completedAt` (duración = 0)
+- **Usuario quiere reabrir tarea completada**: No permitido, debe crear tarea derivada con `parentTaskId`
 
 ---
 
@@ -65,7 +61,7 @@ Nota: `completedAt` ya existe en el schema.
 ### Flujo del Usuario
 
 1. Usuario abre modal de tarea (en cualquier estado excepto Done)
-2. Usuario hace clic en "Agregar adjunto" o arrastra archivos al dropzone
+2. Usuario hace clic en "Agregar adjunto" o arrastra archivos
 3. Archivos se suben a Google Drive en carpeta `Mira/tasks/{taskId}/`
 4. Usuario ve miniaturas de archivos en el modal
 5. Usuario puede descargar individualmente o "Descargar todos"
@@ -75,21 +71,21 @@ Nota: `completedAt` ya existe en el schema.
 ### UI/UX
 
 **En el Task Card (Kanban):**
-- Icono de clip si la tarea tiene adjuntos
-- Badge con cantidad de adjuntos
+- Icono de clip (📎) si la tarea tiene adjuntos
+- Opcional: badge con cantidad de adjuntos
 
 **En el Task Detail Modal:**
 - Sección "Adjuntos" con:
   - Área de drop zone para arrastrar archivos
   - Botón "Agregar archivos"
-  - Grid de miniaturas (iconos para docs/videos)
-  - Botón "Descargar todos"
-  - Cada archivo: icono + nombre + botón eliminar
-- Dropzone deshabilitado si tarea está en Done
+  - Grid de miniaturas (thumbnails para imágenes, iconos para docs/videos)
+  - Botón "Descargar todos" (zip)
+  - Cada archivo: miniatura + nombre + botón eliminar
+- Clic en miniatura → abre preview en pantalla completa (lightbox)
 
 **Estados visuales:**
-- Subiendo: animación de bounce en icono Upload
-- Error: toast con mensaje de error
+- Subiendo: progress bar por archivo
+- Error: mensaje de error con opción de reintentar
 - Vacío: mensaje "Arrastra archivos aquí o haz clic para agregar"
 
 ### Tipos de Archivo Soportados
@@ -122,30 +118,16 @@ Google Drive/
 1. Sin límite de cantidad o tamaño de archivos
 2. Adjuntos solo editables mientras tarea NO está en Done
 3. Eliminación automática: `completedAt + 3 días`
-4. Cron job diario (3am UTC) para limpiar adjuntos expirados
+4. Job programado (cron) para limpiar adjuntos expirados
 5. Al eliminar tarea, eliminar carpeta de Drive inmediatamente
-
-### Tabla Nueva en DB
-
-```
-attachments:
-  id: uuid PK
-  taskId: uuid FK (cascade delete)
-  driveFileId: text (ID del archivo en Google Drive)
-  name: text (nombre original)
-  mimeType: text
-  sizeBytes: integer
-  uploadedBy: text FK (usuario)
-  uploadedAt: timestamp
-```
 
 ### Edge Cases
 
-- **Falla de subida**: Mostrar toast error, no guardar en DB
-- **Archivo duplicado**: Permitir (Google Drive maneja nombres únicos)
-- **Tarea eliminada con adjuntos**: Eliminar carpeta de Drive inmediatamente (cascade)
-- **Google Drive no disponible**: Mostrar toast error genérico
-- **Cron job falla**: Retry en siguiente ejecución, logging detallado
+- **Falla de subida**: Mostrar error, permitir reintentar
+- **Archivo duplicado**: Sobrescribir con confirmación
+- **Tarea eliminada con adjuntos**: Eliminar carpeta de Drive inmediatamente
+- **Google Drive no disponible**: Mostrar error, desactivar funcionalidad temporalmente
+- **Usuario sin permisos de Drive**: Configurar Service Account con acceso
 
 ---
 
@@ -154,27 +136,30 @@ attachments:
 ### MVP (Esta iteración)
 
 **Tracking de Tiempos:**
-- [ ] Campos `startedAt`, `parentTaskId` en DB
-- [ ] Captura automática de `startedAt` al mover a In Progress
-- [ ] Edición de `completedAt` (solo owner)
-- [ ] Mostrar duración en card y modal
-- [ ] Bloquear movimiento de Done hacia atrás
-- [ ] Crear tarea derivada con `parentTaskId`
+- [x] Campos `startedAt`, `completedAt`, `parentTaskId` en DB
+- [x] Captura automática de `startedAt` al mover a In Progress
+- [x] Captura automática de `completedAt` al completar
+- [x] Edición de `completedAt` (solo owner)
+- [x] Mostrar duración en card y modal
+- [x] Bloquear movimiento de Done hacia atrás
+- [x] Crear tarea derivada con `parentTaskId`
 
 **Adjuntos:**
-- [ ] Tabla `attachments` en DB
-- [ ] Integración Google Drive API
-- [ ] Subida de archivos desde modal
-- [ ] Lista de adjuntos con download/delete
-- [ ] Icono de clip en cards
-- [ ] Cron job para limpieza automática (completedAt + 3 días)
+- [x] Integración Google Drive API
+- [x] Subida de archivos desde modal
+- [x] Visualización de miniaturas
+- [x] Descarga individual y "Descargar todos"
+- [x] Eliminación de adjuntos
+- [x] Icono de clip en cards
+- [x] Preview en lightbox
+- [x] Cron job para limpieza automática (completedAt + 3 días)
 
 ### Diferido (Futuro)
 
 - Tracking completo por fase: `stagingTime` (backlog→todo), `workingTime` (todo→in_progress)
 - Reportes/analytics de tiempos por usuario/proyecto
-- Preview inline de archivos (sin descarga)
 - Versionado de adjuntos
+- Comentarios en adjuntos
 - Integración con otros providers (S3, Dropbox)
 
 ---
@@ -182,12 +167,11 @@ attachments:
 ## Éxito
 
 El feature funciona bien cuando:
-1. Las duraciones de tareas se calculan correctamente y son visibles en UI
+1. Las duraciones de tareas se calculan correctamente y son visibles
 2. Los usuarios pueden subir/descargar archivos sin fricción
 3. Los adjuntos se eliminan automáticamente después de 3 días de completada la tarea
 4. Solo el owner puede editar el `completedAt` de sus tareas
 5. El sistema de tareas derivadas permite seguir threads de trabajo
-6. El bloqueo de Done previene movimientos accidentales
 
 ---
 
@@ -196,13 +180,16 @@ El feature funciona bien cuando:
 **Decisiones tomadas:**
 - Google Drive como storage por preferencia del cliente (carpeta compartida existente)
 - Sin límites de tamaño/cantidad para flexibilidad operativa
-- Eliminación automática a los 3 días sin advertencia previa
+- Eliminación automática a los 3 días sin advertencia (usuario ya lo sabe)
 - Tareas derivadas en lugar de "reabrir" para mantener historial limpio
 - Tracking simplificado (startedAt → completedAt) como MVP, tracking completo por fases es futuro
-- Owner = assignee OR creator (cualquiera puede editar completedAt)
 
-**Trade-offs aceptados:**
-- Sin preview inline de archivos (solo descarga) para simplificar MVP
-- Sin historial de transiciones de estado (solo startedAt/completedAt)
-- Sin versionado de archivos adjuntos
-- startedAt se resetea si tarea vuelve a backlog/todo
+**Consideraciones técnicas:**
+- Google Drive API requiere Service Account y folder ID compartido
+- Necesario cron job o similar para limpieza de adjuntos expirados
+- El campo `parentTaskId` permite construir árbol de tareas relacionadas
+
+**Trade-offs:**
+- Sin versionado de archivos para simplificar MVP
+- Preview de video puede requerir transcodificación futura
+- Cálculo de duración simple (no considera pausas o cambios de estado intermedios)

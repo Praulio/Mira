@@ -1,4 +1,4 @@
-# Ralph Loop Instructions: Backlog Funcional + Cierre de Ciclo
+# Ralph Loop Instructions: Task Enhancements - Tracking de Tiempos y Adjuntos
 
 ## Tu Rol
 
@@ -49,7 +49,7 @@ Actualizar `docs/specs/current/discoveries.md`:
 ### PASO 5: Commit
 ```bash
 git add .
-git commit -m "feat(backlog): [task description]
+git commit -m "feat(task-enhancements): [task description]
 
 Task [X.Y] completed
 
@@ -98,31 +98,40 @@ Si verificación falla:
 | Cambio de UI | Build + verificación visual |
 | Server Action | Build + sin errores TS |
 | Database | Migration aplica |
-| Bug fix | Build + bug no reproduce |
+| Google Drive | Build + test manual si hay credenciales |
 
 ## Archivos Clave
 
 ```
 db/schema.ts                           # Schema de base de datos
 app/actions/tasks.ts                   # Server actions de tareas
-app/actions/activity.ts                # Server action de actividad
-components/kanban-board.tsx            # Tablero Kanban
-components/task-card.tsx               # Card de tarea
-components/task-detail-dialog.tsx      # Modal de detalle
-app/(dashboard)/dashboard/backlog/     # Página de backlog
-app/(dashboard)/dashboard/activity/    # Página de actividad
+app/actions/attachments.ts             # NUEVO: Server actions de adjuntos
+app/actions/kanban.ts                  # Query de datos Kanban
+lib/google-drive.ts                    # NUEVO: Cliente Google Drive
+lib/format-duration.ts                 # NUEVO: Helper de formateo
+components/kanban-board.tsx            # Tablero Kanban (bloquear drag done)
+components/task-card.tsx               # Card de tarea (duración, clip)
+components/task-detail-dialog.tsx      # Modal de detalle (tiempos, adjuntos)
+components/file-dropzone.tsx           # NUEVO: Upload de archivos
+components/attachment-list.tsx         # NUEVO: Lista de adjuntos
+app/api/attachments/[id]/download/     # NUEVO: API de descarga
+app/api/cron/cleanup-attachments/      # NUEVO: Cron de limpieza
+vercel.json                            # Configuración cron
 ```
 
 ## Spec Reference
 
-Feature: Backlog Funcional + Cierre de Ciclo de Tareas
+Feature: Task Enhancements - Tracking de Tiempos y Adjuntos
 Spec: `docs/specs/current/spec.md`
 Plan: `docs/specs/current/implementation_plan.md`
 
 ## Notas Importantes
 
-1. **Drizzle ORM**: Usar tipos inferidos `typeof tasks.$inferSelect`
-2. **Server Actions**: Siempre `'use server'` al inicio
-3. **Imports**: Verificar que existan antes de usar
-4. **Canvas Confetti**: Requiere `typeof window !== 'undefined'`
-5. **Menciones**: Formato interno `@[name](userId)`
+1. **Drizzle ORM**: Usar `AnyPgColumn` para self-referencing FK (parentTaskId)
+2. **Google Drive API**: Requiere `googleapis` package y Service Account
+3. **Server Actions**: Siempre `'use server'` al inicio
+4. **Timestamps**: `startedAt` se captura automáticamente, `completedAt` es editable por owner
+5. **Attachments**: Bloqueados para tareas en status 'done'
+6. **Cron Job**: Validar CRON_SECRET antes de procesar
+7. **formatDuration**: Mostrar días si > 24h, minutos si < 1h
+8. **Owner**: assignee OR creator pueden editar completedAt
