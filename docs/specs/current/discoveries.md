@@ -379,3 +379,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El campo attachmentCount ya está en el tipo KanbanTaskData línea 30
 - Fase 5 (UI - Adjuntos) completada
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 21 - 2026-01-22
+**Task:** 6.1 - Crear configuración vercel.json
+**Files:** vercel.json (nuevo)
+**Patterns:**
+- vercel.json se crea en la raíz del proyecto para configuración de deployment
+- Cron jobs usan sintaxis cron estándar: "minuto hora día mes díaSemana"
+- `0 3 * * *` = ejecutar a las 3:00 AM UTC todos los días
+- El path del cron apunta a la API route que manejará la lógica
+**Notes:**
+- Archivo creado con configuración mínima: solo crons array
+- Schedule configurado para 3am UTC como especifica el spec
+- La API route `/api/cron/cleanup-attachments` será creada en tarea 6.2
+- Build y lint pasan sin errores (12 warnings preexistentes)

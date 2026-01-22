@@ -190,7 +190,7 @@ Validación Fase 5:
 
 ## Fase 6: Cron Job Cleanup
 
-- [ ] **6.1** Crear configuración vercel.json
+- [x] **6.1** Crear configuración vercel.json
   - Input: vercel.json (crear o actualizar)
   - Output: Cron job configurado para /api/cron/cleanup-attachments a las 3am UTC
   - Referencia: Vercel docs cron syntax
