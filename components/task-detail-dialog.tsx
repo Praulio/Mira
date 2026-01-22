@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch } from 'lucide-react';
 import { toast } from 'sonner';
-import { updateTaskMetadata, assignTask, deleteTask } from '@/app/actions/tasks';
+import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 import { CompleteTaskModal } from './complete-task-modal';
+import { formatDuration } from '@/lib/format-duration';
 
 type TaskDetailDialogProps = {
   task: KanbanTaskData;
@@ -23,12 +25,21 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
 
 function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'isOpen'>) {
   const router = useRouter();
+  const { user } = useUser();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [assigneeId, setAssigneeId] = useState(task.assignee?.id || null);
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completedAtInput, setCompletedAtInput] = useState(
+    task.completedAt ? new Date(task.completedAt).toISOString().slice(0, 16) : ''
+  );
+  const [isUpdatingCompletedAt, setIsUpdatingCompletedAt] = useState(false);
+  const [isCreatingDerived, setIsCreatingDerived] = useState(false);
+
+  // Check if current user is owner (assignee or creator)
+  const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
@@ -83,6 +94,40 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     setShowCompleteModal(false);
     router.refresh();
     onClose();
+  }
+
+  async function handleUpdateCompletedAt() {
+    if (!completedAtInput) return;
+
+    setIsUpdatingCompletedAt(true);
+    const result = await updateCompletedAt({
+      taskId: task.id,
+      completedAt: new Date(completedAtInput),
+    });
+
+    if (result.success) {
+      toast.success('Fecha de completado actualizada');
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al actualizar fecha');
+    }
+    setIsUpdatingCompletedAt(false);
+  }
+
+  async function handleCreateDerivedTask() {
+    setIsCreatingDerived(true);
+    const result = await createDerivedTask({
+      parentTaskId: task.id,
+    });
+
+    if (result.success) {
+      toast.success('Tarea derivada creada');
+      router.refresh();
+      onClose();
+    } else {
+      toast.error(result.error || 'Error al crear tarea derivada');
+    }
+    setIsCreatingDerived(false);
   }
 
   return (
@@ -177,6 +222,59 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
                   <span className="opacity-40">Last Updated</span>
                   <span>{new Date(task.updatedAt).toLocaleTimeString()}</span>
                 </div>
+                {task.startedAt && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="opacity-40">Iniciado</span>
+                    <span>{new Date(task.startedAt).toLocaleString()}</span>
+                  </div>
+                )}
+                {task.status === 'done' && task.completedAt && (
+                  <>
+                    <div className="flex justify-between items-center py-1 border-b border-white/5">
+                      <span className="opacity-40">Completado</span>
+                      {isOwner ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="datetime-local"
+                            value={completedAtInput}
+                            onChange={(e) => setCompletedAtInput(e.target.value)}
+                            max={new Date().toISOString().slice(0, 16)}
+                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary/40"
+                          />
+                          <button
+                            onClick={handleUpdateCompletedAt}
+                            disabled={isUpdatingCompletedAt || !completedAtInput}
+                            className="text-primary hover:text-primary/80 disabled:opacity-50"
+                            title="Guardar fecha"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span>{new Date(task.completedAt).toLocaleString()}</span>
+                      )}
+                    </div>
+                    {/* Duration - prominent display */}
+                    <div className="flex justify-between items-center py-2 mt-2 bg-emerald-500/10 rounded-lg px-3">
+                      <span className="flex items-center gap-2 text-emerald-400">
+                        <Clock className="h-4 w-4" /> Duración
+                      </span>
+                      <span className="text-emerald-400 text-sm font-black">
+                        {formatDuration(task.startedAt, task.completedAt)}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {task.status === 'in_progress' && task.startedAt && (
+                  <div className="flex justify-between items-center py-2 mt-2 bg-amber-500/10 rounded-lg px-3">
+                    <span className="flex items-center gap-2 text-amber-400">
+                      <Clock className="h-4 w-4 animate-pulse" /> En progreso
+                    </span>
+                    <span className="text-amber-400 text-sm font-black animate-pulse">
+                      {formatDuration(task.startedAt, null)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -197,20 +295,36 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3 bg-white/5">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-all"
-          >
-            Close
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="p-6 border-t border-white/5 flex justify-between items-center bg-white/5">
+          {/* Left side - Derived Task button for done tasks */}
+          <div>
+            {task.status === 'done' && (
+              <button
+                onClick={handleCreateDerivedTask}
+                disabled={isCreatingDerived}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-amber-400 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50"
+              >
+                <GitBranch className="h-4 w-4" />
+                {isCreatingDerived ? 'Creando...' : 'Crear tarea derivada'}
+              </button>
+            )}
+          </div>
+          {/* Right side - Close and Save */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-all"
+            >
+              Close
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </div>
 

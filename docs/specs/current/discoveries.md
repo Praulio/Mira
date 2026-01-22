@@ -279,3 +279,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Icono Clock de lucide-react agregado para indicador visual de duración
 - Colores: emerald-400 para completado, amber-400 para en progreso
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 15 - 2026-01-22
+**Task:** 4.3 - Agregar info de tiempos en TaskDetailDialog
+**Files:** components/task-detail-dialog.tsx
+**Patterns:**
+- Usar `useUser` hook de `@clerk/nextjs` para obtener ID de usuario actual en cliente
+- Ownership check: `user?.id === task.assignee?.id || user?.id === task.creator.id`
+- Input type="datetime-local" para edición de fecha/hora sin librerías externas
+- Atributo `max` en datetime-local limita fecha a <= ahora (previene fechas futuras)
+- Footer con `justify-between` para separar acciones izquierda/derecha
+**Notes:**
+- Sección Information actualizada con:
+  - Iniciado (startedAt) solo lectura, visible cuando existe
+  - Completado (completedAt) editable solo por owner con datetime-local input
+  - Duración prominente en bg-emerald-500/10 con formatDuration()
+  - Timer en vivo con bg-amber-500/10 y animate-pulse para in_progress
+- Botón "Crear tarea derivada" con GitBranch icon solo visible en tareas done
+- Estado `completedAtInput` usa formato ISO slice(0,16) para compatibilidad con datetime-local
+- Funciones handler: handleUpdateCompletedAt, handleCreateDerivedTask
+- Imports agregados: useUser, Clock, GitBranch, updateCompletedAt, createDerivedTask, formatDuration
+- Build y lint pasan sin errores (12 warnings preexistentes)
