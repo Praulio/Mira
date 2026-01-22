@@ -300,3 +300,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Funciones handler: handleUpdateCompletedAt, handleCreateDerivedTask
 - Imports agregados: useUser, Clock, GitBranch, updateCompletedAt, createDerivedTask, formatDuration
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 16 - 2026-01-22
+**Task:** 5.1 - Crear componente FileDropzone
+**Files:** components/file-dropzone.tsx (nuevo)
+**Patterns:**
+- No usar useCallback con React Compiler activo si las dependencias inferidas no coinciden con las manuales
+- Drag & drop handlers simples sin memoización funcionan correctamente con React Compiler
+- Convertir File a base64 con `Buffer.from(arrayBuffer).toString('base64')` para enviar a Server Action
+- Mostrar lista de archivos en progreso con estado independiente del dropzone
+**Notes:**
+- Componente con drag & drop y click para selección de archivos
+- Props: taskId (requerido), onUploadComplete (callback opcional), disabled (bloquea dropzone)
+- Estados: isDragging (visual feedback), uploading (bloquea interacción), uploadingFiles (lista de nombres)
+- Cuando disabled=true, muestra mensaje "Adjuntos bloqueados en tareas completadas"
+- Subida secuencial de archivos con toast de éxito/error individual por archivo
+- Callback onUploadComplete se ejecuta si al menos un archivo se subió correctamente
+- Build y lint pasan sin errores (12 warnings preexistentes)

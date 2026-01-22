@@ -149,7 +149,7 @@ Validación Fase 4:
 
 ## Fase 5: UI - Adjuntos
 
-- [ ] **5.1** Crear componente FileDropzone
+- [x] **5.1** Crear componente FileDropzone
   - Input: Nuevo archivo components/file-dropzone.tsx
   - Output: Componente con drag&drop y file input
   - Props: { taskId, onUploadComplete, disabled? }
