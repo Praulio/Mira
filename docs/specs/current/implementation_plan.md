@@ -89,7 +89,7 @@ Validación Fase 2:
 
 ## Fase 3: Backend - Google Drive Integration
 
-- [ ] **3.1** Crear cliente Google Drive
+- [x] **3.1** Crear cliente Google Drive
   - Input: Nuevo archivo lib/google-drive.ts
   - Output: Función getGoogleDriveClient() y constante MIRA_FOLDER_ID
   - Comportamiento: Usa googleapis con Service Account credentials de env

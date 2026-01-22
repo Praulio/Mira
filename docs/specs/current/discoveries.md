@@ -188,3 +188,23 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Mensajes de error en español siguiendo convención UI del proyecto
 - Build y lint pasan sin errores (12 warnings preexistentes)
 - Fase 2 (Backend - Tracking de Tiempos) completada
+
+### Session 10 - 2026-01-22
+**Task:** 3.1 - Crear cliente Google Drive
+**Files:** lib/google-drive.ts (nuevo)
+**Patterns:**
+- Singleton pattern para cliente Drive: variable `driveClient` se inicializa una vez y se reutiliza
+- Import de tipos específicos: `import { google, drive_v3 } from 'googleapis'`
+- Scope mínimo necesario: `https://www.googleapis.com/auth/drive.file` (solo archivos creados por la app)
+- GoogleAuth con credentials inline desde env var (no archivo JSON externo)
+**Notes:**
+- Funciones implementadas:
+  - `getGoogleDriveClient()` - Singleton que parsea GOOGLE_SERVICE_ACCOUNT_KEY y crea cliente
+  - `createTaskFolder(taskId)` - Crea o retorna carpeta existente bajo MIRA_FOLDER_ID
+  - `uploadFileToDrive(taskId, fileName, mimeType, fileBuffer)` - Sube archivo a carpeta de tarea
+  - `downloadFileFromDrive(driveFileId)` - Descarga archivo como Buffer
+  - `deleteFileFromDrive(driveFileId)` - Elimina archivo individual
+  - `deleteTaskFolder(taskId)` - Elimina carpeta completa de tarea con contenido
+- Constante `MIRA_FOLDER_ID` exportada para uso en otras partes de la app
+- Validación de env vars con mensajes de error claros
+- Build y lint pasan sin errores (12 warnings preexistentes)
