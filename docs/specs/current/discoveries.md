@@ -262,3 +262,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Función auxiliar `getDurationMs()` para cálculos que necesitan el valor numérico
 - completedAt opcional: si es null/undefined, usa new Date() (tiempo actual) para duración en vivo
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 14 - 2026-01-22
+**Task:** 4.2 - Mostrar duración en TaskCard
+**Files:** components/task-card.tsx, app/actions/kanban.ts
+**Patterns:**
+- Usar `useEffect` con `setInterval` para timer en vivo en tareas in_progress
+- Usar `useState` con dummy counter para forzar re-render: `const [, forceUpdate] = useState(0)`
+- Cleanup de interval en return de useEffect para evitar memory leaks
+- Condicional triple en JSX para 3 estados: done (verde), in_progress (amber pulse), default (status dot)
+- Clase `animate-pulse` de Tailwind para efecto de pulsación en tiempo vivo
+**Notes:**
+- Tarea 4.2 requería datos de startedAt/completedAt que no estaban en KanbanTaskData
+- Se adelantó parte de 4.4 (agregar campos al tipo y query) para habilitar la funcionalidad
+- Timer actualiza cada 60 segundos (60000ms) para balance entre precisión y performance
+- Icono Clock de lucide-react agregado para indicador visual de duración
+- Colores: emerald-400 para completado, amber-400 para en progreso
+- Build y lint pasan sin errores (12 warnings preexistentes)
