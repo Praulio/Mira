@@ -430,3 +430,22 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Selectores usados: `.text-amber-400` (in_progress), `.text-emerald-400` (done), `.bg-amber-500\\/10`, `.bg-emerald-500\\/10`
 - Verificación de animate-pulse class para timer en vivo
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 24 - 2026-01-22
+**Task:** 7.2 - Crear tests E2E para bloqueo de tareas Done
+**Files:** e2e/task-done-blocking.spec.ts (nuevo)
+**Patterns:**
+- Seguir pattern de task-time-tracking.spec.ts para estructura de tests E2E
+- Usar `page.waitForSelector('text=...')` para verificar toasts de error
+- Verificar que elemento NO existe con `await expect(locator).not.toBeVisible()`
+- Probar todos los destinos posibles (In Progress, Backlog, Todo) para cobertura completa
+**Notes:**
+- 4 tests creados para cubrir bloqueo de tareas completadas:
+  1. Tarea completada no puede moverse a In Progress (con verificación de toast error)
+  2. Tarea completada no puede moverse a Backlog
+  3. Tarea completada no puede moverse a Todo
+  4. Tareas no completadas aún pueden moverse normalmente (control positivo)
+- Mensaje de error verificado: "Las tareas completadas no se pueden mover"
+- Cada test verifica que la tarea permanece en columna Done tras intento de drag fallido
+- Test de control positivo verifica que bloqueo solo aplica a tareas Done
+- Build y lint pasan sin errores (12 warnings preexistentes)

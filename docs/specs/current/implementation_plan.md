@@ -216,7 +216,7 @@ Validación Fase 6:
   - Comportamiento: Crear tarea → drag a In Progress → verificar startedAt → completar → verificar duración
   - Referencia: ver tests/e2e/ para patterns existentes de Playwright
 
-- [ ] **7.2** Crear tests E2E para bloqueo de tareas Done
+- [x] **7.2** Crear tests E2E para bloqueo de tareas Done
   - Input: Nuevo archivo tests/e2e/task-done-blocking.spec.ts
   - Output: Tests que verifican que tareas Done no se pueden mover
   - Comportamiento: Completar tarea → intentar drag → verificar toast error → verificar posición no cambió
