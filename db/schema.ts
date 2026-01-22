@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, uuid, pgEnum, jsonb, index, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, uuid, pgEnum, jsonb, index, boolean, type AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /**
  * Enum for task status
@@ -51,12 +51,15 @@ export const tasks = pgTable('tasks', {
   completionNotes: text('completion_notes'),
   completionLinks: jsonb('completion_links').$type<string[]>(),
   completionMentions: jsonb('completion_mentions').$type<string[]>(),
+  startedAt: timestamp('started_at'), // When task moved to In Progress
+  parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }), // For derived tasks
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
   assigneeIdx: index('tasks_assignee_idx').on(table.assigneeId),
   statusIdx: index('tasks_status_idx').on(table.status),
   creatorIdx: index('tasks_creator_idx').on(table.creatorId),
+  parentTaskIdx: index('tasks_parent_task_idx').on(table.parentTaskId),
 }));
 
 /**

@@ -86,3 +86,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Lint tiene 12 warnings preexistentes pero 0 errores
 - Build exitoso con Next.js 16.1.2 (Turbopack)
 - Fase 0 completada, lista para Fase 1 (Schema y migraciones)
+
+### Session 3 - 2026-01-22
+**Task:** 1.1 - Agregar campos startedAt y parentTaskId a tabla tasks
+**Files:** db/schema.ts
+**Patterns:**
+- Self-referencing FK requiere `AnyPgColumn` type import de drizzle-orm/pg-core
+- Sintaxis: `uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' })`
+- Índice agregado para parentTaskId para queries de tareas derivadas
+**Notes:**
+- Campo startedAt: timestamp nullable, se llena cuando tarea pasa a In Progress
+- Campo parentTaskId: uuid nullable, referencia a tarea padre para tareas derivadas
+- onDelete: 'set null' mantiene la tarea hija si la padre se elimina
+- Build y lint pasan sin errores
