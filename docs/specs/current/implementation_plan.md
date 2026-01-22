@@ -241,7 +241,7 @@ Validación Fase 7:
 
 ## Fase 8: Peer Review - Auditoría de Seguridad
 
-- [ ] **8.1** Auditar integración Google Drive
+- [x] **8.1** Auditar integración Google Drive
   - Input: lib/google-drive.ts, app/actions/attachments.ts
   - Output: Reporte de seguridad documentado en discoveries.md
   - Verificar: Credentials no expuestas, validación de inputs, manejo de errores seguros

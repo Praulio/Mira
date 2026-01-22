@@ -489,3 +489,42 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Tests verifican ownership indirectamente: si el usuario actual creó la tarea, es owner
 - Fase 7 (QA/Testing - Playwright E2E) completada
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 27 - 2026-01-22
+**Task:** 8.1 - Auditar integración Google Drive
+**Files:** lib/google-drive.ts, app/actions/attachments.ts (auditados, no modificados)
+**Security Audit Report:**
+
+**lib/google-drive.ts:**
+| Item | Status | Descripción |
+|------|--------|-------------|
+| Credentials hardcoded | ✅ OK | Credenciales vienen de env vars (GOOGLE_SERVICE_ACCOUNT_KEY) |
+| Env var validation | ✅ OK | Se valida existencia antes de usar (líneas 19-25) |
+| Scope mínimo | ✅ OK | Usa `drive.file` que solo permite acceso a archivos creados por la app |
+| Query Injection | ⚠️ BAJO | taskId se interpola en query (líneas 57, 140) - mitigado por validación UUID upstream |
+| Secrets en logs | ✅ OK | No hay console.log de credentials o datos sensibles |
+| Nombres de archivo | ⚠️ INFO | fileName se pasa sin sanitizar a Drive API - Drive maneja esto internamente |
+
+**app/actions/attachments.ts:**
+| Item | Status | Descripción |
+|------|--------|-------------|
+| Autenticación | ✅ OK | Todas las funciones validan userId antes de proceder |
+| MIME type validation | ✅ OK | Lista explícita server-side con Zod refine (líneas 27-62) |
+| UUID validation | ✅ OK | Todos los IDs validados como UUID con Zod schemas |
+| Status check | ✅ OK | uploadAttachment/deleteAttachment verifican status !== 'done' |
+| Cleanup on failure | ✅ OK | Si DB insert falla, intenta eliminar archivo de Drive (líneas 159-164) |
+| Logging seguro | ✅ OK | Solo mensajes genéricos en logs, no datos de archivos |
+| Límite de tamaño | ℹ️ N/A | Sin límite por spec - podría agregarse en futuro para prevenir DoS |
+
+**Conclusión:**
+- No se encontraron vulnerabilidades críticas o altas
+- El riesgo de query injection en Drive API es BAJO porque:
+  - taskId siempre proviene de la base de datos (UUID generado por sistema)
+  - Zod valida formato UUID antes de llegar a google-drive.ts
+  - Google Drive API escapa caracteres especiales internamente
+- Recomendación futura: considerar añadir sanitización explícita de taskId en google-drive.ts como defensa en profundidad
+- Feature listo para producción desde perspectiva de seguridad de Google Drive
+
+**Notes:**
+- Auditoría pasiva (sin modificar código) según instrucciones de tarea 8.1
+- Verificación checklist: credentials no expuestas ✓, validación de inputs ✓, manejo de errores seguros ✓, no secrets en logs ✓, sanitización de nombres de archivo (delegado a Drive API) ✓
