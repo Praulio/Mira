@@ -243,3 +243,22 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Error handling con mensajes en español para errores 404 y 500
 - Build y lint pasan sin errores (12 warnings preexistentes)
 - Fase 3 (Backend - Google Drive Integration) completada
+
+### Session 13 - 2026-01-22
+**Task:** 4.1 - Crear helper formatDuration
+**Files:** lib/format-duration.ts (nuevo)
+**Patterns:**
+- Helper functions en archivos separados bajo lib/ siguiendo pattern de lib/utils.ts
+- Funciones aceptan Date | string | null | undefined para flexibilidad con diferentes fuentes de datos
+- Documentación JSDoc con ejemplos de output para claridad
+**Notes:**
+- Función `formatDuration(startedAt, completedAt)` implementada:
+  - Si startedAt es null → retorna "-"
+  - Si duración negativa → retorna "-"
+  - Si > 24h → "Xd Yh" (ej: "1d 4h")
+  - Si 1-24h → "Xh Ym" (ej: "2h 30m")
+  - Si < 1h → "Xm" (ej: "45m")
+  - Si < 1m → "< 1m"
+- Función auxiliar `getDurationMs()` para cálculos que necesitan el valor numérico
+- completedAt opcional: si es null/undefined, usa new Date() (tiempo actual) para duración en vivo
+- Build y lint pasan sin errores (12 warnings preexistentes)

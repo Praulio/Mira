@@ -116,7 +116,7 @@ Validación Fase 3:
 
 ## Fase 4: UI - Tracking de Tiempos
 
-- [ ] **4.1** Crear helper formatDuration
+- [x] **4.1** Crear helper formatDuration
   - Input: Nuevo archivo lib/format-duration.ts
   - Output: Función formatDuration(startedAt, completedAt) → "2h 30m" o "1d 4h"
   - Comportamiento: Si no hay startedAt retorna '-', si >24h muestra días
