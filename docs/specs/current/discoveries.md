@@ -74,3 +74,15 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Notes:**
 - Import verificado: `const { google } = require('googleapis')` funciona correctamente
 - 4 vulnerabilidades moderadas reportadas por npm audit (no críticas)
+
+### Session 2 - 2026-01-22
+**Task:** 0.2 - Agregar variables de entorno de ejemplo
+**Files:** .env.example
+**Patterns:**
+- Variables de entorno documentadas con comentarios explicativos
+- GOOGLE_SERVICE_ACCOUNT_KEY acepta JSON string (puede ser base64 o escaped)
+- CRON_SECRET generado con openssl rand -hex 32
+**Notes:**
+- Lint tiene 12 warnings preexistentes pero 0 errores
+- Build exitoso con Next.js 16.1.2 (Turbopack)
+- Fase 0 completada, lista para Fase 1 (Schema y migraciones)
