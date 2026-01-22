@@ -469,3 +469,23 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Tests requieren Google Drive API configurada para funcionar completamente
 - Toasts de éxito verificados: "subido correctamente" y "eliminado"
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 26 - 2026-01-22
+**Task:** 7.4 - Crear tests E2E para edición de completedAt
+**Files:** e2e/task-completed-at-edit.spec.ts (nuevo)
+**Patterns:**
+- Seguir pattern de task-time-tracking.spec.ts para estructura de tests E2E
+- Usar `input[type="datetime-local"]` para localizar el campo de edición de fecha
+- Usar `button[title="Guardar fecha"]` para localizar botón de guardar
+- Toast de éxito: "Fecha de completado actualizada"
+- Verificar atributo `max` del datetime-local para validar restricción de fechas futuras
+**Notes:**
+- 5 tests creados para cubrir funcionalidad de edición de completedAt:
+  1. Owner (creator) puede ver y tiene acceso al campo datetime-local para editar
+  2. Owner puede editar completedAt y guardar exitosamente (verificar toast)
+  3. Duración se actualiza cuando completedAt es editado (reopen dialog to verify)
+  4. Input datetime-local respeta restricción max (no fechas futuras)
+  5. Sección completedAt solo aparece para tareas en status 'done' (no para in_progress)
+- Tests verifican ownership indirectamente: si el usuario actual creó la tarea, es owner
+- Fase 7 (QA/Testing - Playwright E2E) completada
+- Build y lint pasan sin errores (12 warnings preexistentes)
