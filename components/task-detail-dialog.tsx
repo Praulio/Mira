@@ -6,10 +6,14 @@ import { useUser } from '@clerk/nextjs';
 import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
+import { getTaskAttachments } from '@/app/actions/attachments';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 import { CompleteTaskModal } from './complete-task-modal';
+import { FileDropzone } from './file-dropzone';
+import { AttachmentList } from './attachment-list';
 import { formatDuration } from '@/lib/format-duration';
+import { Paperclip } from 'lucide-react';
 
 type TaskDetailDialogProps = {
   task: KanbanTaskData;
@@ -37,13 +41,37 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   );
   const [isUpdatingCompletedAt, setIsUpdatingCompletedAt] = useState(false);
   const [isCreatingDerived, setIsCreatingDerived] = useState(false);
+  const [attachmentsList, setAttachmentsList] = useState<{
+    id: string;
+    taskId: string;
+    driveFileId: string;
+    name: string;
+    mimeType: string;
+    sizeBytes: number;
+    uploadedBy: string;
+    uploadedAt: Date;
+  }[]>([]);
 
   // Check if current user is owner (assignee or creator)
   const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
-  }, []);
+    // Load attachments when dialog opens
+    getTaskAttachments({ taskId: task.id }).then((result) => {
+      if (result.success && result.data) {
+        setAttachmentsList(result.data);
+      }
+    });
+  }, [task.id]);
+
+  // Function to reload attachments after upload/delete
+  async function reloadAttachments() {
+    const result = await getTaskAttachments({ taskId: task.id });
+    if (result.success && result.data) {
+      setAttachmentsList(result.data);
+    }
+  }
 
   async function handleSave() {
     setIsSaving(true);
@@ -290,6 +318,28 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               rows={6}
               className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none"
               placeholder="Add more context to this task..."
+            />
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-4 pt-4">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+              <Paperclip className="h-3 w-3" /> Adjuntos
+              {attachmentsList.length > 0 && (
+                <span className="text-xs font-bold text-muted-foreground/70">
+                  ({attachmentsList.length})
+                </span>
+              )}
+            </label>
+            <FileDropzone
+              taskId={task.id}
+              onUploadComplete={reloadAttachments}
+              disabled={task.status === 'done'}
+            />
+            <AttachmentList
+              attachments={attachmentsList}
+              onDelete={reloadAttachments}
+              readonly={task.status === 'done'}
             />
           </div>
         </div>

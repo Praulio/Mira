@@ -349,3 +349,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Icono Paperclip de lucide-react con contador solo visible cuando attachmentCount > 0
 - Color: text-muted-foreground/70 para no competir con indicadores de duración
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 19 - 2026-01-22
+**Task:** 5.4 - Integrar adjuntos en TaskDetailDialog
+**Files:** components/task-detail-dialog.tsx
+**Patterns:**
+- React Compiler detecta `setState` dentro de `useEffect` como cascading renders - evitar definir funciones async externas que llamen setState
+- Para carga inicial: usar `.then(setStateCallback)` directamente en useEffect como `getTaskAttachments({taskId}).then((result) => setAttachmentsList(result.data))`
+- Para reload tras acciones: definir función async separada (`reloadAttachments`) usada como callback en props de hijos
+- Combinar múltiples cargas de datos en un solo useEffect cuando comparten dependencias (teamUsers + attachments)
+**Notes:**
+- Sección "Adjuntos" agregada después de Description con etiqueta que incluye contador
+- FileDropzone recibe disabled={task.status === 'done'} para bloquear uploads en tareas completadas
+- AttachmentList recibe readonly={task.status === 'done'} para ocultar botón delete en tareas completadas
+- Imports agregados: FileDropzone, AttachmentList, getTaskAttachments, Paperclip
+- Estado attachmentsList mantiene lista de adjuntos cargada desde servidor
+- reloadAttachments se pasa a onUploadComplete y onDelete para refrescar lista tras cambios
+- Build y lint pasan sin errores (12 warnings preexistentes)

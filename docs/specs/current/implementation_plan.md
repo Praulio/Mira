@@ -169,7 +169,7 @@ Validación Fase 4:
   - Comportamiento: Mostrar solo si attachmentCount > 0
   - Nota: Requiere agregar attachmentCount al type KanbanTaskData
 
-- [ ] **5.4** Integrar adjuntos en TaskDetailDialog
+- [x] **5.4** Integrar adjuntos en TaskDetailDialog
   - Input: components/task-detail-dialog.tsx (después de descripción)
   - Output: Sección "Adjuntos" con FileDropzone + AttachmentList
   - Comportamiento: Dropzone disabled si status=done, lista readonly si done
