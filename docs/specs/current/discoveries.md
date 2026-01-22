@@ -155,3 +155,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Validación agregada en línea 155-159: si task.status === 'done', mostrar toast y return
 - Mensaje en español: "Las tareas completadas no se pueden mover"
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 8 - 2026-01-22
+**Task:** 2.3 - Crear función updateCompletedAt
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- Usar z.coerce.date() para parsear strings ISO a Date en Zod schemas
+- Validación de ownership con operador OR: `assigneeId === userId || creatorId === userId`
+- Refine de Zod para validación de fecha futura: `.refine((date) => date <= new Date(), 'mensaje')`
+- Metadata de activity incluye old/new values para auditoría
+**Notes:**
+- Schema updateCompletedAtSchema valida taskId (uuid) y completedAt (date <= now)
+- Función valida: auth, ownership (assignee OR creator), status === 'done'
+- Activity action 'updated' con metadata.field = 'completedAt' para distinguir de otros updates
+- Mensajes de error en español siguiendo convención UI del proyecto
+- Build y lint pasan sin errores (12 warnings preexistentes)
