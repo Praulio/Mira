@@ -366,3 +366,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Estado attachmentsList mantiene lista de adjuntos cargada desde servidor
 - reloadAttachments se pasa a onUploadComplete y onDelete para refrescar lista tras cambios
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 20 - 2026-01-22
+**Task:** 5.5 - Actualizar query para incluir attachmentCount
+**Files:** (ninguno - ya implementado en sesión 18)
+**Patterns:**
+- Tareas relacionadas pueden completarse juntas si el flujo de trabajo lo requiere
+- Verificar discoveries.md antes de implementar para detectar trabajo ya realizado
+**Notes:**
+- Tarea 5.5 fue completada durante la sesión 18 (Task 5.3) como parte del mismo cambio
+- La subquery de attachmentCount ya existe en app/actions/kanban.ts líneas 62-70
+- El campo attachmentCount ya está en el tipo KanbanTaskData línea 30
+- Fase 5 (UI - Adjuntos) completada
+- Build y lint pasan sin errores (12 warnings preexistentes)
