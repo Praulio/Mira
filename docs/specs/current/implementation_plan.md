@@ -210,7 +210,7 @@ Validación Fase 6:
 
 ## Fase 7: QA/Testing - Pruebas de Integración con Playwright
 
-- [ ] **7.1** Crear tests E2E para tracking de tiempos
+- [x] **7.1** Crear tests E2E para tracking de tiempos
   - Input: Nuevo archivo tests/e2e/task-time-tracking.spec.ts
   - Output: Tests que verifican flujo completo de tracking
   - Comportamiento: Crear tarea → drag a In Progress → verificar startedAt → completar → verificar duración

@@ -409,3 +409,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Error handling individual por archivo/carpeta para que fallas parciales no bloqueen el proceso completo
 - Fase 6 (Cron Job Cleanup) completada
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 23 - 2026-01-22
+**Task:** 7.1 - Crear tests E2E para tracking de tiempos
+**Files:** e2e/task-time-tracking.spec.ts (nuevo)
+**Patterns:**
+- Tests E2E en directorio `e2e/` siguiendo pattern de critical-flow.spec.ts
+- `page.setExtraHTTPHeaders({ 'x-e2e-test': 'true' })` para bypass de auth en tests
+- Usar `data-task-id` y `data-task-status` attributes para localizar y verificar estado de tareas
+- `test.step()` para organizar fases del test y mejorar reportes
+- `page.locator().dragTo()` para simular drag & drop en Playwright
+- `await page.waitForSelector('text=...')` para esperar toasts de confirmación
+**Notes:**
+- 5 tests creados para cubrir flujos de time tracking:
+  1. Captura startedAt al mover a In Progress
+  2. Muestra duración final al completar tarea
+  3. Muestra duración en TaskDetailDialog para tareas completadas
+  4. Muestra timer en vivo en TaskDetailDialog para tareas in_progress
+  5. Tarea sin pasar por In Progress no muestra duración (status dot en lugar de clock)
+- Selectores usados: `.text-amber-400` (in_progress), `.text-emerald-400` (done), `.bg-amber-500\\/10`, `.bg-emerald-500\\/10`
+- Verificación de animate-pulse class para timer en vivo
+- Build y lint pasan sin errores (12 warnings preexistentes)
