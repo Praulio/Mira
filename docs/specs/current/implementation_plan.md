@@ -156,7 +156,7 @@ Validación Fase 4:
   - Comportamiento: Arrastra/click → llama uploadAttachment → toast resultado → callback
   - Referencia: ver components/link-input.tsx para pattern de input con lista
 
-- [ ] **5.2** Crear componente AttachmentList
+- [x] **5.2** Crear componente AttachmentList
   - Input: Nuevo archivo components/attachment-list.tsx
   - Output: Lista de adjuntos con iconos, tamaño, download, delete
   - Props: { attachments, onDelete, readonly? }

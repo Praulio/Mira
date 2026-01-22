@@ -317,3 +317,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Subida secuencial de archivos con toast de éxito/error individual por archivo
 - Callback onUploadComplete se ejecuta si al menos un archivo se subió correctamente
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 17 - 2026-01-22
+**Task:** 5.2 - Crear componente AttachmentList
+**Files:** components/attachment-list.tsx (nuevo)
+**Patterns:**
+- Usar tipos explícitos para props en lugar de inferir de DB para flexibilidad del componente
+- Helper function `getFileIcon()` mapea MIME types a iconos de lucide-react (Image, Video, FileText, File)
+- Helper function `formatFileSize()` convierte bytes a formato legible (KB, MB, GB)
+- Botón delete con estado de carga individual (deletingId) para evitar doble-click
+**Notes:**
+- Props: attachments (array), onDelete (callback opcional), readonly (bloquea eliminación)
+- Link de descarga apunta a `/api/attachments/${id}/download` con atributo `download`
+- Cuando readonly=true, botón de eliminar no se muestra (para tareas completadas)
+- Iconos específicos: Image para imágenes, Video para videos, FileText para documentos, File para otros
+- Glassmorphism aplicado: bg-white/5, border-white/5, rounded-xl
+- Loader2 con animate-spin durante eliminación
+- Build y lint pasan sin errores (12 warnings preexistentes)
