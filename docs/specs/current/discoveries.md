@@ -226,3 +226,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Bloqueo de operaciones en tareas con status 'done' según spec
 - Mensajes de error en español siguiendo convención UI del proyecto
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 12 - 2026-01-22
+**Task:** 3.3 - Crear API route para descarga
+**Files:** app/api/attachments/[id]/download/route.ts (nuevo)
+**Patterns:**
+- Next.js 16+ con App Router usa `params: Promise<{ id: string }>` y requiere `await params` para acceder a los valores
+- Buffer no es directamente asignable a NextResponse body en Next.js 16, usar `new Uint8Array(buffer)` para conversión
+- Content-Disposition header con `encodeURIComponent(filename)` para nombres de archivo con caracteres especiales
+- Validar UUID format con regex antes de query a DB para evitar errores innecesarios
+**Notes:**
+- API route GET handler en `/api/attachments/[id]/download`
+- Valida autenticación con getAuth() antes de cualquier operación
+- Busca attachment en DB por ID, luego descarga de Drive con downloadFileFromDrive()
+- Headers: Content-Type (mimeType), Content-Length, Content-Disposition (attachment), Cache-Control (private)
+- Error handling con mensajes en español para errores 404 y 500
+- Build y lint pasan sin errores (12 warnings preexistentes)
+- Fase 3 (Backend - Google Drive Integration) completada
