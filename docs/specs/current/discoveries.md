@@ -587,3 +587,59 @@ The potential IDOR pattern is **ACCEPTABLE** for this application because:
 - Cron endpoint protected by CRON_SECRET Bearer token
 - IDOR is a design decision for team collaboration, not a vulnerability in this context
 - Build and lint pass without errors (12 preexisting warnings)
+
+### Session 29 - 2026-01-22
+**Task:** 8.3 - Auditar manejo de archivos
+**Files:** components/file-dropzone.tsx, components/attachment-list.tsx, app/api/attachments/[id]/download/route.ts, app/actions/attachments.ts, lib/google-drive.ts (auditados, no modificados)
+**Security Audit Report:**
+
+**MIME Type Validation:**
+| Item | Status | Description |
+|------|--------|-------------|
+| Server-side whitelist | ✅ OK | Explicit allowlist `ALLOWED_MIME_TYPES` in attachments.ts (lines 27-50) |
+| Zod validation | ✅ OK | mimeType validated with `.refine()` against whitelist (lines 58-61) |
+| Client-side bypass | ✅ MITIGATED | Server validates regardless of client-sent MIME type |
+| Magic byte validation | ⚠️ NOT IMPLEMENTED | MIME type trusted from client, not verified via magic bytes (LOW risk - files in Drive) |
+
+**Path Traversal Prevention:**
+| Item | Status | Description |
+|------|--------|-------------|
+| Server filesystem | ✅ N/A | Files never stored on server, only Google Drive |
+| TaskId as folder | ✅ OK | Always UUID (Zod validated), no user-controlled paths |
+| Filename handling | ✅ OK | Stored in DB, retrieved via UUID lookup, not filesystem paths |
+| Download route | ✅ OK | Uses `attachment.name` from DB, not URL parameters |
+
+**Content-Disposition Headers:**
+| Item | Status | Description |
+|------|--------|-------------|
+| Header type | ✅ OK | Uses `attachment` (forces download, no inline render) |
+| Filename encoding | ✅ OK | `encodeURIComponent(attachment.name)` prevents injection |
+| XSS via filename | ✅ MITIGATED | Proper encoding + React auto-escaping in UI |
+| Header injection | ✅ OK | Filename in quotes, special chars encoded |
+
+**Additional Checks:**
+| Item | Status | Description |
+|------|--------|-------------|
+| File size limit | ℹ️ BY DESIGN | No limit per spec (acceptable product decision) |
+| Double extension | ✅ LOW | Files in Drive, served as attachment, MIME validated |
+| XSS in attachment-list | ✅ OK | React auto-escapes, filename in `truncate` element |
+
+**Verification Checklist:**
+- ✅ MIME types validated server-side (Zod + whitelist)
+- ✅ No path traversal (no filesystem access, Drive API handles)
+- ✅ Content-Disposition headers secure (`attachment` + encoding)
+- ✅ No header injection (proper encoding)
+- ✅ No XSS via filenames (React escaping + URL encoding)
+
+**Recommendations (Future Hardening):**
+1. Magic byte validation - optional, LOW priority (Drive has malware scanning)
+2. Rate limiting on uploads - optional, acceptable per product decision
+3. Additional file scanning - optional enhancement
+
+**Conclusion:** File handling implementation is secure. No critical or high severity issues found.
+
+**Notes:**
+- All file operations go through Google Drive API, no local filesystem risk
+- MIME validation uses explicit whitelist, not blacklist
+- Content-Disposition `attachment` forces download, preventing script execution
+- Build and lint pass without errors (12 preexisting warnings)
