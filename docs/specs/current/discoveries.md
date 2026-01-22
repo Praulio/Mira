@@ -449,3 +449,23 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Cada test verifica que la tarea permanece en columna Done tras intento de drag fallido
 - Test de control positivo verifica que bloqueo solo aplica a tareas Done
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 25 - 2026-01-22
+**Task:** 7.3 - Crear tests E2E para adjuntos
+**Files:** e2e/task-attachments.spec.ts (nuevo)
+**Patterns:**
+- Usar `fileInput.setInputFiles()` de Playwright para simular upload de archivos con buffer
+- Buffer.from() para crear contenido de archivo de prueba en memoria (sin necesidad de archivos en disco)
+- Verificar toast de éxito con texto exacto: `"${filename}" subido correctamente`
+- Localizar elementos de lista de adjuntos por texto del nombre de archivo
+- Usar `button[title="Eliminar"]` para localizar botón de delete en AttachmentList
+**Notes:**
+- 5 tests creados para cubrir funcionalidad de adjuntos:
+  1. Upload de archivo y verificación en lista de adjuntos
+  2. Eliminación de archivo y verificación que desaparece de lista
+  3. Dropzone bloqueado en tareas completadas (mensaje "Adjuntos bloqueados en tareas completadas")
+  4. Icono clip aparece en task card cuando tiene adjuntos
+  5. Lista de adjuntos readonly en tareas completadas (sin botón eliminar, solo descargar)
+- Tests requieren Google Drive API configurada para funcionar completamente
+- Toasts de éxito verificados: "subido correctamente" y "eliminado"
+- Build y lint pasan sin errores (12 warnings preexistentes)
