@@ -143,3 +143,15 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - startedAt se resetea a null al mover de vuelta a backlog o todo
 - Si tarea ya tiene startedAt (re-entrada a in_progress), se mantiene el original
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 7 - 2026-01-22
+**Task:** 2.2 - Bloquear drag desde Done en kanban-board
+**Files:** components/kanban-board.tsx
+**Patterns:**
+- Validación de bloqueo se hace al inicio de handleDragEnd, después de encontrar la tarea
+- Early return con toast.error() sigue el patrón existente de manejo de errores
+- No se requiere actualización optimista porque el drag se bloquea antes de cualquier cambio de estado
+**Notes:**
+- Validación agregada en línea 155-159: si task.status === 'done', mostrar toast y return
+- Mensaje en español: "Las tareas completadas no se pueden mover"
+- Build y lint pasan sin errores (12 warnings preexistentes)

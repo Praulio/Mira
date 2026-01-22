@@ -153,6 +153,12 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       return;
     }
 
+    // Block dragging from Done - completed tasks cannot be moved
+    if (task.status === 'done') {
+      toast.error('Las tareas completadas no se pueden mover');
+      return;
+    }
+
     // Only update if status actually changed
     if (task.status === newStatus) {
       return;
