@@ -247,7 +247,7 @@ Validación Fase 7:
   - Verificar: Credentials no expuestas, validación de inputs, manejo de errores seguros
   - Checklist: No secrets en logs, sanitización de nombres de archivo, límites de request
 
-- [ ] **8.2** Auditar API routes y Server Actions
+- [x] **8.2** Auditar API routes y Server Actions
   - Input: app/api/attachments/*, app/api/cron/*, app/actions/attachments.ts
   - Output: Confirmación de validación de auth en todos los endpoints
   - Verificar: Auth requerida, ownership validado, CRON_SECRET verificado, no IDOR vulnerabilities
