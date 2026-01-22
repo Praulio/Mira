@@ -195,7 +195,7 @@ Validación Fase 5:
   - Output: Cron job configurado para /api/cron/cleanup-attachments a las 3am UTC
   - Referencia: Vercel docs cron syntax
 
-- [ ] **6.2** Crear API route del cron
+- [x] **6.2** Crear API route del cron
   - Input: Nuevo archivo app/api/cron/cleanup-attachments/route.ts
   - Output: GET handler que elimina adjuntos de tareas done +3 días
   - Comportamiento: Valida CRON_SECRET, busca tareas, elimina de Drive y DB, elimina carpetas

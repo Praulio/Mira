@@ -393,3 +393,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Schedule configurado para 3am UTC como especifica el spec
 - La API route `/api/cron/cleanup-attachments` será creada en tarea 6.2
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 22 - 2026-01-22
+**Task:** 6.2 - Crear API route del cron
+**Files:** app/api/cron/cleanup-attachments/route.ts (nuevo)
+**Patterns:**
+- Vercel cron jobs envían Authorization header con Bearer token, validar con `req.headers.get('authorization') !== 'Bearer ${secret}'`
+- Usar `NextResponse.json()` para respuestas con stats y errores estructurados
+- Query con `and()`, `eq()`, `isNotNull()`, `lte()` de drizzle-orm para filtrado compuesto
+- Cutoff date calculado con `setDate(getDate() - 3)` para 3 días atrás
+**Notes:**
+- Flujo de cleanup: encontrar tareas done con completedAt <= cutoffDate → eliminar archivos de Drive → eliminar registros de DB → eliminar carpetas de Drive
+- Retorna stats detallados: tasksProcessed, attachmentsDeleted, foldersDeleted, errors (opcional)
+- Logging con console.log/error para monitoreo en Vercel logs
+- Error handling individual por archivo/carpeta para que fallas parciales no bloqueen el proceso completo
+- Fase 6 (Cron Job Cleanup) completada
+- Build y lint pasan sin errores (12 warnings preexistentes)
