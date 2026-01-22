@@ -69,6 +69,14 @@ const updateCompletedAtSchema = z.object({
 });
 
 /**
+ * Zod schema for creating a derived task
+ */
+const createDerivedTaskSchema = z.object({
+  parentTaskId: z.string().uuid('Invalid parent task ID'),
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
+});
+
+/**
  * Zod schema for task metadata update (title/description)
  */
 const updateTaskMetadataSchema = z.object({
@@ -916,6 +924,132 @@ export async function updateCompletedAt(
     return {
       success: false,
       error: 'An unexpected error occurred while updating the completion date',
+    };
+  }
+}
+
+/**
+ * Server Action: Create a derived task
+ *
+ * Creates a new task that inherits from a completed parent task.
+ * Used when a completed task needs follow-up work.
+ * Inherits description and assignee from the parent task.
+ *
+ * @param input - Parent task ID and optional custom title
+ * @returns ActionResponse with created task data or error message
+ */
+export async function createDerivedTask(
+  input: z.infer<typeof createDerivedTaskSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to create tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = createDerivedTaskSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { parentTaskId, title } = validationResult.data;
+
+    // Fetch the parent task
+    const [parentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, parentTaskId))
+      .limit(1);
+
+    if (!parentTask) {
+      return {
+        success: false,
+        error: 'Tarea padre no encontrada',
+      };
+    }
+
+    // Parent task must be in 'done' status to create derived task
+    if (parentTask.status !== 'done') {
+      return {
+        success: false,
+        error: 'Solo se pueden crear tareas derivadas de tareas completadas',
+      };
+    }
+
+    // Execute creation in transaction
+    const result = await db.transaction(async (tx) => {
+      // Create derived task with inherited properties
+      const derivedTitle = title || `Seguimiento: ${parentTask.title}`;
+
+      const [newTask] = await tx
+        .insert(tasks)
+        .values({
+          title: derivedTitle,
+          description: parentTask.description,
+          assigneeId: parentTask.assigneeId,
+          creatorId: userId,
+          parentTaskId: parentTaskId,
+          status: 'backlog',
+        })
+        .returning();
+
+      if (!newTask) {
+        throw new Error('Failed to create derived task');
+      }
+
+      // Log activity for the new task creation
+      await tx.insert(activity).values({
+        taskId: newTask.id,
+        userId,
+        action: 'created',
+        metadata: {
+          title: newTask.title,
+          assigneeId: newTask.assigneeId,
+          derivedFrom: parentTaskId,
+          parentTaskTitle: parentTask.title,
+        },
+      });
+
+      // If assigned at creation, log assignment activity
+      if (newTask.assigneeId) {
+        await tx.insert(activity).values({
+          taskId: newTask.id,
+          userId,
+          action: 'assigned',
+          metadata: {
+            assigneeId: newTask.assigneeId,
+            taskTitle: newTask.title,
+          },
+        });
+      }
+
+      return newTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error creating derived task:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while creating the derived task',
     };
   }
 }

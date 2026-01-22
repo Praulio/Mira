@@ -72,7 +72,7 @@ Validación Fase 1:
   - Comportamiento: Solo assignee o creator pueden editar, validar fecha <= now()
   - Referencia: ver pattern de completeTask en mismo archivo
 
-- [ ] **2.4** Crear función createDerivedTask
+- [x] **2.4** Crear función createDerivedTask
   - Input: app/actions/tasks.ts (nueva función)
   - Output: Función que crea tarea con parentTaskId
   - Props: { parentTaskId: string, title?: string }

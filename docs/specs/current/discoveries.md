@@ -170,3 +170,21 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Activity action 'updated' con metadata.field = 'completedAt' para distinguir de otros updates
 - Mensajes de error en español siguiendo convención UI del proyecto
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 9 - 2026-01-22
+**Task:** 2.4 - Crear función createDerivedTask
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- Tareas derivadas heredan description y assignee del padre automáticamente
+- Título por defecto: `Seguimiento: ${parentTask.title}` si no se proporciona
+- Validar que tarea padre esté en status 'done' antes de crear derivada
+- Usar campo parentTaskId para enlazar tarea hija con tarea padre
+- Activity metadata incluye `derivedFrom` y `parentTaskTitle` para trazabilidad
+**Notes:**
+- Schema createDerivedTaskSchema valida parentTaskId (uuid requerido) y title (string opcional)
+- Función valida: auth, existencia de padre, status padre === 'done'
+- Tarea derivada se crea en status 'backlog' por defecto
+- Se registran dos activities: 'created' (con metadata de derivación) y 'assigned' (si hay assignee)
+- Mensajes de error en español siguiendo convención UI del proyecto
+- Build y lint pasan sin errores (12 warnings preexistentes)
+- Fase 2 (Backend - Tracking de Tiempos) completada
