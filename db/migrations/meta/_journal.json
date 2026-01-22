@@ -22,6 +22,13 @@
       "when": 1768856635766,
       "tag": "0002_true_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769109016990,
+      "tag": "0003_luxuriant_psynapse",
+      "breakpoints": true
     }
   ]
 }

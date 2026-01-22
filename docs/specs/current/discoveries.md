@@ -113,3 +113,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - driveFileId almacena el ID del archivo en Google Drive para operaciones de descarga/eliminación
 - sizeBytes como integer (máx ~2GB por archivo, suficiente para MVP)
 - Build y lint pasan sin errores
+
+### Session 5 - 2026-01-22
+**Task:** 1.3 - Ejecutar migración
+**Files:** db/migrations/0003_luxuriant_psynapse.sql (generated)
+**Patterns:**
+- `npm run db:generate` genera archivo SQL de migración automáticamente
+- `drizzle-kit push --force` aplica cambios sin confirmación interactiva
+- Migrations se numeran secuencialmente (0003 en este caso)
+**Notes:**
+- Migración aplicada a Neon DB exitosamente
+- Cambios aplicados:
+  - Tabla `attachments` creada con 8 columnas y 2 índices
+  - Columna `started_at` agregada a `tasks`
+  - Columna `parent_task_id` agregada a `tasks` con FK self-referencing
+  - Índice `tasks_parent_task_idx` creado
+- Fase 1 (Schema y Migraciones) completada
+- Build y lint pasan sin errores (12 warnings preexistentes)
