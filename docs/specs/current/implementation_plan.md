@@ -32,7 +32,7 @@ Validación Fase 0:
   - Comportamiento: parentTaskId referencia tasks.id con onDelete: 'set null'
   - Referencia: ver db/schema.ts:42-60 para pattern existente
 
-- [ ] **1.2** Crear tabla attachments
+- [x] **1.2** Crear tabla attachments
   - Input: db/schema.ts (después de tabla activity, línea 76)
   - Output: Tabla con id, taskId, driveFileId, name, mimeType, sizeBytes, uploadedBy, uploadedAt
   - Comportamiento: taskId FK a tasks con cascade delete, índice en taskId
