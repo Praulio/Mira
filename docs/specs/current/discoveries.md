@@ -99,3 +99,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Campo parentTaskId: uuid nullable, referencia a tarea padre para tareas derivadas
 - onDelete: 'set null' mantiene la tarea hija si la padre se elimina
 - Build y lint pasan sin errores
+
+### Session 4 - 2026-01-22
+**Task:** 1.2 - Crear tabla attachments
+**Files:** db/schema.ts
+**Patterns:**
+- Seguir pattern de tabla activity para estructura y índices
+- taskId con onDelete: 'cascade' para eliminar adjuntos cuando se elimina tarea
+- uploadedBy con onDelete: 'cascade' para integridad con users
+- Índices en taskId (búsqueda de adjuntos por tarea) y uploadedBy (auditoría)
+**Notes:**
+- Campos: id (uuid PK), taskId (FK cascade), driveFileId (text), name (text), mimeType (text), sizeBytes (int), uploadedBy (FK cascade), uploadedAt (timestamp)
+- driveFileId almacena el ID del archivo en Google Drive para operaciones de descarga/eliminación
+- sizeBytes como integer (máx ~2GB por archivo, suficiente para MVP)
+- Build y lint pasan sin errores

@@ -77,3 +77,20 @@ export const activity = pgTable('activity', {
   createdAtIdx: index('activity_created_at_idx').on(table.createdAt),
   userIdx: index('activity_user_idx').on(table.userId),
 }));
+
+/**
+ * Attachments table - files attached to tasks, stored in Google Drive
+ */
+export const attachments = pgTable('attachments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  driveFileId: text('drive_file_id').notNull(), // Google Drive file ID
+  name: text('name').notNull(), // Original filename
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  uploadedBy: text('uploaded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
+}, (table) => ({
+  taskIdx: index('attachments_task_idx').on(table.taskId),
+  uploadedByIdx: index('attachments_uploaded_by_idx').on(table.uploadedBy),
+}));
