@@ -238,12 +238,25 @@ export async function updateTaskStatus(
           );
       }
 
+      // Determine startedAt value based on status transition
+      // Capture startedAt when moving to in_progress, reset when moving back to backlog/todo
+      let startedAtValue: Date | null | undefined = undefined;
+
+      if (newStatus === 'in_progress' && !currentTask.startedAt) {
+        // First time entering in_progress - capture timestamp
+        startedAtValue = new Date();
+      } else if ((newStatus === 'backlog' || newStatus === 'todo') && currentTask.startedAt) {
+        // Moving back from in_progress - reset startedAt
+        startedAtValue = null;
+      }
+
       // Update the target task with the new status
       const [updatedTask] = await tx
         .update(tasks)
-        .set({ 
+        .set({
           status: newStatus,
           updatedAt: new Date(),
+          ...(startedAtValue !== undefined && { startedAt: startedAtValue }),
         })
         .where(eq(tasks.id, taskId))
         .returning();

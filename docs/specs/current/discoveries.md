@@ -130,3 +130,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
   - Índice `tasks_parent_task_idx` creado
 - Fase 1 (Schema y Migraciones) completada
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 6 - 2026-01-22
+**Task:** 2.1 - Modificar updateTaskStatus para capturar startedAt
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- Usar spread condicional `...(startedAtValue !== undefined && { startedAt: startedAtValue })` para solo actualizar campo cuando es necesario
+- Usar `undefined` para distinguir "no cambiar" de "cambiar a null"
+- Verificar currentTask.startedAt antes de capturar para evitar sobrescribir timestamp existente
+**Notes:**
+- startedAt se captura automáticamente al mover a in_progress (solo si no existe)
+- startedAt se resetea a null al mover de vuelta a backlog o todo
+- Si tarea ya tiene startedAt (re-entrada a in_progress), se mantiene el original
+- Build y lint pasan sin errores (12 warnings preexistentes)
