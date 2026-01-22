@@ -208,3 +208,21 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Constante `MIRA_FOLDER_ID` exportada para uso en otras partes de la app
 - Validación de env vars con mensajes de error claros
 - Build y lint pasan sin errores (12 warnings preexistentes)
+
+### Session 11 - 2026-01-22
+**Task:** 3.2 - Crear Server Actions para attachments
+**Files:** app/actions/attachments.ts (nuevo)
+**Patterns:**
+- Usar innerJoin para obtener datos de tablas relacionadas en una sola query (attachments + tasks para validar status)
+- Validar MIME types server-side con array de tipos permitidos y z.refine()
+- Base64 encoding para transferir archivos entre cliente y servidor
+- Cleanup on failure: si DB insert falla después de subir a Drive, intentar eliminar el archivo subido
+**Notes:**
+- Funciones implementadas:
+  - `uploadAttachment(input, fileData)` - Valida auth, mime type, status != done; sube a Drive; guarda en DB
+  - `deleteAttachment(input)` - Valida auth, status != done; elimina de Drive y DB
+  - `getTaskAttachments(input)` - Lista adjuntos de una tarea ordenados por uploadedAt
+- MIME types soportados: imágenes (jpeg, png, gif, webp, svg), videos (mp4, mov, avi, webm), documentos (pdf, doc/x, xls/x, ppt/x, txt, md)
+- Bloqueo de operaciones en tareas con status 'done' según spec
+- Mensajes de error en español siguiendo convención UI del proyecto
+- Build y lint pasan sin errores (12 warnings preexistentes)
