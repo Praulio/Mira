@@ -225,7 +225,7 @@ export async function updateTaskStatus(
       if (newStatus === 'in_progress' && currentTask.assigneeId) {
         await tx
           .update(tasks)
-          .set({ 
+          .set({
             status: 'todo',
             updatedAt: new Date(),
           })
@@ -238,13 +238,25 @@ export async function updateTaskStatus(
           );
       }
 
+      // Build update data for status change
+      const updateData: Partial<typeof tasks.$inferInsert> = {
+        status: newStatus,
+        updatedAt: new Date(),
+      };
+
+      // TIME TRACKING LOGIC:
+      // - Capture startedAt when moving to 'in_progress' (only if not already set)
+      // - Reset startedAt when moving back to 'backlog' or 'todo'
+      if (newStatus === 'in_progress' && !currentTask.startedAt) {
+        updateData.startedAt = new Date();
+      } else if (newStatus === 'backlog' || newStatus === 'todo') {
+        updateData.startedAt = null;
+      }
+
       // Update the target task with the new status
       const [updatedTask] = await tx
         .update(tasks)
-        .set({ 
-          status: newStatus,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(tasks.id, taskId))
         .returning();
 

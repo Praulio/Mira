@@ -132,3 +132,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Foreign keys con cascade correcto: attachments->tasks (cascade), attachments->users (cascade), tasks->tasks (set null)
 - Build y lint pasan sin errores nuevos (solo warnings pre-existentes)
 - Próximo paso: tarea 2.1 - Modificar updateTaskStatus para capturar startedAt
+
+### Session 6 - 2026-01-26
+
+**Task:** 2.1 - Modificar updateTaskStatus para capturar startedAt
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- Usar `Partial<typeof tasks.$inferInsert>` para construir objetos de actualización dinámicos de forma type-safe
+- Lógica condicional de timestamps debe ir dentro de la transacción para atomicidad
+- El patrón de "captura solo si vacío" (`!currentTask.startedAt`) evita sobrescribir datos válidos
+**Notes:**
+- Captura `startedAt = new Date()` cuando `newStatus === 'in_progress'` y campo está vacío
+- Resetea `startedAt = null` cuando se mueve a 'backlog' o 'todo' (el trabajo "reinicia")
+- La función `completeTask` NO necesita modificación - si se completa sin pasar por in_progress, `startedAt` permanece null y la UI mostrará "-"
+- Próximo paso: tarea 2.2 - Bloquear drag desde Done en kanban-board

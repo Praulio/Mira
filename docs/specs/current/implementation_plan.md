@@ -53,7 +53,7 @@ Validación Fase 1:
 
 ## Fase 2: Backend - Tracking de Tiempos
 
-- [ ] **2.1** Modificar updateTaskStatus para capturar startedAt
+- [x] **2.1** Modificar updateTaskStatus para capturar startedAt
   - Input: app/actions/tasks.ts función updateTaskStatus (buscar .set({ status:)
   - Output: Captura startedAt=now() si newStatus='in_progress' y !currentTask.startedAt
   - Comportamiento: Si vuelve a backlog/todo, resetear startedAt=null
