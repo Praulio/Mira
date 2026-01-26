@@ -7,7 +7,7 @@ Fecha: 2026-01-22
 
 ## Fase 0: Preparación y Dependencias
 
-- [ ] **0.1** Instalar paquete googleapis
+- [x] **0.1** Instalar paquete googleapis
   - Input: package.json actual
   - Output: googleapis instalado
   - Comando: `pnpm add googleapis`
