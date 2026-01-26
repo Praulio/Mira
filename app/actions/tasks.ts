@@ -70,6 +70,15 @@ const updateCompletedAtSchema = z.object({
 });
 
 /**
+ * Zod schema for creating a derived task
+ * A derived task links to a parent task via parentTaskId
+ */
+const createDerivedTaskSchema = z.object({
+  parentTaskId: z.string().uuid('Invalid parent task ID'),
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
+});
+
+/**
  * Zod schema for task metadata update (title/description)
  */
 const updateTaskMetadataSchema = z.object({
@@ -925,3 +934,127 @@ export async function updateCompletedAt(
   }
 }
 
+/**
+ * Server Action: Create a derived task
+ *
+ * Creates a new task linked to a parent task via parentTaskId.
+ * Used when a completed task needs follow-up work without "reopening" it.
+ *
+ * Behavior:
+ * - Inherits description and assignee from parent task
+ * - Custom title optional (defaults to "Continuación: {parentTitle}")
+ * - New task starts in 'backlog' status
+ * - Logs activity with derivedFrom metadata
+ *
+ * @param input - Parent task ID and optional custom title
+ * @returns ActionResponse with created task data or error message
+ */
+export async function createDerivedTask(
+  input: z.infer<typeof createDerivedTaskSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to create tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = createDerivedTaskSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { parentTaskId, title: customTitle } = validationResult.data;
+
+    // Fetch the parent task
+    const [parentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, parentTaskId))
+      .limit(1);
+
+    if (!parentTask) {
+      return {
+        success: false,
+        error: 'Tarea padre no encontrada',
+      };
+    }
+
+    // Generate title: custom or "Continuación: {parentTitle}"
+    const derivedTitle = customTitle || `Continuación: ${parentTask.title}`;
+
+    // Execute creation in transaction
+    const result = await db.transaction(async (tx) => {
+      // Insert derived task
+      const [newTask] = await tx
+        .insert(tasks)
+        .values({
+          title: derivedTitle,
+          description: parentTask.description,
+          assigneeId: parentTask.assigneeId,
+          creatorId: userId,
+          parentTaskId: parentTaskId,
+          status: 'backlog',
+        })
+        .returning();
+
+      if (!newTask) {
+        throw new Error('Failed to create derived task');
+      }
+
+      // Log activity for the new task
+      await tx.insert(activity).values({
+        taskId: newTask.id,
+        userId,
+        action: 'created',
+        metadata: {
+          title: newTask.title,
+          assigneeId: newTask.assigneeId,
+          derivedFrom: parentTaskId,
+          parentTaskTitle: parentTask.title,
+        },
+      });
+
+      // If inherited assignee, log assignment activity
+      if (newTask.assigneeId) {
+        await tx.insert(activity).values({
+          taskId: newTask.id,
+          userId,
+          action: 'assigned',
+          metadata: {
+            assigneeId: newTask.assigneeId,
+            taskTitle: newTask.title,
+            inheritedFrom: parentTaskId,
+          },
+        });
+      }
+
+      return newTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error creating derived task:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while creating the derived task',
+    };
+  }
+}

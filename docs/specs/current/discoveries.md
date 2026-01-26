@@ -177,3 +177,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Mensajes de error en español para consistencia con UI
 - La UI necesitará un DateTimePicker para usar esta función (Task 4.3)
 - Próximo paso: tarea 2.4 - Crear función createDerivedTask
+
+### Session 9 - 2026-01-26
+
+**Task:** 2.4 - Crear función createDerivedTask
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- Las "tareas derivadas" usan `parentTaskId` para crear un thread sin "reabrir" la tarea completada
+- Heredar campos del padre (description, assigneeId) ahorra tiempo al usuario
+- El título por defecto "Continuación: {parentTitle}" indica claramente la relación
+- metadata.derivedFrom permite rastrear el linaje de tareas en activity logs
+**Notes:**
+- La función recibe `{ parentTaskId, title? }` - título es opcional
+- Nueva tarea comienza en 'backlog' (no hereda el status del padre)
+- Si el padre tenía assignee, se registra activity de 'assigned' con metadata.inheritedFrom
+- No se valida que el padre esté en 'done' - permite crear derivadas en cualquier momento
+- Próximo paso: Fase 3 - Backend Google Drive Integration (3.1)
