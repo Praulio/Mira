@@ -161,3 +161,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Mensaje: "Las tareas completadas no se pueden mover. Crea una tarea derivada si necesitas continuar el trabajo."
 - El bloqueo es unidireccional: solo desde Done hacia otros status (el drop TO done ya estaba permitido y abre el CompleteTaskModal)
 - Próximo paso: tarea 2.3 - Crear función updateCompletedAt
+
+### Session 8 - 2026-01-26
+
+**Task:** 2.3 - Crear función updateCompletedAt
+**Files:** app/actions/tasks.ts
+**Patterns:**
+- `z.coerce.date()` convierte strings ISO-8601 a Date automáticamente (útil para inputs de formularios)
+- Ownership validation se hace con OR: `assigneeId === userId || creatorId === userId`
+- El refine de Zod permite validaciones custom con mensajes personalizados en español
+- Registrar tanto oldValue como newValue en activity metadata para auditoría completa
+**Notes:**
+- Función solo edita completedAt de tareas ya en status 'done'
+- Valida que fecha no sea en el futuro con `date <= new Date()`
+- Mensajes de error en español para consistencia con UI
+- La UI necesitará un DateTimePicker para usar esta función (Task 4.3)
+- Próximo paso: tarea 2.4 - Crear función createDerivedTask

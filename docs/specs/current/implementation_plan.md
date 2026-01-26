@@ -65,7 +65,7 @@ Validación Fase 1:
   - Comportamiento: Mensaje "Las tareas completadas no se pueden mover"
   - Referencia: ver components/kanban-board.tsx:127-214
 
-- [ ] **2.3** Crear función updateCompletedAt
+- [x] **2.3** Crear función updateCompletedAt
   - Input: app/actions/tasks.ts (nueva función)
   - Output: Función que valida ownership y actualiza completedAt
   - Props: { taskId: string, completedAt: Date }

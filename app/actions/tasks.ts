@@ -58,6 +58,18 @@ const completeTaskSchema = z.object({
 });
 
 /**
+ * Zod schema for updating completedAt timestamp
+ * Only the owner (assignee or creator) can edit this value
+ */
+const updateCompletedAtSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+  completedAt: z.coerce.date().refine(
+    (date) => date <= new Date(),
+    'La fecha de finalización no puede ser en el futuro'
+  ),
+});
+
+/**
  * Zod schema for task metadata update (title/description)
  */
 const updateTaskMetadataSchema = z.object({
@@ -788,6 +800,127 @@ export async function completeTask(
     return {
       success: false,
       error: 'An unexpected error occurred while completing the task',
+    };
+  }
+}
+
+/**
+ * Server Action: Update completedAt timestamp
+ *
+ * Allows the owner (assignee or creator) to edit the completion timestamp
+ * of a task that is already in 'done' status.
+ *
+ * Rules:
+ * - Only assignee or creator can edit completedAt
+ * - Task must be in 'done' status
+ * - New date cannot be in the future
+ *
+ * @param input - Task ID and new completedAt date
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function updateCompletedAt(
+  input: z.infer<typeof updateCompletedAtSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to update tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = updateCompletedAtSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, completedAt } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Verify task is in 'done' status
+    if (currentTask.status !== 'done') {
+      return {
+        success: false,
+        error: 'Solo se puede editar la fecha de finalización de tareas completadas',
+      };
+    }
+
+    // Verify ownership: user must be assignee OR creator
+    const isOwner = currentTask.assigneeId === userId || currentTask.creatorId === userId;
+
+    if (!isOwner) {
+      return {
+        success: false,
+        error: 'Solo el asignado o creador de la tarea puede editar la fecha de finalización',
+      };
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          completedAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to update task');
+      }
+
+      // Log the completedAt update in activity
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        metadata: {
+          taskTitle: updatedTask.title,
+          oldCompletedAt: currentTask.completedAt?.toISOString() || null,
+          newCompletedAt: completedAt.toISOString(),
+          fieldUpdated: 'completedAt',
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error updating completedAt:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating the completion date',
     };
   }
 }
