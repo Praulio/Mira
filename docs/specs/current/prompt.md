@@ -46,7 +46,12 @@ Actualizar `docs/specs/current/discoveries.md`:
 **Notes:** [observaciones para próxima sesión]
 ```
 
-### PASO 5: Commit
+### PASO 5: Marcar Completado
+Editar `implementation_plan.md`:
+- Cambiar `- [ ] **X.Y**` a `- [x] **X.Y**`
+
+### PASO 6: Commit Atómico
+**IMPORTANTE: Un solo commit con TODO (código + docs + plan)**
 ```bash
 git add .
 git commit -m "feat(task-enhancements): [task description]
@@ -55,10 +60,6 @@ Task [X.Y] completed
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
-
-### PASO 6: Marcar Completado
-Editar `implementation_plan.md`:
-- Cambiar `- [ ] **X.Y**` a `- [x] **X.Y**`
 
 ### PASO 7: Exit
 ```
