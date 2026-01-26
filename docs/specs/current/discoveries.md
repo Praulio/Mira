@@ -146,3 +146,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Resetea `startedAt = null` cuando se mueve a 'backlog' o 'todo' (el trabajo "reinicia")
 - La función `completeTask` NO necesita modificación - si se completa sin pasar por in_progress, `startedAt` permanece null y la UI mostrará "-"
 - Próximo paso: tarea 2.2 - Bloquear drag desde Done en kanban-board
+
+### Session 7 - 2026-01-26
+
+**Task:** 2.2 - Bloquear drag desde Done en kanban-board
+**Files:** components/kanban-board.tsx
+**Patterns:**
+- Bloquear drag en `handleDragEnd` es más limpio que en `handleDragStart`
+- En `handleDragEnd` ya tenemos acceso a `task.status` (el status original antes de cualquier cambio)
+- El early return antes de la actualización optimista evita cualquier parpadeo de UI
+- Incluir mensaje guía en el toast ("Crea una tarea derivada...") mejora UX
+**Notes:**
+- Check agregado después de verificar que la tarea existe y antes de cualquier actualización
+- Mensaje: "Las tareas completadas no se pueden mover. Crea una tarea derivada si necesitas continuar el trabajo."
+- El bloqueo es unidireccional: solo desde Done hacia otros status (el drop TO done ya estaba permitido y abre el CompleteTaskModal)
+- Próximo paso: tarea 2.3 - Crear función updateCompletedAt

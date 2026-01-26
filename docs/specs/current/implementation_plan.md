@@ -59,7 +59,7 @@ Validación Fase 1:
   - Comportamiento: Si vuelve a backlog/todo, resetear startedAt=null
   - Referencia: ver app/actions/tasks.ts líneas 180-286
 
-- [ ] **2.2** Bloquear drag desde Done en kanban-board
+- [x] **2.2** Bloquear drag desde Done en kanban-board
   - Input: components/kanban-board.tsx función handleDragEnd
   - Output: Si task.status === 'done', mostrar toast.error y return early
   - Comportamiento: Mensaje "Las tareas completadas no se pueden mover"
