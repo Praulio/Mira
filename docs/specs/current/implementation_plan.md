@@ -13,7 +13,7 @@ Fecha: 2026-01-22
   - Comando: `pnpm add googleapis`
   - Verificación: import funciona sin error
 
-- [ ] **0.2** Agregar variables de entorno de ejemplo
+- [x] **0.2** Agregar variables de entorno de ejemplo
   - Input: .env.example actual
   - Output: Variables GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_DRIVE_FOLDER_ID, CRON_SECRET agregadas
   - Referencia: ver .env.example líneas 1-18
