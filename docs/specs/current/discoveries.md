@@ -88,3 +88,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Variables agregadas: GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_DRIVE_FOLDER_ID, CRON_SECRET
 - Incluye instrucciones de dónde obtener cada valor en comentarios
 - La carpeta de Drive debe ser compartida con el Service Account email
+
+### Session 3 - 2026-01-26
+
+**Task:** 1.1 - Agregar campos startedAt y parentTaskId a tabla tasks
+**Files:** db/schema.ts
+**Patterns:**
+- Self-referencing FK en Drizzle requiere `AnyPgColumn` type con callback: `(): AnyPgColumn => tasks.id`
+- El import debe ser `type AnyPgColumn` (type-only import)
+- Agregar índice en FKs que serán usadas en queries frecuentes (parentTaskId)
+**Notes:**
+- startedAt: timestamp nullable - se llena cuando tarea pasa a "in_progress"
+- parentTaskId: uuid nullable - referencia a tarea padre si es derivada, onDelete: 'set null'
+- Próximo paso: tarea 1.2 - Crear tabla attachments

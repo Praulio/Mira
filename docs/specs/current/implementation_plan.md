@@ -26,7 +26,7 @@ Validación Fase 0:
 
 ## Fase 1: Schema y Migraciones
 
-- [ ] **1.1** Agregar campos startedAt y parentTaskId a tabla tasks
+- [x] **1.1** Agregar campos startedAt y parentTaskId a tabla tasks
   - Input: db/schema.ts línea 53 (después de completionMentions)
   - Output: Campos startedAt (timestamp nullable) y parentTaskId (uuid self-reference) agregados
   - Comportamiento: parentTaskId referencia tasks.id con onDelete: 'set null'
