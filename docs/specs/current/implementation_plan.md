@@ -38,7 +38,7 @@ Validación Fase 0:
   - Comportamiento: taskId FK a tasks con cascade delete, índice en taskId
   - Referencia: ver db/schema.ts:65-76 para pattern de tabla activity
 
-- [ ] **1.3** Ejecutar migración
+- [x] **1.3** Ejecutar migración
   - Input: Schema actualizado
   - Output: Tablas actualizadas en Neon DB
   - Comando: `pnpm db:generate && pnpm db:push`

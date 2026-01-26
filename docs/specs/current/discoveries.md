@@ -116,3 +116,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - driveFileId almacena referencia al archivo en Google Drive (no el archivo)
 - uploadedBy con cascade delete - si se elimina usuario, se eliminan sus uploads
 - Próximo paso: tarea 1.3 - Ejecutar migración
+
+### Session 5 - 2026-01-26
+
+**Task:** 1.3 - Ejecutar migración
+**Files:** db/migrations/0003_silly_stryfe.sql (generado)
+**Patterns:**
+- `pnpm db:generate` crea archivo SQL con cambios incrementales del schema
+- `pnpm db:push` aplica cambios directamente a Neon DB (vs `db:migrate` que usa tabla de migraciones)
+- "No changes detected" en push significa schema ya sincronizado
+- Drizzle nombra migraciones con formato `XXXX_adjective_name.sql`
+**Notes:**
+- Migración incluye: tabla attachments, campos started_at y parent_task_id en tasks
+- Índices creados: attachments_task_idx, attachments_uploaded_by_idx, tasks_parent_task_idx
+- Foreign keys con cascade correcto: attachments->tasks (cascade), attachments->users (cascade), tasks->tasks (set null)
+- Build y lint pasan sin errores nuevos (solo warnings pre-existentes)
+- Próximo paso: tarea 2.1 - Modificar updateTaskStatus para capturar startedAt
