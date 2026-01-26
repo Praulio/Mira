@@ -193,3 +193,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Si el padre tenía assignee, se registra activity de 'assigned' con metadata.inheritedFrom
 - No se valida que el padre esté en 'done' - permite crear derivadas en cualquier momento
 - Próximo paso: Fase 3 - Backend Google Drive Integration (3.1)
+
+### Session 10 - 2026-01-26
+
+**Task:** 3.1 - Crear cliente Google Drive
+**Files:** lib/google-drive.ts (nuevo)
+**Patterns:**
+- Singleton pattern para el cliente de Drive evita recrear auth en cada request
+- GoogleAuth con credentials directas (client_email, private_key) es más limpio que usar keyFile
+- Soporte dual para JSON string y base64 encoded keys facilita uso en diferentes entornos
+- Estructura de carpetas `Mira/tasks/{taskId}/` mantiene organización clara
+**Notes:**
+- Cliente exporta funciones: getGoogleDriveClient, getOrCreateTaskFolder, uploadFileToDrive, downloadFileFromDrive, deleteFileFromDrive, deleteTaskFolder, getFileMetadata
+- MIRA_FOLDER_ID se exporta como constante para uso en otras partes
+- findFolder y createFolder son funciones internas auxiliares
+- El scope 'https://www.googleapis.com/auth/drive' permite acceso completo (lectura/escritura)
+- Validación temprana de env vars con errores descriptivos
+- Próximo paso: tarea 3.2 - Crear Server Actions para attachments
