@@ -64,3 +64,14 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Próximos pasos:**
 - Ejecutar `./ralph-loop.sh`
 - Monitorear con `tail -f ralph-log.txt`
+
+### Session 1 - 2026-01-26
+
+**Task:** 0.1 - Instalar paquete googleapis
+**Files:** package.json, pnpm-lock.yaml
+**Patterns:**
+- pnpm add agrega a dependencies por defecto
+- googleapis v170.1.0 instalado correctamente
+**Notes:**
+- Import funciona: `const { google } = require("googleapis")`
+- Build y lint pasan sin errores nuevos
