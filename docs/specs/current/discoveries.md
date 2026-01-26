@@ -210,3 +210,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El scope 'https://www.googleapis.com/auth/drive' permite acceso completo (lectura/escritura)
 - Validación temprana de env vars con errores descriptivos
 - Próximo paso: tarea 3.2 - Crear Server Actions para attachments
+
+### Session 11 - 2026-01-26
+
+**Task:** 3.2 - Crear Server Actions para attachments
+**Files:** app/actions/attachments.ts (nuevo)
+**Patterns:**
+- Base64 encoding para enviar archivos via Server Actions evita complejidad de FormData multipart
+- Lista de ALLOWED_MIME_TYPES validada server-side con Zod refine() - nunca confiar en cliente
+- Cleanup pattern: si DB insert falla después de upload a Drive, intentar eliminar archivo huérfano
+- innerJoin para obtener attachment con taskStatus en una sola query evita N+1
+**Notes:**
+- Funciones exportadas: uploadAttachment, deleteAttachment, getTaskAttachments, deleteAllTaskAttachments
+- uploadAttachment bloquea si task.status === 'done' con mensaje "No se pueden agregar adjuntos a tareas completadas"
+- deleteAttachment también bloquea para tareas completadas
+- deleteAllTaskAttachments es función interna para cleanup - no requiere auth check ya que será llamada internamente
+- Lint warning corregido: import `and` no usado fue removido
+- Próximo paso: tarea 3.3 - Crear API route para descarga

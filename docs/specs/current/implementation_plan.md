@@ -95,7 +95,7 @@ Validación Fase 2:
   - Comportamiento: Usa googleapis con Service Account credentials de env
   - Referencia: ver lib/mock-auth.ts para pattern de singleton
 
-- [ ] **3.2** Crear Server Actions para attachments
+- [x] **3.2** Crear Server Actions para attachments
   - Input: Nuevo archivo app/actions/attachments.ts
   - Output: Funciones uploadAttachment, deleteAttachment, getTaskAttachments
   - Comportamiento: uploadAttachment crea carpeta por taskId, valida mime types, bloquea si status=done
