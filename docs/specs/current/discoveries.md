@@ -75,3 +75,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Notes:**
 - Import funciona: `const { google } = require("googleapis")`
 - Build y lint pasan sin errores nuevos
+
+### Session 2 - 2026-01-26
+
+**Task:** 0.2 - Agregar variables de entorno de ejemplo
+**Files:** .env.example
+**Patterns:**
+- Variables de entorno server-side no llevan prefix NEXT_PUBLIC_
+- Service Account keys pueden ser JSON string o base64 encoded
+- CRON_SECRET se genera con `openssl rand -hex 32`
+**Notes:**
+- Variables agregadas: GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_DRIVE_FOLDER_ID, CRON_SECRET
+- Incluye instrucciones de dónde obtener cada valor en comentarios
+- La carpeta de Drive debe ser compartida con el Service Account email
