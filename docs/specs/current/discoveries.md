@@ -101,3 +101,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - startedAt: timestamp nullable - se llena cuando tarea pasa a "in_progress"
 - parentTaskId: uuid nullable - referencia a tarea padre si es derivada, onDelete: 'set null'
 - Próximo paso: tarea 1.2 - Crear tabla attachments
+
+### Session 4 - 2026-01-26
+
+**Task:** 1.2 - Crear tabla attachments
+**Files:** db/schema.ts
+**Patterns:**
+- Tabla attachments sigue patrón de tabla activity: uuid PK, FK a tasks, timestamps
+- onDelete: 'cascade' en taskId para eliminar adjuntos automáticamente con la tarea
+- Índice en taskId es crítico para queries "obtener adjuntos de tarea X"
+- sizeBytes como integer soporta hasta ~2GB por archivo
+**Notes:**
+- Campos: id, taskId, driveFileId, name, mimeType, sizeBytes, uploadedBy, uploadedAt
+- driveFileId almacena referencia al archivo en Google Drive (no el archivo)
+- uploadedBy con cascade delete - si se elimina usuario, se eliminan sus uploads
+- Próximo paso: tarea 1.3 - Ejecutar migración
