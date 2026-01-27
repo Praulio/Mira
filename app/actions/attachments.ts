@@ -49,6 +49,12 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 /**
+ * Maximum file size in bytes (50MB)
+ * Base64 encoding increases size by ~37%, so we validate the decoded size
+ */
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+
+/**
  * Zod schema for uploading an attachment
  */
 const uploadAttachmentSchema = z.object({
@@ -58,7 +64,16 @@ const uploadAttachmentSchema = z.object({
     (type) => ALLOWED_MIME_TYPES.includes(type),
     'Tipo de archivo no permitido'
   ),
-  fileBase64: z.string().min(1, 'File content is required'),
+  fileBase64: z.string()
+    .min(1, 'File content is required')
+    .refine(
+      (base64) => {
+        // Calculate approximate decoded size (base64 is ~1.37x larger than binary)
+        const estimatedSize = Math.ceil(base64.length * 0.75);
+        return estimatedSize <= MAX_FILE_SIZE_BYTES;
+      },
+      `El archivo excede el límite de 50MB`
+    ),
 });
 
 /**

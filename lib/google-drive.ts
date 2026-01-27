@@ -54,7 +54,8 @@ export function getGoogleDriveClient(): drive_v3.Drive {
       client_email: credentials.client_email,
       private_key: credentials.private_key,
     },
-    scopes: ['https://www.googleapis.com/auth/drive'],
+    // Use drive.file scope for least privilege - only access files created by this app
+    scopes: ['https://www.googleapis.com/auth/drive.file'],
   });
 
   driveClient = google.drive({ version: 'v3', auth });
@@ -81,6 +82,14 @@ export async function getOrCreateTaskFolder(taskId: string): Promise<string> {
 }
 
 /**
+ * Escape single quotes in strings for Google Drive API queries.
+ * Prevents query injection attacks.
+ */
+function escapeQueryString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/**
  * Find a folder by name within a parent folder.
  */
 async function findFolder(
@@ -88,8 +97,12 @@ async function findFolder(
   name: string,
   parentId: string
 ): Promise<string | null> {
+  // Escape special characters to prevent query injection
+  const safeName = escapeQueryString(name);
+  const safeParentId = escapeQueryString(parentId);
+
   const response = await drive.files.list({
-    q: `name='${name}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `name='${safeName}' and '${safeParentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
     spaces: 'drive',
   });

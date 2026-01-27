@@ -12,19 +12,23 @@ import { downloadFileFromDrive } from '@/lib/google-drive';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Get authenticated user ID (supports E2E testing bypass)
+ * Get authenticated user ID (supports E2E testing bypass in non-production)
  */
 async function getAuthUserId(): Promise<string | null> {
-  // Check for E2E test header
-  try {
-    const headerList = await headers();
-    const isTest = headerList.get('x-e2e-test') === 'true';
+  // Check for E2E test header - ONLY in non-production environments
+  const isProduction = process.env.NODE_ENV === 'production';
 
-    if (isTest) {
-      return 'user_e2e_test_123';
+  if (!isProduction) {
+    try {
+      const headerList = await headers();
+      const isTest = headerList.get('x-e2e-test') === 'true';
+
+      if (isTest) {
+        return 'user_e2e_test_123';
+      }
+    } catch {
+      // Fallback if headers() fails
     }
-  } catch {
-    // Fallback if headers() fails
   }
 
   const { userId } = await auth();
