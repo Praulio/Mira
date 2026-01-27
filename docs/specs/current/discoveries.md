@@ -507,3 +507,70 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El mensaje de éxito es "Fecha de finalización actualizada"
 - Fase 7 (QA/Testing - Playwright E2E) completada
 - Próximo paso: Fase 8 - Peer Review (8.1)
+
+### Session 28 - 2026-01-26
+
+**Task:** 8.1 - Auditar integración Google Drive
+**Files:** lib/google-drive.ts, app/actions/attachments.ts (review only - no changes)
+**Security Audit Report:**
+
+**Overall Risk Assessment: MEDIUM**
+
+| Severidad | Cantidad |
+|-----------|----------|
+| Critical | 0 |
+| High | 2 |
+| Medium | 3 |
+| Low | 3 |
+| Info | 4 |
+
+**HIGH SEVERITY:**
+1. **H1: Query Injection Risk en Google Drive API** (lib/google-drive.ts:91-95)
+   - `findFolder()` usa string interpolation: `name='${name}'`
+   - Si `name` contiene comillas simples, podría manipular la query
+   - Mitigación actual: `name` es hardcoded ('tasks') o UUID validado
+   - Recomendación: Escapar comillas simples o usar función interna (no exportar)
+
+2. **H2: Scope de API excesivamente amplio** (lib/google-drive.ts:57)
+   - Usa `https://www.googleapis.com/auth/drive` (acceso total)
+   - Recomendación: Cambiar a `drive.file` (solo archivos creados por la app)
+   - Nota: Ya documentado en plans/feat-task-enhancements-tracking-attachments.md:374
+
+**MEDIUM SEVERITY:**
+1. **M1: IDOR Vulnerability** (app/actions/attachments.ts)
+   - Attachment operations no verifican ownership de la tarea
+   - Cualquier usuario autenticado puede acceder adjuntos de cualquier tarea
+   - Recomendación: Agregar check de ownership como en tasks.ts:879
+
+2. **M2: E2E Test Bypass Header** (lib/mock-auth.ts:16-21)
+   - Header `x-e2e-test: true` bypassa auth sin verificar NODE_ENV
+   - Recomendación: Agregar check `NODE_ENV !== 'production'`
+
+3. **M3: Sin límite de tamaño de archivo** (app/actions/attachments.ts)
+   - Zod no valida tamaño máximo de fileBase64
+   - Recomendación: Agregar validación de tamaño (ej: 50MB max)
+
+**LOW SEVERITY:**
+1. **L1: Error details en cron response** (app/api/cron/cleanup-attachments/route.ts:124-131)
+2. **L2: Missing security headers en download** (nosniff, X-Frame-Options)
+3. **L3: Task ID usado directamente como nombre de carpeta**
+
+**CONFIRMADO CORRECTO:**
+- ✅ Credentials via environment variables (no hardcoded)
+- ✅ Singleton pattern apropiado para credentials
+- ✅ Error messages genéricos para usuarios
+- ✅ Input validation con Zod (UUIDs, MIME types, file names)
+- ✅ Auth check en todas las server actions
+- ✅ CSRF protection via Next.js Server Actions
+
+**Patterns:**
+- Security audits deben usar agentes especializados para análisis profundo
+- IDOR es común en aplicaciones multi-tenant - siempre verificar ownership
+- Scopes de APIs externas deben seguir principio de mínimo privilegio
+- Test bypasses deben estar condicionados a entorno de desarrollo
+
+**Notes:**
+- Los issues encontrados son de conocimiento para futuras iteraciones
+- Esta tarea de auditoría es solo de REVIEW - no se hacen cambios de código
+- Los fixes se priorizarían como: M1 (IDOR) > H2 (scope) > M2 (test bypass) > resto
+- Próximo paso: tarea 8.2 - Auditar API routes y Server Actions
