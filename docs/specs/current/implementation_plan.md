@@ -134,7 +134,7 @@ Validación Fase 3:
   - Comportamiento: DateTimePicker para completedAt solo si isOwner, botón crear derivada si done
   - Referencia: ver components/task-detail-dialog.tsx:166-196
 
-- [ ] **4.4** Actualizar query getKanbanData para incluir startedAt
+- [x] **4.4** Actualizar query getKanbanData para incluir startedAt
   - Input: app/actions/kanban.ts función getKanbanData
   - Output: Incluir startedAt en select de tasks
   - Referencia: ver app/actions/kanban.ts

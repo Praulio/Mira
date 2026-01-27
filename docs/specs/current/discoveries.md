@@ -294,3 +294,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Labels traducidos a español: Creada, Última actualización, Iniciada, Completada, Duración, Cerrar, Guardar
 - Requiere que tarea 4.4 agregue startedAt/completedAt al tipo KanbanTaskData para funcionar completamente
 - Próximo paso: tarea 4.4 - Actualizar query getKanbanData para incluir startedAt
+
+### Session 16 - 2026-01-26
+
+**Task:** 4.4 - Actualizar query getKanbanData para incluir startedAt
+**Files:** app/actions/kanban.ts
+**Patterns:**
+- Agregar campos al tipo `KanbanTaskData` permite que los componentes que lo consumen tengan tipado correcto
+- El select de Drizzle acepta nuevos campos sin romper queries existentes
+- Agregar tanto `startedAt` como `completedAt` al tipo centralizado elimina necesidad de extensiones de tipo (`& { startedAt?, completedAt? }`) en componentes
+**Notes:**
+- Type KanbanTaskData ahora incluye: `startedAt: Date | null`, `completedAt: Date | null`
+- Query select actualizada con `startedAt: tasks.startedAt` y `completedAt: tasks.completedAt`
+- Objeto retornado en el map incluye ambos campos
+- Con esta tarea completada, TaskCard y TaskDetailDialog tienen acceso directo a los datos sin extensiones de tipo
+- Fase 4 (UI Tracking de Tiempos) completada - próximo paso: Fase 5 (UI Adjuntos)

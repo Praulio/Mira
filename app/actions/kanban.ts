@@ -25,6 +25,8 @@ export type KanbanTaskData = {
   };
   createdAt: Date;
   updatedAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
 };
 
 /**
@@ -70,6 +72,8 @@ export async function getKanbanData(): Promise<KanbanData> {
         creatorId: tasks.creatorId,
         createdAt: tasks.createdAt,
         updatedAt: tasks.updatedAt,
+        startedAt: tasks.startedAt,
+        completedAt: tasks.completedAt,
       })
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
@@ -106,6 +110,8 @@ export async function getKanbanData(): Promise<KanbanData> {
           },
           createdAt: task.createdAt,
           updatedAt: task.updatedAt,
+          startedAt: task.startedAt,
+          completedAt: task.completedAt,
         } as KanbanTaskData;
       })
     );
