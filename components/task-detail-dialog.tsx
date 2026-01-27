@@ -125,6 +125,7 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     toast.success('Task updated');
     setIsSaving(false);
     router.refresh();
+    onClose();
   }
 
   async function handleDelete() {

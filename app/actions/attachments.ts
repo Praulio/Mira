@@ -31,11 +31,14 @@ const ALLOWED_MIME_TYPES = [
   'image/gif',
   'image/webp',
   'image/svg+xml',
+  'image/bmp',
+  'image/tiff',
   // Videos
   'video/mp4',
   'video/quicktime',
   'video/x-msvideo',
   'video/webm',
+  'video/mpeg',
   // Documents
   'application/pdf',
   'application/msword',
@@ -44,8 +47,18 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.ms-powerpoint',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  // Text/Code files
   'text/plain',
   'text/markdown',
+  'text/x-markdown', // Variante común de markdown (Chrome, algunos editores)
+  'text/csv',
+  'text/html',
+  'text/css',
+  'text/javascript',
+  'application/json',
+  'application/xml',
+  // Fallback para archivos con extensión válida pero MIME no reconocido
+  'application/octet-stream',
 ];
 
 /**

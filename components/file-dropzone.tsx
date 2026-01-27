@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { uploadAttachment } from '@/app/actions/attachments';
 import { cn } from '@/lib/utils';
 
 type FileDropzoneProps = {
@@ -16,8 +15,8 @@ type FileDropzoneProps = {
  * FileDropzone - Drag and drop file upload component
  *
  * Allows users to upload files by dragging them into the dropzone
- * or clicking to open the file browser. Uses base64 encoding to send
- * files to the server action.
+ * or clicking to open the file browser. Uses multipart/form-data
+ * for efficient upload of large files.
  */
 export function FileDropzone({
   taskId,
@@ -30,23 +29,8 @@ export function FileDropzone({
   const dragCounterRef = useRef(0);
 
   /**
-   * Converts a File to base64 string
-   */
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        // Remove the data URL prefix (e.g., "data:image/png;base64,")
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64 || '');
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  /**
-   * Handles file upload
+   * Handles file upload using FormData (multipart/form-data)
+   * This approach supports large files without base64 encoding overhead
    */
   const handleUpload = useCallback(
     async (files: FileList | File[]) => {
@@ -62,14 +46,16 @@ export function FileDropzone({
 
       for (const file of fileArray) {
         try {
-          const fileBase64 = await fileToBase64(file);
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('taskId', taskId);
 
-          const result = await uploadAttachment({
-            taskId,
-            fileName: file.name,
-            mimeType: file.type || 'application/octet-stream',
-            fileBase64,
+          const response = await fetch('/api/attachments/upload', {
+            method: 'POST',
+            body: formData,
           });
+
+          const result = await response.json();
 
           if (result.success) {
             successCount++;
