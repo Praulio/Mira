@@ -252,7 +252,7 @@ Validación Fase 7:
   - Output: Confirmación de validación de auth en todos los endpoints
   - Verificar: Auth requerida, ownership validado, CRON_SECRET verificado, no IDOR vulnerabilities
 
-- [ ] **8.3** Auditar manejo de archivos
+- [x] **8.3** Auditar manejo de archivos
   - Input: Componentes de upload y download
   - Output: Confirmación de validación de mime types y tamaños
   - Verificar: Mime types validados server-side, no path traversal, Content-Disposition headers seguros

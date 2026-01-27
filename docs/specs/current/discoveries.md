@@ -508,6 +508,173 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Fase 7 (QA/Testing - Playwright E2E) completada
 - Próximo paso: Fase 8 - Peer Review (8.1)
 
+### Session 30 - 2026-01-26
+
+**Task:** 8.3 - Auditar manejo de archivos
+**Files:** components/file-dropzone.tsx, components/attachment-list.tsx, app/actions/attachments.ts, app/api/attachments/[id]/download/route.ts (review only)
+
+**Security Audit Report - Manejo de Archivos:**
+
+**Overall Assessment: MEDIUM RISK**
+
+| Severidad | Cantidad |
+|-----------|----------|
+| Critical | 0 |
+| High | 0 |
+| Medium | 2 |
+| Low | 3 |
+| Info | 4 |
+
+---
+
+**MEDIUM SEVERITY:**
+
+1. **M1: MIME Type Spoofing - Solo validación de MIME type string** (attachments.ts:57-60)
+   - La validación solo verifica el string MIME type proporcionado por el cliente
+   - Un atacante puede enviar `mimeType: 'image/png'` con contenido de archivo ejecutable
+   - El navegador confía en el Content-Type al descargar, pero el contenido real puede ser diferente
+   - Impacto: Limitado porque files se descargan como `attachment` (no se ejecutan inline)
+   - Mitigación recomendada: Agregar validación de "magic bytes" (file signature) en server-side
+   - Ejemplo: `const realType = await fileTypeFromBuffer(fileBuffer);`
+
+2. **M2: Sin límite de tamaño de archivo** (attachments.ts:61, file-dropzone.tsx)
+   - El schema Zod no valida tamaño máximo de fileBase64
+   - El spec dice "Sin límite de cantidad o tamaño de archivos" pero esto es un riesgo
+   - Un archivo muy grande puede causar OOM en el servidor al convertir base64
+   - Mitigación recomendada: Agregar validación de tamaño:
+     ```
+     fileBase64: z.string().min(1).max(50 * 1024 * 1024 * 1.37) // ~50MB after base64
+     ```
+
+---
+
+**LOW SEVERITY:**
+
+1. **L1: Client-side accept attribute no es validación real** (file-dropzone.tsx:209)
+   - `accept="image/*,video/*,.pdf,..."` mejora UX pero NO es seguridad
+   - Fácilmente bypaseable con DevTools o llamada directa al server action
+   - Correctamente mitigado: La validación real ocurre en server-side con ALLOWED_MIME_TYPES
+
+2. **L2: Filename sanitization incompleta** (download/route.ts:98-100)
+   - Sanitización actual: `/[^\w\s.-]/g` → `_`
+   - Esto permite algunos caracteres que podrían causar problemas en sistemas de archivos específicos
+   - Caracteres `.` permitidos podrían permitir doble extensión: `file.jpg.exe` → `file_jpg.exe`
+   - Bajo riesgo porque es solo el nombre mostrado al descargar
+   - Mitigación: Considerar límite de longitud y una sola extensión
+
+3. **L3: Content-Disposition vulnerable a nombre de archivo largo** (download/route.ts:111)
+   - Nombres muy largos podrían truncarse o causar comportamiento inesperado
+   - La validación de fileName es max 255 (attachments.ts:56) lo cual es razonable
+   - Mitigación: La validación existente es suficiente
+
+---
+
+**INFO (Correctamente Implementado):**
+
+1. ✅ **Validación de MIME types en whitelist** (attachments.ts:27-49)
+   - Lista explícita de ALLOWED_MIME_TYPES (no regex)
+   - Incluye solo tipos seguros de archivos comunes
+   - Validación con Zod refine() en server-side
+
+2. ✅ **Sin Path Traversal posible**
+   - Task ID es UUID validado (attachments.ts:55)
+   - File name no se usa para crear rutas locales (va directo a Google Drive)
+   - La estructura de carpetas en Drive usa solo el taskId UUID
+   - El nombre de archivo se sanitiza antes de Content-Disposition
+
+3. ✅ **Content-Disposition: attachment** (download/route.ts:111)
+   - Usa `attachment` forzando descarga, no `inline`
+   - Esto previene que archivos HTML/SVG se ejecuten en el contexto del sitio
+   - Headers correctos: Content-Type, Content-Length, Cache-Control
+
+4. ✅ **Cleanup en caso de fallo** (attachments.ts:165-175)
+   - Si el insert en DB falla después de subir a Drive, intenta eliminar archivo huérfano
+   - Previene acumulación de archivos no referenciados
+
+---
+
+**MATRIZ DE SEGURIDAD - MANEJO DE ARCHIVOS:**
+
+| Control | Upload | Download | Delete | Estado |
+|---------|--------|----------|--------|--------|
+| Auth requerida | ✅ | ✅ | ✅ | OK |
+| MIME whitelist | ✅ server-side | N/A | N/A | OK |
+| UUID validation | ✅ taskId | ✅ attachmentId | ✅ attachmentId | OK |
+| Path traversal | ✅ prevenido | ✅ prevenido | N/A | OK |
+| Filename sanitization | N/A | ✅ Content-Disposition | N/A | OK |
+| Size limit | ⚠️ ninguno | N/A | N/A | RISK |
+| Magic bytes validation | ❌ no implementado | N/A | N/A | RISK |
+| XSS via inline content | N/A | ✅ attachment mode | N/A | OK |
+| Status check (done) | ✅ bloqueado | ✅ permitido (lectura) | ✅ bloqueado | OK |
+
+---
+
+**FLUJO DE DATOS VALIDADO:**
+
+```
+Cliente (FileDropzone)
+   │
+   ├── File → base64 encoding
+   ├── fileName: string (from File.name)
+   ├── mimeType: string (from File.type || 'application/octet-stream')
+   │
+   ▼
+Server Action (uploadAttachment)
+   │
+   ├── Zod validation: taskId UUID, fileName length, mimeType whitelist
+   ├── Auth check: userId required
+   ├── Task status check: blocks if 'done'
+   ├── base64 → Buffer conversion
+   │
+   ▼
+Google Drive (uploadFileToDrive)
+   │
+   ├── Creates folder if not exists: /Mira/tasks/{taskId}/
+   ├── Uploads with original fileName
+   │
+   ▼
+Database (attachments table)
+   │
+   └── Stores: driveFileId, name, mimeType, sizeBytes, uploadedBy
+```
+
+---
+
+**COMPARACIÓN CON OWASP FILE UPLOAD GUIDELINES:**
+
+| OWASP Recommendation | Estado | Notas |
+|---------------------|--------|-------|
+| Validate file extension | ⚠️ Parcial | MIME type validated, no extension check |
+| Validate file content (magic bytes) | ❌ No | Solo string MIME type |
+| Limit file size | ❌ No | No hay límite definido |
+| Use random file names | ✅ Sí | Google Drive genera ID único |
+| Store outside web root | ✅ Sí | Google Drive externo |
+| Scan for malware | ❌ No | No implementado |
+| Restrict file types | ✅ Sí | Whitelist de 18 MIME types |
+| Use Content-Disposition: attachment | ✅ Sí | Implementado correctamente |
+
+---
+
+**PRIORIZACIÓN DE MEJORAS (futuras iteraciones):**
+
+1. **P1:** Agregar límite de tamaño (50MB recomendado)
+2. **P2:** Agregar validación de magic bytes con `file-type` package
+3. **P3:** Considerar validación de extensión consistente con MIME type
+4. **P4 (opcional):** Integrar escaneo antivirus para uploads empresariales
+
+**Patterns:**
+- La validación client-side (accept attribute) es UX, no seguridad
+- MIME type spoofing es mitigado parcialmente por Content-Disposition: attachment
+- Path traversal imposible cuando se usa almacenamiento externo (Drive) con IDs únicos
+- Cleanup patterns previenen acumulación de datos huérfanos
+
+**Notes:**
+- Esta auditoría es solo de REVIEW - los hallazgos son para conocimiento
+- El riesgo general es MEDIUM porque no hay vectores de ejecución de código
+- Los archivos se descargan, no se ejecutan inline
+- La app es single-tenant actualmente, reduciendo el impacto de IDOR
+- Próximo paso: tarea 8.4 - Review final de código
+
 ### Session 28 - 2026-01-26
 
 **Task:** 8.1 - Auditar integración Google Drive
