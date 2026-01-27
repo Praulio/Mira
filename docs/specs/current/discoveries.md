@@ -244,3 +244,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Cache-Control: private, max-age=3600 permite caching por 1 hora en browser
 - Error 502 Bad Gateway para errores de Google Drive (upstream dependency)
 - Próximo paso: Fase 4 - UI Tracking de Tiempos (4.1)
+
+### Session 13 - 2026-01-26
+
+**Task:** 4.1 - Crear helper formatDuration
+**Files:** lib/format-duration.ts (nuevo)
+**Patterns:**
+- Type coercion flexible con `Date | string | null | undefined` para compatibilidad con datos de DB
+- Función pura sin side effects - ideal para testing unitario
+- Cascada de condiciones: días → horas → minutos → <1m para formato progresivo
+- Helper auxiliar `isTaskInProgress` para evitar duplicar lógica en componentes
+**Notes:**
+- formatDuration(startedAt, completedAt) retorna strings como "2h 30m", "1d 4h", "45m", "<1m"
+- Si no hay startedAt retorna "-" (tarea nunca pasó por In Progress)
+- Si no hay completedAt calcula tiempo transcurrido hasta ahora (live timer)
+- Diferencia negativa o cero retorna "-" (edge case de datos inconsistentes)
+- Próximo paso: tarea 4.2 - Mostrar duración en TaskCard
