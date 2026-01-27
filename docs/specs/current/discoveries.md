@@ -326,3 +326,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Estados visuales: default (gris), dragover (primary/blue), uploading (spinner), disabled (opacity 50%)
 - Toast success/error/warning según resultado de uploads
 - Próximo paso: tarea 5.2 - Crear componente AttachmentList
+
+### Session 18 - 2026-01-26
+
+**Task:** 5.2 - Crear componente AttachmentList
+**Files:** components/attachment-list.tsx (nuevo)
+**Patterns:**
+- Mapeo de MIME types a iconos: `image/*` → ImageIcon, `video/*` → Film, `application/pdf` → FileText, etc.
+- Formateo de bytes con logaritmos: `Math.floor(Math.log(bytes) / Math.log(1024))` para obtener el índice de unidad
+- Colores semánticos por tipo de archivo: azul=imágenes, rojo=PDF, verde=Excel, etc.
+- Patrón `group-hover:opacity-100` para mostrar botones de acción solo en hover
+**Notes:**
+- Props: `{ attachments, onDelete?, readonly? }`
+- Descarga abre nueva pestaña con `/api/attachments/[id]/download`
+- Eliminación usa `window.confirm()` para confirmación simple (no custom modal)
+- Estado `deletingId` previene múltiples clicks en el mismo botón
+- Si readonly=true, el botón de eliminar no se renderiza
+- Próximo paso: tarea 5.3 - Agregar icono clip en TaskCard
