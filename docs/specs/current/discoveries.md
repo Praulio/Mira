@@ -445,3 +445,22 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El test de "live duration" solo verifica presencia de `.animate-pulse`, no espera 60 segundos
 - Requiere data-testids existentes: `task-card-*`, `kanban-column-*`, `create-task-button`
 - Próximo paso: tarea 7.2 - Tests E2E para bloqueo de tareas Done
+
+### Session 25 - 2026-01-26
+
+**Task:** 7.2 - Crear tests E2E para bloqueo de tareas Done
+**Files:** e2e/task-done-blocking.spec.ts (nuevo)
+**Patterns:**
+- Verificar bloqueo de drag con estrategia de "intento + verificación de posición no cambió"
+- Usar `page.locator(\`[data-task-id="${taskId}"]\`)` para rastrear la misma tarea después de acciones
+- El toast de error se verifica con `text=Las tareas completadas no se pueden mover` (subcadena del mensaje)
+- Para verificar que task NO está en columna: `await expect(column.locator(...)).not.toBeVisible()`
+**Notes:**
+- 4 tests creados:
+  1. "completed task cannot be dragged to another column" - flujo completo Done → In Progress
+  2. "completed task cannot be dragged to Backlog" - verifica bloqueo a Backlog
+  3. "completed task cannot be dragged to To Do" - verifica bloqueo a To Do
+  4. "toast error message includes suggestion" - verifica mensaje completo con sugerencia de derivada
+- Cada test: crear → in_progress → done → intentar drag → verificar toast → verificar posición no cambió
+- El mensaje de error completo es: "Las tareas completadas no se pueden mover. Crea una tarea derivada si necesitas continuar el trabajo."
+- Próximo paso: tarea 7.3 - Tests E2E para adjuntos
