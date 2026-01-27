@@ -54,8 +54,9 @@ export function getGoogleDriveClient(): drive_v3.Drive {
       client_email: credentials.client_email,
       private_key: credentials.private_key,
     },
-    // Use drive.file scope for least privilege - only access files created by this app
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
+    // Full drive scope needed to access folder shared with service account
+    // TODO: Consider using drive.file with app-created folders for better security
+    scopes: ['https://www.googleapis.com/auth/drive'],
   });
 
   driveClient = google.drive({ version: 'v3', auth });
