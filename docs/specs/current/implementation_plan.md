@@ -101,7 +101,7 @@ Validación Fase 2:
   - Comportamiento: uploadAttachment crea carpeta por taskId, valida mime types, bloquea si status=done
   - Referencia: ver app/actions/tasks.ts para patterns de Server Actions
 
-- [ ] **3.3** Crear API route para descarga
+- [x] **3.3** Crear API route para descarga
   - Input: Nuevo archivo app/api/attachments/[id]/download/route.ts
   - Output: GET handler que streams archivo desde Drive
   - Comportamiento: Valida auth, busca attachment en DB, descarga de Drive, retorna con headers

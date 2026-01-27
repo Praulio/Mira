@@ -227,3 +227,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - deleteAllTaskAttachments es función interna para cleanup - no requiere auth check ya que será llamada internamente
 - Lint warning corregido: import `and` no usado fue removido
 - Próximo paso: tarea 3.3 - Crear API route para descarga
+
+### Session 12 - 2026-01-26
+
+**Task:** 3.3 - Crear API route para descarga
+**Files:** app/api/attachments/[id]/download/route.ts (nuevo)
+**Patterns:**
+- API Routes (route.ts) necesarias para control directo de HTTP headers como Content-Disposition
+- `Buffer` de Node.js no es compatible con `NextResponse` body - convertir a `new Uint8Array(buffer)`
+- Validación de UUID con regex antes de query a DB evita queries innecesarias
+- E2E bypass de auth con header `x-e2e-test: true` para consistencia con lib/mock-auth.ts
+**Notes:**
+- GET handler streams archivo desde Google Drive con headers correctos
+- Content-Disposition: attachment fuerza descarga (no inline preview)
+- Sanitización de filename previene inyección de headers (reemplaza caracteres especiales con `_`)
+- Cache-Control: private, max-age=3600 permite caching por 1 hora en browser
+- Error 502 Bad Gateway para errores de Google Drive (upstream dependency)
+- Próximo paso: Fase 4 - UI Tracking de Tiempos (4.1)
