@@ -122,7 +122,7 @@ Validación Fase 3:
   - Comportamiento: Si no hay startedAt retorna '-', si >24h muestra días
   - Referencia: ver lib/utils.ts para pattern de helpers
 
-- [ ] **4.2** Mostrar duración en TaskCard
+- [x] **4.2** Mostrar duración en TaskCard
   - Input: components/task-card.tsx footer (líneas 140-165)
   - Output: Span con duración verde si done, amber pulsante si in_progress
   - Comportamiento: Reemplaza status dot por duración formateada cuando aplica

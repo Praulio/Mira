@@ -260,3 +260,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Si no hay completedAt calcula tiempo transcurrido hasta ahora (live timer)
 - Diferencia negativa o cero retorna "-" (edge case de datos inconsistentes)
 - Próximo paso: tarea 4.2 - Mostrar duración en TaskCard
+
+### Session 14 - 2026-01-26
+
+**Task:** 4.2 - Mostrar duración en TaskCard
+**Files:** components/task-card.tsx
+**Patterns:**
+- La regla `react-hooks/set-state-in-effect` prohíbe llamar setState síncronamente en useEffect
+- Patrón para live timers: usar contador (`liveCounter`) que el interval incrementa, forzando re-renders
+- `useMemo` para valores estáticos que dependen de props evita recálculos innecesarios
+- Type assertion para extender el tipo KanbanTaskData con campos opcionales (`startedAt`, `completedAt`)
+**Notes:**
+- TaskCard ahora muestra duración con icono Clock en tareas done (verde) e in_progress (amber pulsante)
+- El timer se actualiza cada 60 segundos para tareas in_progress
+- Si no hay startedAt o duración es "-", se muestra el status dot original
+- Requiere que tarea 4.4 agregue startedAt/completedAt al tipo KanbanTaskData para funcionar completamente
+- Próximo paso: tarea 4.3 - Agregar info de tiempos en TaskDetailDialog

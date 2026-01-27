@@ -1,13 +1,14 @@
 'use client';
 
-import { User, MoreVertical, Trash2 } from 'lucide-react';
+import { User, MoreVertical, Trash2, Clock } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { deleteTask } from '@/app/actions/tasks';
 import { TaskDetailDialog } from './task-detail-dialog';
+import { formatDuration } from '@/lib/format-duration';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
 type TaskCardProps = {
@@ -28,6 +29,45 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
     id: task.id,
     disabled: showMenu || showDetail, // Disable drag when interaction is happening
   });
+
+  // Type assertion since startedAt/completedAt may not exist in all KanbanTaskData yet
+  const taskWithTimes = task as KanbanTaskData & {
+    startedAt?: Date | string | null;
+    completedAt?: Date | string | null;
+  };
+
+  // Calculate if this is an in_progress task that needs live updates
+  const isInProgressWithTime = task.status === 'in_progress' && !!taskWithTimes.startedAt;
+
+  // Static duration for completed tasks (memoized to avoid recalculation)
+  const staticDuration = useMemo(
+    () => formatDuration(taskWithTimes.startedAt, taskWithTimes.completedAt),
+    [taskWithTimes.startedAt, taskWithTimes.completedAt]
+  );
+
+  // Live duration state only used for in_progress tasks with timer
+  const [liveCounter, setLiveCounter] = useState(0);
+
+  // Timer effect: only runs for in_progress tasks, increments counter every minute
+  useEffect(() => {
+    if (!isInProgressWithTime) {
+      return;
+    }
+
+    // Update every minute for live display
+    const interval = setInterval(() => {
+      setLiveCounter((c) => c + 1);
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [isInProgressWithTime]);
+
+  // Calculate display duration: for in_progress use live calculation, otherwise use static
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _forceUpdate = liveCounter; // Ensure re-render when counter changes
+  const displayDuration = isInProgressWithTime
+    ? formatDuration(taskWithTimes.startedAt, null)
+    : staticDuration;
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -137,7 +177,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           </p>
         )}
 
-        {/* Footer: Assignee and time */}
+        {/* Footer: Assignee and duration/status */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {/* Assignee */}
           <div className="flex items-center gap-2">
@@ -157,11 +197,24 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
             <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
           </div>
 
-          {/* Status Indicator */}
-          <div 
-            className="h-1.5 w-1.5 rounded-full" 
-            style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
-          />
+          {/* Duration (for done/in_progress) or Status Indicator */}
+          {(task.status === 'done' || task.status === 'in_progress') && displayDuration !== '-' ? (
+            <div
+              className={`flex items-center gap-1 ${
+                task.status === 'done'
+                  ? 'text-emerald-400'
+                  : 'text-amber-400 animate-pulse'
+              }`}
+            >
+              <Clock className="h-3 w-3" />
+              <span>{displayDuration}</span>
+            </div>
+          ) : (
+            <div
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
+            />
+          )}
         </div>
       </div>
 
