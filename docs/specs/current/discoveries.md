@@ -409,3 +409,23 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El endpoint aún no existe - será creado en tarea 6.2
 - La validación de CRON_SECRET será implementada en el handler
 - Próximo paso: tarea 6.2 - Crear API route del cron
+
+### Session 23 - 2026-01-26
+
+**Task:** 6.2 - Crear API route del cron
+**Files:** app/api/cron/cleanup-attachments/route.ts (nuevo)
+**Patterns:**
+- Cron jobs de Vercel son HTTP GET requests al endpoint con header `authorization: Bearer <CRON_SECRET>`
+- Validación flexible: aceptar tanto `Bearer <secret>` como el secret directo para compatibilidad
+- Batch delete con `inArray()` es más eficiente que N queries individuales
+- Error resilience: si falla una operación de Drive, continuar con las demás tareas
+- Logging detallado con prefijo `[Cron]` para filtrar logs en producción
+**Notes:**
+- Endpoint valida CRON_SECRET antes de cualquier operación de DB/Drive
+- Busca tareas con `status = 'done'` y `completedAt <= (ahora - 3 días)`
+- Usa `innerJoin` con attachments para filtrar solo tareas con adjuntos
+- Elimina registros de DB en batch, luego elimina carpetas de Drive una por una
+- Retorna stats JSON: tasksProcessed, attachmentsDeleted, foldersDeleted, errors
+- Response 401 si CRON_SECRET no coincide, 500 si error de configuración/inesperado
+- Fase 6 (Cron Job Cleanup) completada
+- Próximo paso: Fase 7 - QA/Testing (7.1)
