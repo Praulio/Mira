@@ -343,3 +343,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Estado `deletingId` previene múltiples clicks en el mismo botón
 - Si readonly=true, el botón de eliminar no se renderiza
 - Próximo paso: tarea 5.3 - Agregar icono clip en TaskCard
+
+### Session 19 - 2026-01-26
+
+**Task:** 5.3 - Agregar icono clip en TaskCard
+**Files:** app/actions/kanban.ts, components/task-card.tsx
+**Patterns:**
+- Subquery de COUNT en Drizzle: `sql<number>\`(SELECT COUNT(*) FROM table WHERE condition)\`.as('alias')`
+- PostgreSQL puede retornar BigInt para COUNT, usar `Number(value) || 0` para asegurar tipo number
+- El índice en `attachments.taskId` hace la subquery eficiente (no N+1 queries)
+- Lucide tiene icono `Paperclip` ideal para indicador de adjuntos
+**Notes:**
+- Campo `attachmentCount: number` agregado a tipo KanbanTaskData
+- Import `sql` de drizzle-orm para subqueries con template literals type-safe
+- Icono clip + contador mostrado solo si attachmentCount > 0
+- Se limpió type assertion redundante de startedAt/completedAt (ya estaban en el tipo desde tarea 4.4)
+- Footer reorganizado: [Assignee] ... [Clip+Count | Duration/Status]
+- Próximo paso: tarea 5.4 - Integrar adjuntos en TaskDetailDialog

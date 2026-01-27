@@ -2,8 +2,8 @@
 
 import { getAuth } from '@/lib/mock-auth';
 import { db } from '@/db';
-import { users, tasks } from '@/db/schema';
-import { eq, desc, asc } from 'drizzle-orm';
+import { users, tasks, attachments } from '@/db/schema';
+import { eq, desc, asc, sql } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
 /**
@@ -27,6 +27,7 @@ export type KanbanTaskData = {
   updatedAt: Date;
   startedAt: Date | null;
   completedAt: Date | null;
+  attachmentCount: number;
 };
 
 /**
@@ -60,6 +61,7 @@ export async function getKanbanData(): Promise<KanbanData> {
   try {
     // Single query with JOINs to fetch all tasks with assignee and creator data
     // Using LEFT JOIN for assignee (nullable) and INNER JOIN for creator (required)
+    // Subquery counts attachments per task for showing clip icon
     const allTasks = await db
       .select({
         id: tasks.id,
@@ -74,6 +76,7 @@ export async function getKanbanData(): Promise<KanbanData> {
         updatedAt: tasks.updatedAt,
         startedAt: tasks.startedAt,
         completedAt: tasks.completedAt,
+        attachmentCount: sql<number>`(SELECT COUNT(*) FROM ${attachments} WHERE ${attachments.taskId} = ${tasks.id})`.as('attachment_count'),
       })
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
@@ -112,6 +115,7 @@ export async function getKanbanData(): Promise<KanbanData> {
           updatedAt: task.updatedAt,
           startedAt: task.startedAt,
           completedAt: task.completedAt,
+          attachmentCount: Number(task.attachmentCount) || 0,
         } as KanbanTaskData;
       })
     );

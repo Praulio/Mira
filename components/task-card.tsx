@@ -1,6 +1,6 @@
 'use client';
 
-import { User, MoreVertical, Trash2, Clock } from 'lucide-react';
+import { User, MoreVertical, Trash2, Clock, Paperclip } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useEffect, useMemo } from 'react';
@@ -30,19 +30,13 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
     disabled: showMenu || showDetail, // Disable drag when interaction is happening
   });
 
-  // Type assertion since startedAt/completedAt may not exist in all KanbanTaskData yet
-  const taskWithTimes = task as KanbanTaskData & {
-    startedAt?: Date | string | null;
-    completedAt?: Date | string | null;
-  };
-
   // Calculate if this is an in_progress task that needs live updates
-  const isInProgressWithTime = task.status === 'in_progress' && !!taskWithTimes.startedAt;
+  const isInProgressWithTime = task.status === 'in_progress' && !!task.startedAt;
 
   // Static duration for completed tasks (memoized to avoid recalculation)
   const staticDuration = useMemo(
-    () => formatDuration(taskWithTimes.startedAt, taskWithTimes.completedAt),
-    [taskWithTimes.startedAt, taskWithTimes.completedAt]
+    () => formatDuration(task.startedAt, task.completedAt),
+    [task.startedAt, task.completedAt]
   );
 
   // Live duration state only used for in_progress tasks with timer
@@ -66,7 +60,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _forceUpdate = liveCounter; // Ensure re-render when counter changes
   const displayDuration = isInProgressWithTime
-    ? formatDuration(taskWithTimes.startedAt, null)
+    ? formatDuration(task.startedAt, null)
     : staticDuration;
 
   async function handleDelete(e: React.MouseEvent) {
@@ -177,7 +171,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           </p>
         )}
 
-        {/* Footer: Assignee and duration/status */}
+        {/* Footer: Assignee, attachments, and duration/status */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {/* Assignee */}
           <div className="flex items-center gap-2">
@@ -197,24 +191,35 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
             <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
           </div>
 
-          {/* Duration (for done/in_progress) or Status Indicator */}
-          {(task.status === 'done' || task.status === 'in_progress') && displayDuration !== '-' ? (
-            <div
-              className={`flex items-center gap-1 ${
-                task.status === 'done'
-                  ? 'text-emerald-400'
-                  : 'text-amber-400 animate-pulse'
-              }`}
-            >
-              <Clock className="h-3 w-3" />
-              <span>{displayDuration}</span>
-            </div>
-          ) : (
-            <div
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
-            />
-          )}
+          {/* Right side: attachment count + duration/status */}
+          <div className="flex items-center gap-2">
+            {/* Attachment indicator */}
+            {task.attachmentCount > 0 && (
+              <div className="flex items-center gap-0.5 text-muted-foreground/70">
+                <Paperclip className="h-3 w-3" />
+                <span>{task.attachmentCount}</span>
+              </div>
+            )}
+
+            {/* Duration (for done/in_progress) or Status Indicator */}
+            {(task.status === 'done' || task.status === 'in_progress') && displayDuration !== '-' ? (
+              <div
+                className={`flex items-center gap-1 ${
+                  task.status === 'done'
+                    ? 'text-emerald-400'
+                    : 'text-amber-400 animate-pulse'
+                }`}
+              >
+                <Clock className="h-3 w-3" />
+                <span>{displayDuration}</span>
+              </div>
+            ) : (
+              <div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
