@@ -574,3 +574,117 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Esta tarea de auditoría es solo de REVIEW - no se hacen cambios de código
 - Los fixes se priorizarían como: M1 (IDOR) > H2 (scope) > M2 (test bypass) > resto
 - Próximo paso: tarea 8.2 - Auditar API routes y Server Actions
+
+### Session 29 - 2026-01-26
+
+**Task:** 8.2 - Auditar API routes y Server Actions
+**Files:** app/api/attachments/[id]/download/route.ts, app/api/cron/cleanup-attachments/route.ts, app/actions/attachments.ts, lib/mock-auth.ts (review only)
+
+**Security Audit Report - API Routes & Server Actions:**
+
+**Overall Assessment: MEDIUM RISK**
+
+| Severidad | Cantidad |
+|-----------|----------|
+| Critical | 0 |
+| High | 1 |
+| Medium | 2 |
+| Low | 2 |
+| Info | 3 |
+
+---
+
+**HIGH SEVERITY:**
+
+1. **H1: IDOR en Download API - Sin verificación de ownership** (route.ts:70-82)
+   - Cualquier usuario autenticado puede descargar cualquier adjunto
+   - Solo verifica que el usuario esté logueado, no que tenga acceso a la tarea
+   - Vector: Usuario A puede descargar adjuntos de tareas de Usuario B conociendo el attachmentId
+   - Mitigación requerida: JOIN con tasks y verificar que task pertenece al workspace del usuario
+
+---
+
+**MEDIUM SEVERITY:**
+
+1. **M1: E2E Test Bypass sin verificación de entorno** (route.ts:19-25, mock-auth.ts:16-23)
+   - El header `x-e2e-test: true` bypassa auth incluso en producción
+   - mock-auth.ts verifica `NODE_ENV === 'test'` pero route.ts NO lo hace
+   - Vector: Atacante podría enviar header `x-e2e-test: true` en producción
+   - Mitigación:
+     - route.ts línea 21: agregar `process.env.NODE_ENV !== 'production' &&`
+     - O eliminar bypass de route.ts y usar solo mock-auth.ts
+
+2. **M2: IDOR en Server Actions - Sin verificación de membership** (attachments.ts:114-125, 229-238, 319-330)
+   - uploadAttachment, deleteAttachment, getTaskAttachments verifican que tarea existe pero no que usuario tenga acceso
+   - Cualquier usuario autenticado puede ver/modificar adjuntos de cualquier tarea
+   - Vector: Usuario de Workspace A puede acceder a tareas de Workspace B
+   - Mitigación: Verificar que userId pertenece al workspace de la tarea
+
+---
+
+**LOW SEVERITY:**
+
+1. **L1: Error details expuestos en cron response** (cleanup-attachments/route.ts:129)
+   - `error instanceof Error ? error.message : 'Unknown error'` expone detalles de error
+   - Baja severidad porque el endpoint está protegido por CRON_SECRET
+   - Recomendación: Loggear details pero no retornarlos en response
+
+2. **L2: deleteAllTaskAttachments sin auth check** (attachments.ts:361-390)
+   - Función exportada sin verificación de autenticación
+   - Diseñada como función interna pero es `export async function`
+   - Mitigación: Marcar como private o agregar auth check
+
+---
+
+**INFO (Correctamente Implementado):**
+
+1. ✅ **Auth requerida en todas las rutas públicas**
+   - Download API verifica `userId` antes de procesar (línea 50-57)
+   - Cron API verifica `CRON_SECRET` antes de procesar (línea 34)
+   - Server Actions verifican `userId` vía getAuth() (líneas 91-99, 207-215, 296-304)
+
+2. ✅ **CRON_SECRET bien implementado** (cleanup-attachments/route.ts:17-40)
+   - Valida que env var esté configurada
+   - Soporta formato Bearer y raw para compatibilidad
+   - Log de intento no autorizado
+   - Retorna 401 sin exponer detalles
+
+3. ✅ **Validación de inputs con Zod** (attachments.ts:54-76)
+   - UUID validation en todos los IDs
+   - MIME type whitelist validada server-side
+   - File name con límite de longitud
+
+---
+
+**RESUMEN DE HALLAZGOS:**
+
+| Endpoint/Function | Auth | AuthZ (Ownership) | Input Validation |
+|------------------|------|-------------------|-----------------|
+| GET /api/attachments/[id]/download | ✅ | ❌ IDOR | ✅ UUID regex |
+| GET /api/cron/cleanup-attachments | ✅ CRON_SECRET | N/A (admin) | N/A |
+| uploadAttachment | ✅ | ❌ No workspace check | ✅ Zod schema |
+| deleteAttachment | ✅ | ❌ No workspace check | ✅ Zod schema |
+| getTaskAttachments | ✅ | ❌ No workspace check | ✅ Zod schema |
+| deleteAllTaskAttachments | ❌ None | N/A | ⚠️ No UUID validation |
+
+---
+
+**PRIORIZACIÓN DE FIXES:**
+
+1. **P0 (Crítico):** Fix M1 - Agregar NODE_ENV check al bypass E2E en route.ts
+2. **P1 (Alto):** Fix H1 - Agregar ownership check en download API
+3. **P2 (Medio):** Fix M2 - Agregar workspace membership en Server Actions
+4. **P3 (Bajo):** Fix L2 - Agregar auth a deleteAllTaskAttachments o hacerla privada
+
+**Patterns:**
+- IDOR es el patrón de vulnerabilidad más común en esta auditoría
+- Authorization (authZ) falta en múltiples lugares mientras Authentication (authN) está presente
+- El bypass E2E es conveniente pero peligroso si no se condiciona a NODE_ENV
+- Server Actions en Next.js no tienen protección CSRF automática pero sí aislamiento de scope
+
+**Notes:**
+- Esta auditoría es solo de REVIEW - los fixes se implementarían en futuras iteraciones
+- El modelo de seguridad asume que todos los usuarios autenticados tienen acceso a todo (single-tenant)
+- Si la app evoluciona a multi-tenant, los fixes de IDOR son CRÍTICOS
+- mock-auth.ts tiene el check correcto de NODE_ENV, pero route.ts no lo hereda
+- Próximo paso: tarea 8.3 - Auditar manejo de archivos
