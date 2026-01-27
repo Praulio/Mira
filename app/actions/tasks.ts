@@ -22,7 +22,7 @@ type ActionResponse<T = unknown> = {
  */
 const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
-  description: z.string().max(2000, 'Description must be 2000 characters or less').optional(),
+  description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
   assigneeId: z.string().optional(),
 });
 
@@ -53,7 +53,7 @@ const toggleCriticalSchema = z.object({
  */
 const completeTaskSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
-  notes: z.string().max(2000, 'Notes must be 2000 characters or less').optional(),
+  notes: z.string().max(50000, 'Las notas no pueden exceder 50,000 caracteres').optional(),
   links: z.array(z.string().url('Invalid URL')).max(10, 'Maximum 10 links').optional(),
   mentions: z.array(z.string()).optional(),
 });
@@ -85,7 +85,7 @@ const createDerivedTaskSchema = z.object({
 const updateTaskMetadataSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
-  description: z.string().max(2000, 'Description must be 2000 characters or less').optional(),
+  description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
 }).refine(
   (data) => data.title !== undefined || data.description !== undefined,
   'At least one field (title or description) must be provided'

@@ -168,9 +168,8 @@ export function CreateTaskDialog() {
               id="description"
               name="description"
               rows={3}
-              maxLength={2000}
               data-testid="task-description-input"
-              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all resize-none overflow-y-auto max-h-40"
               placeholder="Agrega algunos detalles..."
             />
           </div>

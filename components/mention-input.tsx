@@ -149,7 +149,7 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={4}
-        className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none"
+        className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none overflow-y-auto max-h-48"
       />
 
       {/* User Dropdown */}
