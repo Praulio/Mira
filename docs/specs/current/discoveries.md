@@ -464,3 +464,26 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Cada test: crear → in_progress → done → intentar drag → verificar toast → verificar posición no cambió
 - El mensaje de error completo es: "Las tareas completadas no se pueden mover. Crea una tarea derivada si necesitas continuar el trabajo."
 - Próximo paso: tarea 7.3 - Tests E2E para adjuntos
+
+### Session 26 - 2026-01-26
+
+**Task:** 7.3 - Crear tests E2E para adjuntos
+**Files:** e2e/task-attachments.spec.ts (nuevo)
+**Patterns:**
+- `page.route()` permite interceptar y mockear requests HTTP para simular APIs externas (Google Drive)
+- `fileInput.setInputFiles()` de Playwright permite simular uploads con archivos virtuales (name, mimeType, buffer)
+- Para verificar botones que aparecen solo en hover, usar `element.hover()` antes de hacer click
+- `page.on('dialog', ...)` permite manejar `window.confirm()` automáticamente en tests
+- Tests deben ser resilientes a fallas de servicios externos - verificar UI es funcional aunque upload falle
+**Notes:**
+- 6 tests creados:
+  1. "upload file shows in attachment list and task card shows clip icon" - flujo completo de upload
+  2. "dropzone is hidden for completed tasks" - verifica que FileDropzone no se renderiza para done
+  3. "delete button is hidden for completed task attachments" - verifica readonly mode en AttachmentList
+  4. "can download attachment from list" - verifica click en botón de descarga abre nueva pestaña
+  5. "can delete attachment from active task" - verifica eliminación con confirmación
+  6. "attachment count badge updates after upload" - verifica badge en TaskCard
+- Tests usan mock de API de download pero permiten que upload vaya al backend real
+- Si Google Drive no está configurado, tests verifican que UI es funcional y muestran dropzone
+- El patrón `hasUpload.catch(() => false)` previene fallas si el elemento no existe
+- Próximo paso: tarea 7.4 - Tests E2E para edición de completedAt

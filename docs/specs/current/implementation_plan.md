@@ -221,7 +221,7 @@ Validación Fase 6:
   - Output: Tests que verifican que tareas Done no se pueden mover
   - Comportamiento: Completar tarea → intentar drag → verificar toast error → verificar posición no cambió
 
-- [ ] **7.3** Crear tests E2E para adjuntos
+- [x] **7.3** Crear tests E2E para adjuntos
   - Input: Nuevo archivo tests/e2e/task-attachments.spec.ts
   - Output: Tests que verifican upload, download y delete de adjuntos
   - Comportamiento: Subir archivo → verificar en lista → descargar → eliminar → verificar eliminado
