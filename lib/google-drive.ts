@@ -92,6 +92,7 @@ function escapeQueryString(str: string): string {
 
 /**
  * Find a folder by name within a parent folder.
+ * Supports both regular Drive and Shared Drives.
  */
 async function findFolder(
   drive: drive_v3.Drive,
@@ -106,6 +107,9 @@ async function findFolder(
     q: `name='${safeName}' and '${safeParentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
     spaces: 'drive',
+    // Required for Shared Drives
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
 
   return response.data.files?.[0]?.id || null;
@@ -113,6 +117,7 @@ async function findFolder(
 
 /**
  * Create a new folder within a parent folder.
+ * Supports both regular Drive and Shared Drives.
  */
 async function createFolder(
   drive: drive_v3.Drive,
@@ -126,6 +131,8 @@ async function createFolder(
       parents: [parentId],
     },
     fields: 'id',
+    // Required for Shared Drives
+    supportsAllDrives: true,
   });
 
   if (!response.data.id) {
@@ -163,6 +170,8 @@ export async function uploadFileToDrive(
       body: readable,
     },
     fields: 'id, webViewLink',
+    // Required for Shared Drives
+    supportsAllDrives: true,
   });
 
   if (!response.data.id) {
@@ -192,11 +201,12 @@ export async function downloadFileFromDrive(fileId: string): Promise<Buffer> {
 
 /**
  * Delete a file from Google Drive by its file ID.
+ * Supports both regular Drive and Shared Drives.
  */
 export async function deleteFileFromDrive(fileId: string): Promise<void> {
   const drive = getGoogleDriveClient();
 
-  await drive.files.delete({ fileId });
+  await drive.files.delete({ fileId, supportsAllDrives: true });
 }
 
 /**
@@ -215,7 +225,7 @@ export async function deleteTaskFolder(taskId: string): Promise<void> {
   if (!taskFolder) return;
 
   // Delete the folder (this deletes all contents recursively)
-  await drive.files.delete({ fileId: taskFolder });
+  await drive.files.delete({ fileId: taskFolder, supportsAllDrives: true });
 }
 
 /**
@@ -232,6 +242,7 @@ export async function getFileMetadata(fileId: string): Promise<{
     const response = await drive.files.get({
       fileId,
       fields: 'name, mimeType, size',
+      supportsAllDrives: true,
     });
 
     return {
