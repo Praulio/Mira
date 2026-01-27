@@ -429,3 +429,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Response 401 si CRON_SECRET no coincide, 500 si error de configuración/inesperado
 - Fase 6 (Cron Job Cleanup) completada
 - Próximo paso: Fase 7 - QA/Testing (7.1)
+
+### Session 24 - 2026-01-26
+
+**Task:** 7.1 - Crear tests E2E para tracking de tiempos
+**Files:** e2e/task-time-tracking.spec.ts (nuevo)
+**Patterns:**
+- Tests E2E en Playwright usan `test.step()` para agrupar acciones lógicas y mejorar reportes
+- Verificar estados visuales con CSS class selectors: `.text-amber-400`, `.animate-pulse`, `.text-emerald-400`
+- Para live timers (60+ segundos), verificar mecanismo presente, no esperar el tiempo completo
+- Regex en locators: `text=/\\d+[hmd]|<1m/` para matchear cualquier formato de duración
+**Notes:**
+- 4 tests creados: captura startedAt, formato duración completed, sin duración en backlog, animación live
+- Test de "task without startedAt" verifica que tareas en backlog/todo no muestran Clock icon
+- El test de "live duration" solo verifica presencia de `.animate-pulse`, no espera 60 segundos
+- Requiere data-testids existentes: `task-card-*`, `kanban-column-*`, `create-task-button`
+- Próximo paso: tarea 7.2 - Tests E2E para bloqueo de tareas Done
