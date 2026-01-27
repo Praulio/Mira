@@ -309,3 +309,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Objeto retornado en el map incluye ambos campos
 - Con esta tarea completada, TaskCard y TaskDetailDialog tienen acceso directo a los datos sin extensiones de tipo
 - Fase 4 (UI Tracking de Tiempos) completada - próximo paso: Fase 5 (UI Adjuntos)
+
+### Session 17 - 2026-01-26
+
+**Task:** 5.1 - Crear componente FileDropzone
+**Files:** components/file-dropzone.tsx (nuevo)
+**Patterns:**
+- Drag counter con `useRef` evita flickering por eventos bubbling en elementos nested
+- `FileReader.readAsDataURL()` retorna `data:mime;base64,{content}` - split por coma para obtener solo el base64
+- `accept` attribute en input file mejora UX pero NO es validación de seguridad (server-side validation es obligatoria)
+- Reset de `e.target.value = ''` permite subir el mismo archivo múltiples veces
+**Notes:**
+- Props: `{ taskId, onUploadComplete?, disabled? }`
+- Soporta múltiples archivos simultáneos con feedback de progreso
+- Accesibilidad: `role="button"`, `tabIndex={0}`, keyboard handlers para Enter/Space
+- Estados visuales: default (gris), dragover (primary/blue), uploading (spinner), disabled (opacity 50%)
+- Toast success/error/warning según resultado de uploads
+- Próximo paso: tarea 5.2 - Crear componente AttachmentList
