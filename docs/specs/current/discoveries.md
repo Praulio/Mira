@@ -378,3 +378,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El estado isLoadingAttachments muestra "Cargando adjuntos..." mientras carga inicial
 - Badge con contador de adjuntos en el label de la sección
 - Próximo paso: tarea 5.5 - Actualizar query para incluir attachmentCount
+
+### Session 21 - 2026-01-26
+
+**Task:** 5.5 - Actualizar query para incluir attachmentCount
+**Files:** app/actions/kanban.ts (sin cambios necesarios)
+**Patterns:**
+- Verificar siempre el estado actual del código antes de implementar - las tareas pueden haberse completado como parte de otras
+- La tarea 5.3 (Session 19) ya implementó el attachmentCount completo en getKanbanData
+- Mantener el plan actualizado para reflejar el estado real evita trabajo duplicado
+**Notes:**
+- No se requirieron cambios - la implementación ya existía:
+  - Tipo KanbanTaskData incluye `attachmentCount: number` (línea 30)
+  - Subquery COUNT en select de getKanbanData (línea 79)
+  - Conversión a number en el objeto retornado (línea 118)
+- Fase 5 (UI Adjuntos) completada
+- Próximo paso: Fase 6 - Cron Job Cleanup (6.1)

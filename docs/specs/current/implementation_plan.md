@@ -175,7 +175,7 @@ Validación Fase 4:
   - Comportamiento: Dropzone disabled si status=done, lista readonly si done
   - Referencia: ver estructura de secciones existentes en el dialog
 
-- [ ] **5.5** Actualizar query para incluir attachmentCount
+- [x] **5.5** Actualizar query para incluir attachmentCount
   - Input: app/actions/kanban.ts
   - Output: Agregar subquery count de attachments por task
   - Referencia: ver pattern de select existente
