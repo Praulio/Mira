@@ -394,3 +394,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
   - Conversión a number en el objeto retornado (línea 118)
 - Fase 5 (UI Adjuntos) completada
 - Próximo paso: Fase 6 - Cron Job Cleanup (6.1)
+
+### Session 22 - 2026-01-26
+
+**Task:** 6.1 - Crear configuración vercel.json
+**Files:** vercel.json (nuevo)
+**Patterns:**
+- `vercel.json` es el archivo de configuración central para proyectos Vercel
+- Propiedad `crons` acepta array de objetos con `path` (endpoint) y `schedule` (expresión cron)
+- Schedule `0 3 * * *` = "cada día a las 3:00 AM UTC"
+- Vercel envía header `x-vercel-cron-signature` automáticamente para verificación
+**Notes:**
+- Cron configurado para llamar a `/api/cron/cleanup-attachments` diariamente a las 3 AM UTC
+- El endpoint aún no existe - será creado en tarea 6.2
+- La validación de CRON_SECRET será implementada en el handler
+- Próximo paso: tarea 6.2 - Crear API route del cron
