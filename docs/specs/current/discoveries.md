@@ -486,4 +486,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Tests usan mock de API de download pero permiten que upload vaya al backend real
 - Si Google Drive no está configurado, tests verifican que UI es funcional y muestran dropzone
 - El patrón `hasUpload.catch(() => false)` previene fallas si el elemento no existe
-- Próximo paso: tarea 7.4 - Tests E2E para edición de completedAt
+
+### Session 27 - 2026-01-26
+
+**Task:** 7.4 - Crear tests E2E para edición de completedAt
+**Files:** e2e/task-completed-at-edit.spec.ts (nuevo)
+**Patterns:**
+- Para inputs `datetime-local`, el valor se formatea con `.toISOString().slice(0, 16)` para obtener `YYYY-MM-DDTHH:mm`
+- La validación de `max` en HTML5 previene fechas futuras en el cliente, pero el server action también valida
+- Para bypassear validación de HTML5 en tests (simular ataques), usar `evaluate()` de Playwright con `dispatchEvent`
+- El test de "non-owner" es limitado porque en E2E mode el usuario mock siempre es el creator
+**Notes:**
+- 5 tests creados:
+  1. "owner can edit completedAt for completed task" - flujo completo: crear, completar, editar fecha, verificar persistencia
+  2. "completedAt input has max constraint preventing future dates" - verifica atributo `max` y validación server-side
+  3. "completedAt edit preserves duration calculation" - verifica que la duración se recalcula correctamente
+  4. "completedAt field is read-only for non-owner" - verifica que owner ve input (no span)
+  5. "completedAt input is disabled while saving" - verifica estado `disabled` durante guardado
+- El mensaje de error para fecha futura es "La fecha de finalización no puede ser en el futuro"
+- El mensaje de éxito es "Fecha de finalización actualizada"
+- Fase 7 (QA/Testing - Playwright E2E) completada
+- Próximo paso: Fase 8 - Peer Review (8.1)

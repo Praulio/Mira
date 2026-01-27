@@ -227,7 +227,7 @@ Validación Fase 6:
   - Comportamiento: Subir archivo → verificar en lista → descargar → eliminar → verificar eliminado
   - Nota: Requiere mock de Google Drive API o test account
 
-- [ ] **7.4** Crear tests E2E para edición de completedAt
+- [x] **7.4** Crear tests E2E para edición de completedAt
   - Input: Nuevo archivo tests/e2e/task-completed-at-edit.spec.ts
   - Output: Tests que verifican permisos de edición
   - Comportamiento: Owner puede editar → no-owner no puede → fecha se guarda correctamente
