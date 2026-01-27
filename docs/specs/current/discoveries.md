@@ -360,3 +360,21 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Se limpió type assertion redundante de startedAt/completedAt (ya estaban en el tipo desde tarea 4.4)
 - Footer reorganizado: [Assignee] ... [Clip+Count | Duration/Status]
 - Próximo paso: tarea 5.4 - Integrar adjuntos en TaskDetailDialog
+
+### Session 20 - 2026-01-26
+
+**Task:** 5.4 - Integrar adjuntos en TaskDetailDialog
+**Files:** components/task-detail-dialog.tsx
+**Patterns:**
+- Para cargar datos async en useEffect sin violar `set-state-in-effect`, definir función async inline dentro del effect
+- Usar flag `cancelled` en cleanup function para evitar state updates en componentes desmontados
+- `useCallback` sigue siendo útil para callbacks pasados a componentes hijos (onUploadComplete, onDelete)
+- Patrón de badge en labels: `<span className="ml-1 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">{count}</span>`
+**Notes:**
+- Sección "Adjuntos" agregada después de "Description" con icono Paperclip
+- FileDropzone oculto completamente para tareas done (no solo disabled)
+- AttachmentList recibe `readonly={isDone}` para ocultar botones de delete
+- loadAttachments callback usado para refresh después de upload/delete
+- El estado isLoadingAttachments muestra "Cargando adjuntos..." mientras carga inicial
+- Badge con contador de adjuntos en el label de la sección
+- Próximo paso: tarea 5.5 - Actualizar query para incluir attachmentCount

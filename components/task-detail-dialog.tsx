@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch } from 'lucide-react';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
+import { getTaskAttachments } from '@/app/actions/attachments';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 import { CompleteTaskModal } from './complete-task-modal';
+import { FileDropzone } from './file-dropzone';
+import { AttachmentList } from './attachment-list';
 import { formatDuration } from '@/lib/format-duration';
 
 // Extended task type to include time tracking fields (added by task 4.4)
@@ -40,6 +43,17 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [isUpdatingCompletedAt, setIsUpdatingCompletedAt] = useState(false);
   const [isCreatingDerived, setIsCreatingDerived] = useState(false);
+  const [attachmentsList, setAttachmentsList] = useState<{
+    id: string;
+    taskId: string;
+    driveFileId: string;
+    name: string;
+    mimeType: string;
+    sizeBytes: number;
+    uploadedBy: string;
+    uploadedAt: Date;
+  }[]>([]);
+  const [isLoadingAttachments, setIsLoadingAttachments] = useState(true);
 
   // Check if current user is owner (assignee or creator)
   const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
@@ -48,6 +62,38 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
   }, []);
+
+  // Load attachments for the task
+  const loadAttachments = useCallback(async () => {
+    setIsLoadingAttachments(true);
+    const result = await getTaskAttachments({ taskId: task.id });
+    if (result.success && result.data) {
+      setAttachmentsList(result.data);
+    }
+    setIsLoadingAttachments(false);
+  }, [task.id]);
+
+  // Initial load of attachments
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAttachments() {
+      setIsLoadingAttachments(true);
+      const result = await getTaskAttachments({ taskId: task.id });
+      if (!cancelled && result.success && result.data) {
+        setAttachmentsList(result.data);
+      }
+      if (!cancelled) {
+        setIsLoadingAttachments(false);
+      }
+    }
+
+    fetchAttachments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [task.id]);
 
   async function handleSave() {
     setIsSaving(true);
@@ -285,6 +331,40 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none"
               placeholder="Add more context to this task..."
             />
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-4 pt-4">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+              <Paperclip className="h-3 w-3" /> Adjuntos
+              {attachmentsList.length > 0 && (
+                <span className="ml-1 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
+                  {attachmentsList.length}
+                </span>
+              )}
+            </label>
+
+            {/* FileDropzone - disabled for done tasks */}
+            {!isDone && (
+              <FileDropzone
+                taskId={task.id}
+                onUploadComplete={loadAttachments}
+                disabled={isDone}
+              />
+            )}
+
+            {/* Attachment List */}
+            {isLoadingAttachments ? (
+              <div className="text-sm text-muted-foreground py-4 text-center">
+                Cargando adjuntos...
+              </div>
+            ) : (
+              <AttachmentList
+                attachments={attachmentsList}
+                onDelete={loadAttachments}
+                readonly={isDone}
+              />
+            )}
           </div>
         </div>
 
