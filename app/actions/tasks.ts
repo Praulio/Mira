@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { tasks, activity } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { deleteTaskFolder } from '@/lib/google-drive';
 
 /**
  * Standardized action response type
@@ -365,6 +366,16 @@ export async function deleteTask(
         success: false,
         error: 'Task not found',
       };
+    }
+
+    // Delete attachments from Google Drive before deleting the task
+    // This runs outside the transaction because Drive operations can be slow
+    // and we don't want to block the DB. The cron job handles orphaned files if this fails.
+    try {
+      await deleteTaskFolder(taskId);
+    } catch (driveError) {
+      console.error('Error deleting task folder from Google Drive:', driveError);
+      // Continue with task deletion even if Drive cleanup fails
     }
 
     // Execute deletion in transaction to ensure activity is logged before task is deleted
