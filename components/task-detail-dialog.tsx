@@ -2,15 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch } from 'lucide-react';
 import { toast } from 'sonner';
-import { updateTaskMetadata, assignTask, deleteTask } from '@/app/actions/tasks';
+import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 import { CompleteTaskModal } from './complete-task-modal';
+import { formatDuration } from '@/lib/format-duration';
+
+// Extended task type to include time tracking fields (added by task 4.4)
+type ExtendedKanbanTaskData = KanbanTaskData & {
+  startedAt?: Date | string | null;
+  completedAt?: Date | string | null;
+};
 
 type TaskDetailDialogProps = {
-  task: KanbanTaskData;
+  task: ExtendedKanbanTaskData;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -23,12 +31,19 @@ export function TaskDetailDialog({ task, isOpen, onClose }: TaskDetailDialogProp
 
 function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'isOpen'>) {
   const router = useRouter();
+  const { user } = useUser();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [assigneeId, setAssigneeId] = useState(task.assignee?.id || null);
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [isUpdatingCompletedAt, setIsUpdatingCompletedAt] = useState(false);
+  const [isCreatingDerived, setIsCreatingDerived] = useState(false);
+
+  // Check if current user is owner (assignee or creator)
+  const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
+  const isDone = task.status === 'done';
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
@@ -83,6 +98,42 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     setShowCompleteModal(false);
     router.refresh();
     onClose();
+  }
+
+  async function handleUpdateCompletedAt(newDate: string) {
+    if (!isOwner || !isDone) return;
+
+    setIsUpdatingCompletedAt(true);
+    const result = await updateCompletedAt({
+      taskId: task.id,
+      completedAt: new Date(newDate),
+    });
+
+    if (result.success) {
+      toast.success('Fecha de finalización actualizada');
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al actualizar fecha');
+    }
+    setIsUpdatingCompletedAt(false);
+  }
+
+  async function handleCreateDerivedTask() {
+    if (!isDone) return;
+
+    setIsCreatingDerived(true);
+    const result = await createDerivedTask({
+      parentTaskId: task.id,
+    });
+
+    if (result.success) {
+      toast.success('Tarea derivada creada');
+      router.refresh();
+      onClose();
+    } else {
+      toast.error(result.error || 'Error al crear tarea derivada');
+    }
+    setIsCreatingDerived(false);
   }
 
   return (
@@ -170,15 +221,56 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               </label>
               <div className="space-y-2 text-xs font-bold">
                 <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="opacity-40">Created</span>
+                  <span className="opacity-40">Creada</span>
                   <span>{new Date(task.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="opacity-40">Last Updated</span>
+                  <span className="opacity-40">Última actualización</span>
                   <span>{new Date(task.updatedAt).toLocaleTimeString()}</span>
                 </div>
+                {/* Time tracking - only show if task has been started */}
+                {task.startedAt && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="opacity-40">Iniciada</span>
+                    <span>{new Date(task.startedAt).toLocaleString()}</span>
+                  </div>
+                )}
+                {/* Completed at - editable for owners of done tasks */}
+                {isDone && (
+                  <div className="flex justify-between items-center py-1 border-b border-white/5">
+                    <span className="opacity-40">Completada</span>
+                    {isOwner ? (
+                      <input
+                        type="datetime-local"
+                        value={task.completedAt ? new Date(task.completedAt).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleUpdateCompletedAt(e.target.value)}
+                        disabled={isUpdatingCompletedAt}
+                        max={new Date().toISOString().slice(0, 16)}
+                        className="bg-transparent border border-white/10 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-primary/50 disabled:opacity-50"
+                      />
+                    ) : (
+                      <span>
+                        {task.completedAt
+                          ? new Date(task.completedAt).toLocaleString()
+                          : '-'}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Duration Section - only show if task has startedAt */}
+            {task.startedAt && (
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-3 w-3" /> Duración
+                </label>
+                <div className={`text-2xl font-black ${isDone ? 'text-green-400' : 'text-amber-400'}`}>
+                  {formatDuration(task.startedAt, task.completedAt)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Description Section */}
@@ -197,20 +289,37 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3 bg-white/5">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-all"
-          >
-            Close
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="p-6 border-t border-white/5 flex justify-between gap-3 bg-white/5">
+          {/* Left side: Create derived task button (only for done tasks) */}
+          <div>
+            {isDone && (
+              <button
+                onClick={handleCreateDerivedTask}
+                disabled={isCreatingDerived}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-xl hover:bg-amber-400/20 transition-all disabled:opacity-50"
+                title="Crear tarea derivada para continuar el trabajo"
+              >
+                <GitBranch className="h-4 w-4" />
+                {isCreatingDerived ? 'Creando...' : 'Crear derivada'}
+              </button>
+            )}
+          </div>
+          {/* Right side: Close and Save buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-all"
+            >
+              Cerrar
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
         </div>
       </div>
 

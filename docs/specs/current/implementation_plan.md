@@ -128,7 +128,7 @@ Validación Fase 3:
   - Comportamiento: Reemplaza status dot por duración formateada cuando aplica
   - Referencia: ver components/task-card.tsx:140-165
 
-- [ ] **4.3** Agregar info de tiempos en TaskDetailDialog
+- [x] **4.3** Agregar info de tiempos en TaskDetailDialog
   - Input: components/task-detail-dialog.tsx sección Information (líneas 166-181)
   - Output: Mostrar startedAt, completedAt (editable si owner), duración calculada
   - Comportamiento: DateTimePicker para completedAt solo si isOwner, botón crear derivada si done

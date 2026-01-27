@@ -276,3 +276,21 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Si no hay startedAt o duración es "-", se muestra el status dot original
 - Requiere que tarea 4.4 agregue startedAt/completedAt al tipo KanbanTaskData para funcionar completamente
 - Próximo paso: tarea 4.3 - Agregar info de tiempos en TaskDetailDialog
+
+### Session 15 - 2026-01-26
+
+**Task:** 4.3 - Agregar info de tiempos en TaskDetailDialog
+**Files:** components/task-detail-dialog.tsx
+**Patterns:**
+- Extensión de tipos con `&`: `ExtendedKanbanTaskData = KanbanTaskData & { startedAt?, completedAt? }` permite agregar campos opcionales sin modificar el tipo base
+- Clerk `useUser()` hook para obtener userId en componentes cliente - la validación real ocurre server-side
+- HTML5 `datetime-local` input con `max={new Date().toISOString().slice(0, 16)}` previene fechas futuras de forma nativa
+- Ownership check: `user?.id === task.assignee?.id || user?.id === task.creator.id`
+**Notes:**
+- Sección "Information" ahora muestra: Creada, Última actualización, Iniciada (si startedAt), Completada (editable si owner + done)
+- Nueva sección "Duración" con `formatDuration()` - texto grande verde (done) o amber (in_progress)
+- Input datetime-local para completedAt solo visible para owners de tareas done
+- Botón "Crear derivada" en footer para tareas done - usa `createDerivedTask` server action
+- Labels traducidos a español: Creada, Última actualización, Iniciada, Completada, Duración, Cerrar, Guardar
+- Requiere que tarea 4.4 agregue startedAt/completedAt al tipo KanbanTaskData para funcionar completamente
+- Próximo paso: tarea 4.4 - Actualizar query getKanbanData para incluir startedAt
