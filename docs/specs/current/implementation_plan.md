@@ -186,7 +186,7 @@ Validación Fase 6:
   - Referencia: ver components/notification-bell.tsx para selectores, e2e/critical-flow.spec.ts para pattern
   - **OBLIGATORIO:** Ejecutar `pnpm test:e2e e2e/notifications-bell.spec.ts` y pegar output completo en discoveries.md
 
-- [ ] **7.3** Crear test E2E para MentionInput en descripción
+- [x] **7.3** Crear test E2E para MentionInput en descripción
   - Input: Nuevo archivo e2e/notifications-mention.spec.ts
   - Output: Test que: (1) navega al dashboard, (2) abre una tarea, (3) escribe @ en el campo de descripción, (4) verifica que aparece el dropdown de autocomplete de usuarios
   - Comportamiento: Usar selectores del MentionInput component

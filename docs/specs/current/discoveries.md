@@ -180,3 +180,14 @@ Running 3 tests using 1 worker
 Running 4 tests using 1 worker
   4 passed (10.7s)
 ```
+
+### Session 18 - 2026-01-28
+**Task:** 7.3 - Crear test E2E para MentionInput en descripción
+**Files:** e2e/notifications-mention.spec.ts (new)
+**Patterns:** Task cards use `data-testid^="task-card-"` prefix (not exact `task-card`). Kanban board is at `/dashboard/kanban`, not `/dashboard`. Tests that need existing tasks should skip gracefully when board is empty. MentionInput dropdown uses Tailwind classes `.absolute.rounded-xl.border` for selection. `page.type('@', { delay: 100 })` triggers the onChange handler properly for mention detection.
+**Notes:** 4 tests: (1) description textarea visible in dialog, (2) typing @ shows autocomplete dropdown, (3) dropdown shows user buttons, (4) gibberish after @ shows "No se encontraron usuarios". All rely on existing tasks on kanban board; skip if empty.
+**Test Output:**
+```
+Running 4 tests using 1 worker
+  4 passed (10.5s)
+```
