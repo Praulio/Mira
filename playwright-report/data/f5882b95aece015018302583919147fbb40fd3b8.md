@@ -1,0 +1,348 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "Mira" [ref=e6] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e11]: Mira
+        - navigation [ref=e12]:
+          - link "Vista de Equipo Ve en qué trabaja el equipo" [ref=e13] [cursor=pointer]:
+            - /url: /dashboard
+            - button "Vista de Equipo Ve en qué trabaja el equipo" [ref=e14]:
+              - img
+              - generic [ref=e15]:
+                - generic [ref=e16]: Vista de Equipo
+                - generic [ref=e17]: Ve en qué trabaja el equipo
+          - link "Tablero Kanban Arrastra y suelta tareas" [ref=e18] [cursor=pointer]:
+            - /url: /dashboard/kanban
+            - button "Tablero Kanban Arrastra y suelta tareas" [ref=e19]:
+              - img
+              - generic [ref=e20]:
+                - generic [ref=e21]: Tablero Kanban
+                - generic [ref=e22]: Arrastra y suelta tareas
+          - link "Pila de Tareas Prioriza trabajo pendiente" [ref=e23] [cursor=pointer]:
+            - /url: /dashboard/backlog
+            - button "Pila de Tareas Prioriza trabajo pendiente" [ref=e24]:
+              - img
+              - generic [ref=e25]:
+                - generic [ref=e26]: Pila de Tareas
+                - generic [ref=e27]: Prioriza trabajo pendiente
+          - link "Actividad Cambios recientes" [ref=e28] [cursor=pointer]:
+            - /url: /dashboard/activity
+            - button "Actividad Cambios recientes" [ref=e29]:
+              - img
+              - generic [ref=e30]:
+                - generic [ref=e31]: Actividad
+                - generic [ref=e32]: Cambios recientes
+        - paragraph [ref=e34]: Mira Tasker v1.0.0
+    - generic [ref=e35]:
+      - banner [ref=e36]:
+        - heading "Dashboard" [level=1] [ref=e38]
+        - button "Notificaciones" [ref=e40]:
+          - img [ref=e41]
+      - main [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - heading "Tablero Kanban" [level=2] [ref=e48]
+              - paragraph [ref=e49]: Organiza y rastrea tus tareas a través de cuatro etapas - Arrastra para mover tareas
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - heading "Crear Nueva Tarea" [level=2] [ref=e53]
+                - button [ref=e54]:
+                  - img [ref=e55]
+              - generic [ref=e58]:
+                - generic [ref=e59]:
+                  - generic [ref=e60]: Título *
+                  - textbox "Título *" [ref=e61]:
+                    - /placeholder: ¿Qué hay que hacer?
+                    - text: Done Block Test 1769631472704
+                - generic [ref=e62]:
+                  - text: Descripción
+                  - textbox "Descripción" [ref=e63]:
+                    - /placeholder: Agrega algunos detalles...
+                - generic [ref=e64]:
+                  - text: Asignar a
+                  - generic [ref=e65]:
+                    - button "José Antonio Cerda Ocejo José" [ref=e66]:
+                      - img "José Antonio Cerda Ocejo" [ref=e68]
+                      - generic [ref=e69]: José
+                    - button "Nebula Tools Nebula" [ref=e70]:
+                      - img "Nebula Tools" [ref=e72]
+                      - generic [ref=e73]: Nebula
+                    - button "EL JULIUS ❄️ EL" [ref=e74]:
+                      - img "EL JULIUS ❄️" [ref=e76]
+                      - generic [ref=e77]: EL
+                    - button "Rogelio Guzmán Rogelio" [ref=e78]:
+                      - img "Rogelio Guzmán" [ref=e80]
+                      - generic [ref=e81]: Rogelio
+                - generic [ref=e82]:
+                  - generic [ref=e83]:
+                    - img [ref=e84]
+                    - text: Adjuntos
+                  - button "Arrastra archivos o haz clic" [ref=e87] [cursor=pointer]:
+                    - generic [ref=e88]:
+                      - img [ref=e89]
+                      - paragraph [ref=e92]: Arrastra archivos o haz clic
+                - generic [ref=e93]:
+                  - button "Cancelar" [ref=e94]
+                  - button "Crear Tarea" [ref=e95]
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e99]:
+                - heading "Pila de Tareas" [level=3] [ref=e101]
+                - generic [ref=e102]: "4"
+              - generic [ref=e103]:
+                - button "Análisis de listado de cálculos MRM Validar archivo markdown en repositorio Unassigned" [ref=e104]:
+                  - button [ref=e106]:
+                    - img [ref=e107]
+                  - heading "Análisis de listado de cálculos MRM" [level=4] [ref=e111]
+                  - paragraph [ref=e112]: Validar archivo markdown en repositorio
+                  - generic [ref=e114]:
+                    - img [ref=e116]
+                    - generic [ref=e119]: Unassigned
+                - button "Auditoría Backend & Proceso SFTP lista de ajustes pendiente de editar aquí... Unassigned" [ref=e122]:
+                  - button [ref=e124]:
+                    - img [ref=e125]
+                  - heading "Auditoría Backend & Proceso SFTP" [level=4] [ref=e129]
+                  - paragraph [ref=e130]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e132]:
+                    - img [ref=e134]
+                    - generic [ref=e137]: Unassigned
+                - button "Ajustes finales Front MRM lista de ajustes pendiente de editar aquí... Unassigned" [ref=e140]:
+                  - button [ref=e142]:
+                    - img [ref=e143]
+                  - heading "Ajustes finales Front MRM" [level=4] [ref=e147]
+                  - paragraph [ref=e148]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e150]:
+                    - img [ref=e152]
+                    - generic [ref=e155]: Unassigned
+                - button "Next Sprint HappyDreamers lista de ajustes pendiente de editar aquí... Unassigned" [ref=e158]:
+                  - button [ref=e160]:
+                    - img [ref=e161]
+                  - heading "Next Sprint HappyDreamers" [level=4] [ref=e165]
+                  - paragraph [ref=e166]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e168]:
+                    - img [ref=e170]
+                    - generic [ref=e173]: Unassigned
+            - generic [ref=e176]:
+              - generic [ref=e178]:
+                - heading "Por Hacer" [level=3] [ref=e180]
+                - generic [ref=e181]: "8"
+              - generic [ref=e182]:
+                - button "Documentación limpia proceso Shared Drive EL JULIUS ❄️ EL JULIUS ❄️" [ref=e183]:
+                  - button [ref=e185]:
+                    - img [ref=e186]
+                  - heading "Documentación limpia proceso Shared Drive" [level=4] [ref=e190]
+                  - generic [ref=e192]:
+                    - img "EL JULIUS ❄️" [ref=e194]
+                    - generic [ref=e195]: EL JULIUS ❄️
+                - button "Revisión WebFlow & Requerimiento Agencia Nevada EL JULIUS ❄️ EL JULIUS ❄️" [ref=e198]:
+                  - button [ref=e200]:
+                    - img [ref=e201]
+                  - heading "Revisión WebFlow & Requerimiento Agencia Nevada" [level=4] [ref=e205]
+                  - generic [ref=e207]:
+                    - img "EL JULIUS ❄️" [ref=e209]
+                    - generic [ref=e210]: EL JULIUS ❄️
+                - button "test 1 ereer Nebula Tools Nebula Tools" [ref=e213]:
+                  - button [ref=e215]:
+                    - img [ref=e216]
+                  - heading "test 1" [level=4] [ref=e220]
+                  - paragraph [ref=e221]: ereer
+                  - generic [ref=e223]:
+                    - img "Nebula Tools" [ref=e225]
+                    - generic [ref=e226]: Nebula Tools
+                - button "Testing Ralph Loop 1st Try EL JULIUS ❄️ EL JULIUS ❄️" [ref=e229]:
+                  - button [ref=e231]:
+                    - img [ref=e232]
+                  - heading "Testing Ralph Loop 1st Try" [level=4] [ref=e236]
+                  - generic [ref=e238]:
+                    - img "EL JULIUS ❄️" [ref=e240]
+                    - generic [ref=e241]: EL JULIUS ❄️
+                - button "Migración landings a nuevo VPS Mover proyectos EzyAI & Artra a server seguro. EL JULIUS ❄️ EL JULIUS ❄️" [ref=e244]:
+                  - button [ref=e246]:
+                    - img [ref=e247]
+                  - heading "Migración landings a nuevo VPS" [level=4] [ref=e251]
+                  - paragraph [ref=e252]: Mover proyectos EzyAI & Artra a server seguro.
+                  - generic [ref=e254]:
+                    - img "EL JULIUS ❄️" [ref=e256]
+                    - generic [ref=e257]: EL JULIUS ❄️
+                - button "Junta Seguimiento Revisión MRM EL JULIUS ❄️ EL JULIUS ❄️" [ref=e260]:
+                  - button [ref=e262]:
+                    - img [ref=e263]
+                  - heading "Junta Seguimiento Revisión MRM" [level=4] [ref=e267]
+                  - generic [ref=e269]:
+                    - img "EL JULIUS ❄️" [ref=e271]
+                    - generic [ref=e272]: EL JULIUS ❄️
+                - button "Junta Kick Off pt. 2 Zuli Validar notas y comentarios del alcance MVP EL JULIUS ❄️ EL JULIUS ❄️" [ref=e275]:
+                  - button [ref=e277]:
+                    - img [ref=e278]
+                  - heading "Junta Kick Off pt. 2 Zuli" [level=4] [ref=e282]
+                  - paragraph [ref=e283]: Validar notas y comentarios del alcance MVP
+                  - generic [ref=e285]:
+                    - img "EL JULIUS ❄️" [ref=e287]
+                    - generic [ref=e288]: EL JULIUS ❄️
+                - button "Workflow AI Afinando workflow con autonomia de implementacion Rogelio Guzmán Rogelio Guzmán" [ref=e291]:
+                  - button [ref=e293]:
+                    - img [ref=e294]
+                  - heading "Workflow AI" [level=4] [ref=e298]
+                  - paragraph [ref=e299]: Afinando workflow con autonomia de implementacion
+                  - generic [ref=e301]:
+                    - img "Rogelio Guzmán" [ref=e303]
+                    - generic [ref=e304]: Rogelio Guzmán
+            - generic [ref=e307]:
+              - generic [ref=e309]:
+                - heading "En Progreso" [level=3] [ref=e311]
+                - generic [ref=e312]: "3"
+              - generic [ref=e313]:
+                - button "Workflow Ralph 2nd sprint EL JULIUS ❄️ EL JULIUS ❄️ 2h 36m" [ref=e314]:
+                  - button [ref=e316]:
+                    - img [ref=e317]
+                  - heading "Workflow Ralph 2nd sprint" [level=4] [ref=e321]
+                  - generic [ref=e322]:
+                    - generic [ref=e323]:
+                      - img "EL JULIUS ❄️" [ref=e325]
+                      - generic [ref=e326]: EL JULIUS ❄️
+                    - generic [ref=e328]:
+                      - img [ref=e329]
+                      - generic [ref=e332]: 2h 36m
+                - button [ref=e333]:
+                  - button [ref=e335]:
+                    - img [ref=e336]
+                  - heading "Item 4 HD" [level=4] [ref=e340]
+                  - paragraph [ref=e341]: "Item 8. respuesta. A item 9 respuesta. lo visualizable debe estar en funcion del niño seleccionado ITEM 10: Layout Plan vs Eventos (Izquierda/Derecha) 1. ¿Este layout reemplaza la vista actual del calendario diario, o es una sección/card ADICIONAL? - Opción A: Reemplaza completamente el calendario diario - Opción B: Se agrega como una nueva card arriba o abajo del calendario R.- Se agrega como card arriba del calendario para padres y admin 2. ¿Este layout aplica solo para PADRES, o también para ADMIN? R.- Ambos 3. ¿El plan se muestra aunque el niño NO tenga un plan activo? Si no tiene plan, ¿qué se muestra en la columna izquierda? R.- Si no tiene plan solo refleja los eventos capturados 4. ¿Cómo se visualiza cuando un evento NO coincide con ningún item del plan? (ej: el padre registró una actividad extra que no estaba en el plan) R.- El evento creado se incrusta cronologicamente aunque en el plan no estuviera contemplado --- ITEM 1: Vista Narrativa en Home 5. ¿El botón Expandir/Colapsar debe iniciar EXPANDIDO o COLAPSADO por default? r.- Debe estar colapsado para mostrar solamente los ultimos 3 eventos capturados del dia ((día considerado como el día rutina de despertar a despertar no en 24 hrs). 6. Cuando dices \"primero diario en texto, luego calendario\", ¿te refieres a: - Opción A: La card de texto narrativo ARRIBA, card de calendario ABAJO - Opción B: Dentro de la misma card, primero el texto y luego el mini-calendario R.- Opción a. en vista mobil primero se visualiza narrativa y despues calendario. en vista web side by side --- ITEM 5: Tabs para Padres 7. Confirmar: Para PADRES la vista de calendario /dashboard/calendar solo tendrá: - Tab \"Diario\" ✅ - Tab \"Semanal\" ✅ - ~Tab \"Mensual\"~ ❌ (eliminado) - ~Tab \"Gráfico\"~ ❌ (eliminado) ¿Es correcto? Corrcto --- ITEM 4: Calendario sin Scroll 8. \"El usuario no debe hacer scroll nunca\" en el calendario - Si hay muchos eventos en un día y no caben en la pantalla, ¿qué debe pasar? - Opción A: El calendario crece y el usuario hace scroll de PÁGINA (no del calendario) - Opción B: Los eventos se comprimen/reducen para caber - Opción C: Otra solución --- ITEM 9: Estado por Niño 9. Si hay múltiples niños y cada uno tiene su estado, ¿el botón de sueño debe mostrar el estado del NIÑO ACTIVO seleccionado? (asumo que sí, pero confirmar)"
+                  - generic [ref=e343]:
+                    - img "Rogelio Guzmán" [ref=e345]
+                    - generic [ref=e346]: Rogelio Guzmán
+                - button "Tab de Incidencias Arregalr detalles de back y front en tab de incidencias José Antonio Cerda Ocejo José Antonio Cerda Ocejo 23h 33m" [ref=e349]:
+                  - button [ref=e351]:
+                    - img [ref=e352]
+                  - heading "Tab de Incidencias" [level=4] [ref=e356]
+                  - paragraph [ref=e357]: Arregalr detalles de back y front en tab de incidencias
+                  - generic [ref=e358]:
+                    - generic [ref=e359]:
+                      - img "José Antonio Cerda Ocejo" [ref=e361]
+                      - generic [ref=e362]: José Antonio Cerda Ocejo
+                    - generic [ref=e364]:
+                      - img [ref=e365]
+                      - generic [ref=e368]: 23h 33m
+            - generic [ref=e369]:
+              - generic [ref=e371]:
+                - heading "Completado" [level=3] [ref=e373]
+                - generic [ref=e374]: "11"
+              - generic [ref=e375]:
+                - 'button "Continuación: Rebotar cuestionario con Mariana sdfdsfg Nebula Tools Nebula Tools 4 1d 15h" [ref=e376]':
+                  - button [ref=e378]:
+                    - img [ref=e379]
+                  - 'heading "Continuación: Rebotar cuestionario con Mariana" [level=4] [ref=e383]'
+                  - paragraph [ref=e384]: sdfdsfg
+                  - generic [ref=e385]:
+                    - generic [ref=e386]:
+                      - img "Nebula Tools" [ref=e388]
+                      - generic [ref=e389]: Nebula Tools
+                    - generic [ref=e390]:
+                      - generic [ref=e391]:
+                        - img [ref=e392]
+                        - generic [ref=e394]: "4"
+                      - generic [ref=e395]:
+                        - img [ref=e396]
+                        - generic [ref=e399]: 1d 15h
+                - button "Junta Seguimiento Zuli EL JULIUS ❄️ EL JULIUS ❄️ 2h 54m" [ref=e400]:
+                  - button [ref=e402]:
+                    - img [ref=e403]
+                  - heading "Junta Seguimiento Zuli" [level=4] [ref=e407]
+                  - generic [ref=e408]:
+                    - generic [ref=e409]:
+                      - img "EL JULIUS ❄️" [ref=e411]
+                      - generic [ref=e412]: EL JULIUS ❄️
+                    - generic [ref=e414]:
+                      - img [ref=e415]
+                      - generic [ref=e418]: 2h 54m
+                - button "MRM- tab de rotacion José Antonio Cerda Ocejo José Antonio Cerda Ocejo" [ref=e419]:
+                  - button [ref=e421]:
+                    - img [ref=e422]
+                  - heading "MRM- tab de rotacion" [level=4] [ref=e426]
+                  - generic [ref=e428]:
+                    - img "José Antonio Cerda Ocejo" [ref=e430]
+                    - generic [ref=e431]: José Antonio Cerda Ocejo
+                - button "Configuración Google Shared Drive para Mira EL JULIUS ❄️ EL JULIUS ❄️" [ref=e434]:
+                  - button [ref=e436]:
+                    - img [ref=e437]
+                  - heading "Configuración Google Shared Drive para Mira" [level=4] [ref=e441]
+                  - generic [ref=e443]:
+                    - img "EL JULIUS ❄️" [ref=e445]
+                    - generic [ref=e446]: EL JULIUS ❄️
+                - button "Rebotar cuestionario con Mariana Nebula Tools Nebula Tools" [ref=e449]:
+                  - button [ref=e451]:
+                    - img [ref=e452]
+                  - heading "Rebotar cuestionario con Mariana" [level=4] [ref=e456]
+                  - generic [ref=e458]:
+                    - img "Nebula Tools" [ref=e460]
+                    - generic [ref=e461]: Nebula Tools
+                - button "Testing Sprint HD en QA EL JULIUS ❄️ EL JULIUS ❄️" [ref=e464]:
+                  - button [ref=e466]:
+                    - img [ref=e467]
+                  - heading "Testing Sprint HD en QA" [level=4] [ref=e471]
+                  - generic [ref=e473]:
+                    - img "EL JULIUS ❄️" [ref=e475]
+                    - generic [ref=e476]: EL JULIUS ❄️
+                - button "Revision de Documentacion HD sprint 1 revisar documentacion en https://docs.google.com/document/d/1r0FqAeEkLFh0HsIChyPxZt6TZNt3aVsTDSEPpMup08g/edit?usp=sharing esta como Sprint 1 HD - ATZ en el gem la conversacion completa Rogelio Guzmán Rogelio Guzmán" [ref=e479]:
+                  - button [ref=e481]:
+                    - img [ref=e482]
+                  - heading "Revision de Documentacion HD sprint 1" [level=4] [ref=e486]
+                  - paragraph [ref=e487]: revisar documentacion en https://docs.google.com/document/d/1r0FqAeEkLFh0HsIChyPxZt6TZNt3aVsTDSEPpMup08g/edit?usp=sharing esta como Sprint 1 HD - ATZ en el gem la conversacion completa
+                  - generic [ref=e489]:
+                    - img "Rogelio Guzmán" [ref=e491]
+                    - generic [ref=e492]: Rogelio Guzmán
+                - button "Landing Butchers Universe Sitio web Draft basado en Figma EL JULIUS ❄️ EL JULIUS ❄️" [ref=e495]:
+                  - button [ref=e497]:
+                    - img [ref=e498]
+                  - heading "Landing Butchers Universe" [level=4] [ref=e502]
+                  - paragraph [ref=e503]: Sitio web Draft basado en Figma
+                  - generic [ref=e505]:
+                    - img "EL JULIUS ❄️" [ref=e507]
+                    - generic [ref=e508]: EL JULIUS ❄️
+                - button "Generación Documento Priorizado Zuli EL JULIUS ❄️ EL JULIUS ❄️" [ref=e511]:
+                  - button [ref=e513]:
+                    - img [ref=e514]
+                  - heading "Generación Documento Priorizado Zuli" [level=4] [ref=e518]
+                  - generic [ref=e520]:
+                    - img "EL JULIUS ❄️" [ref=e522]
+                    - generic [ref=e523]: EL JULIUS ❄️
+                - button "Revisar documentación Zuli Validar 10 files del drive y agregar notas EL JULIUS ❄️ EL JULIUS ❄️" [ref=e526]:
+                  - button [ref=e528]:
+                    - img [ref=e529]
+                  - heading "Revisar documentación Zuli" [level=4] [ref=e533]
+                  - paragraph [ref=e534]: Validar 10 files del drive y agregar notas
+                  - generic [ref=e536]:
+                    - img "EL JULIUS ❄️" [ref=e538]
+                    - generic [ref=e539]: EL JULIUS ❄️
+                - button "AI MRM Ver el flujo y preparar documentacion para editar el flujo Rogelio Guzmán Rogelio Guzmán" [ref=e542]:
+                  - button [ref=e544]:
+                    - img [ref=e545]
+                  - heading "AI MRM" [level=4] [ref=e549]
+                  - paragraph [ref=e550]: Ver el flujo y preparar documentacion para editar el flujo
+                  - generic [ref=e552]:
+                    - img "Rogelio Guzmán" [ref=e554]
+                    - generic [ref=e555]: Rogelio Guzmán
+          - status [ref=e558]
+  - region "Notifications alt+T"
+  - generic [ref=e563] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e564]:
+      - img [ref=e565]
+    - generic [ref=e568]:
+      - button "Open issues overlay" [ref=e569]:
+        - generic [ref=e570]:
+          - generic [ref=e571]: "1"
+          - generic [ref=e572]: "2"
+        - generic [ref=e573]:
+          - text: Issue
+          - generic [ref=e574]: s
+      - button "Collapse issues badge" [ref=e575]:
+        - img [ref=e576]
+  - alert [ref=e578]
+```

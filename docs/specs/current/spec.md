@@ -1,208 +1,62 @@
-# Feature: Task Enhancements - Tracking de Tiempos y Adjuntos
+# Feature: Sistema de Notificaciones
 
 ## Visión
+Los usuarios de Mira necesitan enterarse cuando les asignan una tarea o los mencionan, sin tener que estar revisando manualmente. Este feature agrega notificaciones in-app (campana con popover) y por email (SMTP/Gmail) para dos eventos clave: asignación de tareas y menciones de usuarios.
 
-Mejorar el sistema de tareas del Kanban de Mira para permitir:
-1. **Tracking de duración**: Calcular automáticamente cuánto tiempo toma completar cada tarea (desde In Progress hasta Done)
-2. **Archivos adjuntos**: Permitir subir archivos a las tareas con almacenamiento temporal en Google Drive
+## Flujo del Usuario
 
-Esto permite a los equipos medir productividad real y centralizar archivos de trabajo durante la ejecución de tareas.
+### Notificación por Asignación de Tarea
+1. Usuario A crea o edita una tarea y asigna a Usuario B (distinto de sí mismo)
+2. El sistema crea un registro de notificación in-app para Usuario B
+3. El sistema envía un email a Usuario B con el título de la tarea y un enlace directo
+4. Usuario B ve el badge numérico en la campana incrementarse (próximo polling de 30s)
+5. Usuario B abre el popover, ve la notificación: "{Usuario A} te asignó la tarea: {título}"
+6. Usuario B hace clic en la notificación → se marca como leída y navega a la tarea
 
----
+### Notificación por Mención (@usuario)
+1. Usuario A escribe `@` en la descripción de una tarea o al completar una tarea
+2. Aparece autocomplete dropdown con usuarios del equipo filtrados
+3. Selecciona Usuario B, se inserta la mención
+4. Al guardar, el sistema detecta las menciones y crea notificación in-app para cada mencionado
+5. Usuario B ve en su campana: "{Usuario A} te mencionó en la tarea: {título}"
+6. Clic en la notificación → marca como leída y navega a la tarea
 
-## Feature 1: Tracking de Tiempos
+## UI/UX
 
-### Flujo del Usuario
+### Ícono de Campana
+- Ubicación: header del dashboard, a la izquierda del UserButton de Clerk
+- Ícono: Bell de lucide-react
+- Badge: número exacto de notificaciones no leídas (rojo, circular)
+- Sin notificaciones no leídas: campana sin badge
 
-1. Usuario crea tarea → se registra `createdAt` (ya existe)
-2. Usuario arrastra tarea a "In Progress" → se registra `startedAt` automáticamente
-3. Usuario trabaja en la tarea, puede ver duración en tiempo real
-4. Usuario completa la tarea (drag a Done, botón "Completar", o editar endTime) → se registra `completedAt`
-5. Sistema calcula duración: `completedAt - startedAt`
-6. Duración visible en card del Kanban y en modal de detalle
+### Popover de Notificaciones
+- Dropdown/popover al hacer clic en la campana (alineado a la derecha)
+- Lista scrollable (~5 visibles, scroll para más, limit 50)
+- Cada card: avatar del actor, texto descriptivo, tiempo relativo, dot de no leída
+- Clic en notificación: marca como leída + navega a la tarea
+- Sin opción de eliminar, solo leer/no leer
+- Estado vacío: "No tienes notificaciones"
 
-### UI/UX
+### Email de Notificación
+- Formato: texto plano
+- Solo se envía email para asignaciones de tarea, NO para menciones
+- Envío non-blocking con after() de Next.js
 
-**En el Task Card (Kanban):**
-- Mostrar duración resumida cuando la tarea está en Done (ej: "2h 30m")
-- Mientras está en In Progress, mostrar tiempo transcurrido en vivo (amber pulsante)
+## Edge Cases
+- Auto-asignación: NO genera notificación
+- Reasignación: solo el nuevo asignado recibe notificación
+- Múltiples menciones del mismo usuario: una sola notificación
+- SMTP caído: no bloquea la acción principal, log del error
+- Usuario desconectado: notificaciones persisten en DB sin límite temporal
+- Mención a sí mismo: NO genera notificación
+- Edición de descripción con menciones: solo notificar IDs nuevos (diff vs guardados)
+- Task borrada: CASCADE delete elimina notificaciones asociadas
 
-**En el Task Detail Modal:**
-- Mostrar `startedAt` (cuando pasó a In Progress) - solo lectura
-- Mostrar `completedAt` (fecha/hora de término) - **editable solo por el owner de la tarea**
-- Mostrar duración calculada prominentemente
-- Date/time picker para editar `completedAt`
-- Botón "Crear tarea derivada" para tareas en Done
-
-### Reglas de Negocio
-
-1. `startedAt` se captura automáticamente al mover a "In Progress"
-2. `completedAt` se captura automáticamente al completar, pero es editable después
-3. **Solo el assignee o creator puede editar el `completedAt` de sus propias tareas**
-4. Si una tarea completada necesita más trabajo → crear nueva tarea con campo `parentTaskId` referenciando la tarea original (thread de tareas)
-5. No se permite mover tareas de Done hacia atrás
-6. Si tarea vuelve de In Progress a backlog/todo, se resetea `startedAt` a null
-
-### Campos Nuevos en DB
-
-```
-startedAt: timestamp (nullable) - cuando pasó a In Progress
-parentTaskId: uuid (nullable) - referencia a tarea padre si es derivada
-```
-Nota: `completedAt` ya existe en el schema.
-
-### Edge Cases
-
-- **Tarea creada directamente en In Progress**: `startedAt` = timestamp del momento
-- **Tarea movida de In Progress a Todo y luego de vuelta**: Se sobrescribe `startedAt` con el nuevo timestamp (reseteo)
-- **Tarea completada sin pasar por In Progress**: `startedAt` permanece null, duración = 0 o "-"
-- **Usuario quiere reabrir tarea completada**: No permitido vía drag, debe crear tarea derivada con `parentTaskId`
-
----
-
-## Feature 2: Archivos Adjuntos
-
-### Flujo del Usuario
-
-1. Usuario abre modal de tarea (en cualquier estado excepto Done)
-2. Usuario hace clic en "Agregar adjunto" o arrastra archivos al dropzone
-3. Archivos se suben a Google Drive en carpeta `Mira/tasks/{taskId}/`
-4. Usuario ve miniaturas de archivos en el modal
-5. Usuario puede descargar individualmente o "Descargar todos"
-6. Usuario puede eliminar adjuntos mientras la tarea está activa
-7. Al completar la tarea, los adjuntos permanecen 3 días y luego se eliminan automáticamente
-
-### UI/UX
-
-**En el Task Card (Kanban):**
-- Icono de clip si la tarea tiene adjuntos
-- Badge con cantidad de adjuntos
-
-**En el Task Detail Modal:**
-- Sección "Adjuntos" con:
-  - Área de drop zone para arrastrar archivos
-  - Botón "Agregar archivos"
-  - Grid de miniaturas (iconos para docs/videos)
-  - Botón "Descargar todos"
-  - Cada archivo: icono + nombre + botón eliminar
-- Dropzone deshabilitado si tarea está en Done
-
-**Estados visuales:**
-- Subiendo: animación de bounce en icono Upload
-- Error: toast con mensaje de error
-- Vacío: mensaje "Arrastra archivos aquí o haz clic para agregar"
-
-### Tipos de Archivo Soportados
-
-**Imágenes:** jpg, jpeg, png, gif, webp, svg
-**Videos:** mp4, mov, avi, webm
-**Documentos:** pdf, doc, docx, xls, xlsx, ppt, pptx, txt, md
-
-### Almacenamiento - Google Drive
-
-**Estructura de carpetas:**
-```
-Google Drive/
-└── Mira/
-    └── tasks/
-        └── {taskId}/
-            ├── archivo1.pdf
-            ├── imagen.png
-            └── video.mp4
-```
-
-**Integración:**
-- Usar Google Drive API con Service Account
-- Carpeta compartida configurada en variables de entorno
-- Crear carpeta por tarea al subir primer archivo
-- Eliminar carpeta completa 3 días después de `completedAt`
-
-### Reglas de Negocio
-
-1. Sin límite de cantidad o tamaño de archivos
-2. Adjuntos solo editables mientras tarea NO está en Done
-3. Eliminación automática: `completedAt + 3 días`
-4. Cron job diario (3am UTC) para limpiar adjuntos expirados
-5. Al eliminar tarea, eliminar carpeta de Drive inmediatamente
-
-### Tabla Nueva en DB
-
-```
-attachments:
-  id: uuid PK
-  taskId: uuid FK (cascade delete)
-  driveFileId: text (ID del archivo en Google Drive)
-  name: text (nombre original)
-  mimeType: text
-  sizeBytes: integer
-  uploadedBy: text FK (usuario)
-  uploadedAt: timestamp
-```
-
-### Edge Cases
-
-- **Falla de subida**: Mostrar toast error, no guardar en DB
-- **Archivo duplicado**: Permitir (Google Drive maneja nombres únicos)
-- **Tarea eliminada con adjuntos**: Eliminar carpeta de Drive inmediatamente (cascade)
-- **Google Drive no disponible**: Mostrar toast error genérico
-- **Cron job falla**: Retry en siguiente ejecución, logging detallado
-
----
-
-## Alcance
-
-### MVP (Esta iteración)
-
-**Tracking de Tiempos:**
-- [ ] Campos `startedAt`, `parentTaskId` en DB
-- [ ] Captura automática de `startedAt` al mover a In Progress
-- [ ] Edición de `completedAt` (solo owner)
-- [ ] Mostrar duración en card y modal
-- [ ] Bloquear movimiento de Done hacia atrás
-- [ ] Crear tarea derivada con `parentTaskId`
-
-**Adjuntos:**
-- [ ] Tabla `attachments` en DB
-- [ ] Integración Google Drive API
-- [ ] Subida de archivos desde modal
-- [ ] Lista de adjuntos con download/delete
-- [ ] Icono de clip en cards
-- [ ] Cron job para limpieza automática (completedAt + 3 días)
-
-### Diferido (Futuro)
-
-- Tracking completo por fase: `stagingTime` (backlog→todo), `workingTime` (todo→in_progress)
-- Reportes/analytics de tiempos por usuario/proyecto
-- Preview inline de archivos (sin descarga)
-- Versionado de adjuntos
-- Integración con otros providers (S3, Dropbox)
-
----
-
-## Éxito
-
-El feature funciona bien cuando:
-1. Las duraciones de tareas se calculan correctamente y son visibles en UI
-2. Los usuarios pueden subir/descargar archivos sin fricción
-3. Los adjuntos se eliminan automáticamente después de 3 días de completada la tarea
-4. Solo el owner puede editar el `completedAt` de sus tareas
-5. El sistema de tareas derivadas permite seguir threads de trabajo
-6. El bloqueo de Done previene movimientos accidentales
-
----
-
-## Notas de la Entrevista
-
-**Decisiones tomadas:**
-- Google Drive como storage por preferencia del cliente (carpeta compartida existente)
-- Sin límites de tamaño/cantidad para flexibilidad operativa
-- Eliminación automática a los 3 días sin advertencia previa
-- Tareas derivadas en lugar de "reabrir" para mantener historial limpio
-- Tracking simplificado (startedAt → completedAt) como MVP, tracking completo por fases es futuro
-- Owner = assignee OR creator (cualquiera puede editar completedAt)
-
-**Trade-offs aceptados:**
-- Sin preview inline de archivos (solo descarga) para simplificar MVP
-- Sin historial de transiciones de estado (solo startedAt/completedAt)
-- Sin versionado de archivos adjuntos
-- startedAt se resetea si tarea vuelve a backlog/todo
+## Decisiones de la Entrevista
+- Badge: número exacto
+- Panel: dropdown/popover (no página dedicada)
+- Actualización: polling 30s con pausa en tab inactivo
+- Email: Nodemailer + Gmail App Password, texto plano
+- Mark as read: clic individual
+- Menciones: expandir a descripción + completar tarea (MentionInput ya existe)
+- SMTP: GMAIL_USER + GMAIL_APP_PASSWORD env vars

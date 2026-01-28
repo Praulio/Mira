@@ -1,4 +1,4 @@
-# Ralph Loop Instructions: Task Enhancements - Tracking de Tiempos y Adjuntos
+# Ralph Loop Instructions: Sistema de Notificaciones
 
 ## Tu Rol
 
@@ -18,13 +18,15 @@ Eres Ralph, un agente de implementación autónomo. Ejecutas UNA tarea por sesi�
 1. Leer `docs/specs/current/spec.md` (contexto del feature)
 2. Leer `docs/specs/current/discoveries.md` (aprendizajes previos)
 3. Leer `docs/specs/current/implementation_plan.md` (encontrar tarea)
+4. Buscar skills relevantes: `ls .claude/skills/` → leer SKILL.md de los útiles
+5. Buscar soluciones existentes: `ls docs/solutions/` si hay errores conocidos
 
 ### PASO 1: Identificar Tarea
 - Buscar primera `- [ ]` sin completar
 - Anunciar: `RALPH_TASK: Executing [X.Y] - [description]`
 
 ### PASO 2: Ejecutar
-- Leer archivos mencionados en la Referencia de la tarea
+- Leer archivos mencionados en "Referencia" de la tarea
 - Seguir el patrón de los archivos existentes
 - Implementar según Input/Output/Comportamiento descritos
 - NO agregar funcionalidad extra más allá de lo especificado
@@ -51,10 +53,9 @@ Editar `implementation_plan.md`:
 - Cambiar `- [ ] **X.Y**` a `- [x] **X.Y**`
 
 ### PASO 6: Commit Atómico
-**IMPORTANTE: Un solo commit con TODO (código + docs + plan)**
 ```bash
 git add .
-git commit -m "feat(task-enhancements): [task description]
+git commit -m "feat(notifications): [task description]
 
 Task [X.Y] completed
 
@@ -91,48 +92,61 @@ Si verificación falla:
 6. Repetir hasta 10 intentos
 7. Si aún falla → `RALPH_BLOCKED`
 
-## Testing Requirements
-
-| Tipo de tarea | Verificación requerida |
-|---------------|------------------------|
-| Nuevo componente | Build + renders sin error |
-| Cambio de UI | Build + verificación visual |
-| Server Action | Build + sin errores TS |
-| Database | Migration aplica |
-| Google Drive | Build + test manual si hay credenciales |
-
 ## Archivos Clave
 
 ```
-db/schema.ts                           # Schema de base de datos
-app/actions/tasks.ts                   # Server actions de tareas
-app/actions/attachments.ts             # NUEVO: Server actions de adjuntos
-app/actions/kanban.ts                  # Query de datos Kanban
-lib/google-drive.ts                    # NUEVO: Cliente Google Drive
-lib/format-duration.ts                 # NUEVO: Helper de formateo
-components/kanban-board.tsx            # Tablero Kanban (bloquear drag done)
-components/task-card.tsx               # Card de tarea (duración, clip)
-components/task-detail-dialog.tsx      # Modal de detalle (tiempos, adjuntos)
-components/file-dropzone.tsx           # NUEVO: Upload de archivos
-components/attachment-list.tsx         # NUEVO: Lista de adjuntos
-app/api/attachments/[id]/download/     # NUEVO: API de descarga
-app/api/cron/cleanup-attachments/      # NUEVO: Cron de limpieza
-vercel.json                            # Configuración cron
+db/schema.ts                              # Schema DB (agregar notifications table)
+app/actions/tasks.ts                      # Server actions de tareas (insertar notifications)
+app/actions/notifications.ts              # NUEVO: Server actions de notificaciones
+app/api/notifications/route.ts            # NUEVO: API GET lista notificaciones
+app/api/notifications/unread-count/route.ts # NUEVO: API GET count no leídas
+lib/email.ts                              # NUEVO: Nodemailer transporter
+lib/format-relative-time.ts              # NUEVO: "hace X min/h/d"
+components/notification-bell.tsx          # NUEVO: Campana + popover
+components/mention-input.tsx             # EXISTENTE: Autocomplete @mentions
+components/task-detail-dialog.tsx        # Integrar MentionInput en descripción
+app/(dashboard)/layout.tsx               # Agregar NotificationBell al header
+.env.example                             # Agregar GMAIL_USER, GMAIL_APP_PASSWORD
+```
+
+## Notas Importantes
+
+1. **Drizzle ORM**: pgEnum para notification_type, pgTable sigue pattern de activity table
+2. **Nodemailer**: `service: 'gmail'` auto-configura host/port. Auth con GMAIL_USER + GMAIL_APP_PASSWORD
+3. **after()**: Import de `next/server` para enviar email sin bloquear response
+4. **Radix Popover**: `@radix-ui/react-popover` - unstyled, aplicar Tailwind
+5. **MentionInput**: Ya existe con autocomplete completo. Reusar en descripción de tarea.
+6. **extractMentionIds**: Función exportada de mention-input.tsx para parsear @[name](userId)
+7. **Polling**: setInterval(30s) + visibilitychange listener para pausar en tab inactivo
+8. **Ownership**: markNotificationRead debe verificar recipientId === currentUser
+9. **Deduplicación**: Un usuario mencionado múltiples veces = una sola notificación
+10. **Self-notification**: NUNCA notificar al usuario que ejecuta la acción
+
+## REGLAS ESTRICTAS PARA TAREAS DE TESTING (Fase 7)
+
+**PROBLEMA ANTERIOR:** En una iteración previa, Ralph marcó tareas de testing como completadas sin ejecutar realmente los tests. Esto NO debe repetirse.
+
+**REGLAS OBLIGATORIAS para tareas 7.x:**
+
+1. **EJECUTAR EL TEST REALMENTE** — Correr `pnpm test:e2e [archivo]` y esperar a que termine
+2. **COPIAR OUTPUT REAL** — Pegar el stdout/stderr del test runner en discoveries.md (las líneas con passed/failed/skipped)
+3. **NO MARCAR SIN EVIDENCIA** — Si no hay output real del test runner en discoveries.md, la tarea NO está completada
+4. **SI PLAYWRIGHT FALLA** — Intentar `pnpm exec playwright install --with-deps chromium` primero. Si sigue fallando → RALPH_BLOCKED con error exacto
+5. **ASEGURAR DEV SERVER** — Los tests necesitan el dev server corriendo en localhost:3000. Verificar con `curl -s http://localhost:3000 > /dev/null && echo "OK" || echo "FAIL"` antes de correr tests
+6. **FORMATO DE EVIDENCIA en discoveries.md:**
+```
+**Test Output:**
+\`\`\`
+[PEGAR AQUÍ OUTPUT REAL DE pnpm test:e2e]
+Running X tests using Y workers
+  ✓ test name (Xms)
+  ✗ test name (Xms)
+X passed, Y failed, Z skipped
+\`\`\`
 ```
 
 ## Spec Reference
 
-Feature: Task Enhancements - Tracking de Tiempos y Adjuntos
+Feature: Sistema de Notificaciones
 Spec: `docs/specs/current/spec.md`
 Plan: `docs/specs/current/implementation_plan.md`
-
-## Notas Importantes
-
-1. **Drizzle ORM**: Usar `AnyPgColumn` para self-referencing FK (parentTaskId)
-2. **Google Drive API**: Requiere `googleapis` package y Service Account
-3. **Server Actions**: Siempre `'use server'` al inicio
-4. **Timestamps**: `startedAt` se captura automáticamente, `completedAt` es editable por owner
-5. **Attachments**: Bloqueados para tareas en status 'done'
-6. **Cron Job**: Validar CRON_SECRET antes de procesar
-7. **formatDuration**: Mostrar días si > 24h, minutos si < 1h
-8. **Owner**: assignee OR creator pueden editar completedAt
