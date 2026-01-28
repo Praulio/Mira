@@ -38,7 +38,7 @@ Validación Fase 0:
   - Comportamiento: Índices en recipientId, (recipientId + isRead) compuesto, createdAt
   - Referencia: ver db/schema.ts:68-79 pattern de tabla activity
 
-- [ ] **1.2** Agregar columna descriptionMentions a tabla tasks
+- [x] **1.2** Agregar columna descriptionMentions a tabla tasks
   - Input: db/schema.ts línea 53 (después de completionMentions)
   - Output: Campo `descriptionMentions: jsonb('description_mentions').$type<string[]>()`
   - Referencia: ver db/schema.ts:53 pattern de completionMentions

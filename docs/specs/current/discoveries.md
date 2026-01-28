@@ -92,3 +92,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** db/schema.ts
 **Patterns:** Followed activity table pattern: uuid PK, references to users/tasks with cascade, indexes. Added notificationTypeEnum pgEnum with 'assigned'/'mentioned'. Composite index on (recipientId, isRead) for efficient unread count queries.
 **Notes:** Build passes (0 errors, 13 warnings pre-existing). Table has: id, recipientId, actorId, taskId, type, isRead, createdAt with 3 indexes.
+
+### Session 5 - 2026-01-28
+**Task:** 1.2 - Agregar columna descriptionMentions a tabla tasks
+**Files:** db/schema.ts
+**Patterns:** Followed completionMentions pattern exactly: `jsonb('description_mentions').$type<string[]>()`. Added after completionMentions on line 53.
+**Notes:** Build passes (0 errors, 13 warnings pre-existing). Column added to track which users were mentioned in task description for diff-based notification logic in task 4.3.
