@@ -193,7 +193,7 @@ Validación Fase 6:
   - Referencia: ver components/mention-input.tsx para selectores, components/task-detail-dialog.tsx para dialog
   - **OBLIGATORIO:** Ejecutar `pnpm test:e2e e2e/notifications-mention.spec.ts` y pegar output completo en discoveries.md
 
-- [ ] **7.4** Ejecutar suite completa de E2E y reportar resultados
+- [x] **7.4** Ejecutar suite completa de E2E y reportar resultados
   - Input: Todos los archivos e2e/*.spec.ts
   - Output: Ejecutar `pnpm test:e2e` (suite completa). Copiar OUTPUT COMPLETO a discoveries.md incluyendo: número de tests passed, failed, skipped, y duración total.
   - Comportamiento: Si algún test falla → intentar fix (max 10 intentos). Si tests pasan → documentar resultado exacto. NUNCA marcar como completada sin output real del test runner.

@@ -191,3 +191,46 @@ Running 4 tests using 1 worker
 Running 4 tests using 1 worker
   4 passed (10.5s)
 ```
+
+### Session 19 - 2026-01-28
+**Task:** 7.4 - Ejecutar suite completa de E2E y reportar resultados
+**Files:** No files modified (test execution only)
+**Patterns:** All 21 failures are pre-existing: they all fail on task creation because mock user `user_e2e_test_123` doesn't exist in DB (FK constraint `tasks_creator_id_users_id_fk`). These affect critical-flow, task-attachments, task-completed-at-edit, task-done-blocking, and task-time-tracking specs. All 11 notification tests pass cleanly.
+**Notes:** Full suite: 33 tests, 12 passed, 21 failed, 0 skipped. Duration: 3.7 minutes. No notification-related failures.
+**Test Output:**
+```
+Running 33 tests using 1 worker
+  21 failed
+    [chromium] › e2e/critical-flow.spec.ts:38:7 › Critical User Flow › complete flow: create task -> move to in progress -> verify in team view
+    [chromium] › e2e/critical-flow.spec.ts:150:7 › Critical User Flow › kanban drag and drop works across all columns
+    [chromium] › e2e/task-attachments.spec.ts:60:7 › Task Attachments › upload file shows in attachment list and task card shows clip icon
+    [chromium] › e2e/task-attachments.spec.ts:170:7 › Task Attachments › dropzone is hidden for completed tasks
+    [chromium] › e2e/task-attachments.spec.ts:246:7 › Task Attachments › delete button is hidden for completed task attachments
+    [chromium] › e2e/task-attachments.spec.ts:356:7 › Task Attachments › can download attachment from list
+    [chromium] › e2e/task-attachments.spec.ts:446:7 › Task Attachments › can delete attachment from active task
+    [chromium] › e2e/task-attachments.spec.ts:537:7 › Task Attachments › attachment count badge updates after upload
+    [chromium] › e2e/task-completed-at-edit.spec.ts:33:7 › Task CompletedAt Edit › owner can edit completedAt for completed task
+    [chromium] › e2e/task-completed-at-edit.spec.ts:141:7 › Task CompletedAt Edit › completedAt input has max constraint preventing future dates
+    [chromium] › e2e/task-completed-at-edit.spec.ts:220:7 › Task CompletedAt Edit › completedAt edit preserves duration calculation
+    [chromium] › e2e/task-completed-at-edit.spec.ts:304:7 › Task CompletedAt Edit › completedAt field is read-only for non-owner
+    [chromium] › e2e/task-completed-at-edit.spec.ts:366:7 › Task CompletedAt Edit › completedAt input is disabled while saving
+    [chromium] › e2e/task-done-blocking.spec.ts:30:7 › Task Done Blocking › completed task cannot be dragged to another column
+    [chromium] › e2e/task-done-blocking.spec.ts:122:7 › Task Done Blocking › completed task cannot be dragged to Backlog
+    [chromium] › e2e/task-done-blocking.spec.ts:195:7 › Task Done Blocking › completed task cannot be dragged to To Do
+    [chromium] › e2e/task-done-blocking.spec.ts:267:7 › Task Done Blocking › toast error message includes suggestion
+    [chromium] › e2e/task-time-tracking.spec.ts:30:7 › Task Time Tracking › captures startedAt when task moves to In Progress
+    [chromium] › e2e/task-time-tracking.spec.ts:117:7 › Task Time Tracking › shows correct duration format after completing task
+    [chromium] › e2e/task-time-tracking.spec.ts:204:7 › Task Time Tracking › task without startedAt shows dash for duration
+    [chromium] › e2e/task-time-tracking.spec.ts:240:7 › Task Time Tracking › duration updates live for in_progress tasks
+  12 passed (3.7m)
+```
+**Breakdown:**
+- notifications-assignment.spec.ts: 3/3 passed
+- notifications-bell.spec.ts: 4/4 passed
+- notifications-mention.spec.ts: 4/4 passed
+- critical-flow.spec.ts: 1/3 passed (2 pre-existing failures)
+- task-attachments.spec.ts: 0/6 passed (all pre-existing failures)
+- task-completed-at-edit.spec.ts: 0/5 passed (all pre-existing failures)
+- task-done-blocking.spec.ts: 0/4 passed (all pre-existing failures)
+- task-time-tracking.spec.ts: 0/4 passed (all pre-existing failures)
+**Root cause of all failures:** Mock E2E user `user_e2e_test_123` does not exist in the Neon DB users table, causing FK violation on task creation.
