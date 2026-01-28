@@ -12,7 +12,7 @@ Fecha: 2026-01-28
   - Output: Paquetes instalados en node_modules
   - Comando: `pnpm add nodemailer @radix-ui/react-popover && pnpm add -D @types/nodemailer`
 
-- [ ] **0.2** Agregar variables de entorno a .env.example
+- [x] **0.2** Agregar variables de entorno a .env.example
   - Input: .env.example actual
   - Output: Variables GMAIL_USER, GMAIL_APP_PASSWORD, NEXT_PUBLIC_APP_URL agregadas
   - Referencia: ver .env.example para formato existente

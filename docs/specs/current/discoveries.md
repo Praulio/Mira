@@ -66,3 +66,9 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Files:** package.json, pnpm-lock.yaml
 **Patterns:** pnpm was not on PATH; needed `/opt/homebrew/bin/pnpm` or global install via npm. pnpm moved npm-installed packages to `.ignored` dir and reinstalled everything cleanly (615 packages).
 **Notes:** nodemailer 7.0.13, @radix-ui/react-popover 1.1.15, @types/nodemailer 7.0.9 installed. Build passes with 0 errors (13 warnings pre-existing).
+
+### Session 2 - 2026-01-28
+**Task:** 0.2 - Agregar variables de entorno a .env.example
+**Files:** .env.example
+**Patterns:** .env.example uses comment blocks per section with URLs for setup instructions.
+**Notes:** Added GMAIL_USER, GMAIL_APP_PASSWORD, NEXT_PUBLIC_APP_URL. Build passes (0 errors, 13 warnings pre-existing).
