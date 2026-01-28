@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Upload, Loader2 } from 'lucide-react';
-import { uploadAttachment } from '@/app/actions/attachments';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 type FileDropzoneProps = {
   taskId: string;
@@ -14,193 +14,214 @@ type FileDropzoneProps = {
 /**
  * FileDropzone - Drag and drop file upload component
  *
- * Supports drag & drop and click to select files.
- * Uploads files to Google Drive via server action.
- * Shows upload progress and error states.
+ * Allows users to upload files by dragging them into the dropzone
+ * or clicking to open the file browser. Uses multipart/form-data
+ * for efficient upload of large files.
  */
-export function FileDropzone({ taskId, onUploadComplete, disabled }: FileDropzoneProps) {
+export function FileDropzone({
+  taskId,
+  onUploadComplete,
+  disabled = false,
+}: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounterRef = useRef(0);
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!disabled) {
-      setIsDragging(true);
-    }
-  };
+  /**
+   * Handles file upload using FormData (multipart/form-data)
+   * This approach supports large files without base64 encoding overhead
+   */
+  const handleUpload = useCallback(
+    async (files: FileList | File[]) => {
+      if (disabled || isUploading) return;
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
+      const fileArray = Array.from(files);
+      if (fileArray.length === 0) return;
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+      setIsUploading(true);
 
-  const uploadFile = async (file: File): Promise<boolean> => {
-    try {
-      // Convert file to base64
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      let successCount = 0;
+      let errorCount = 0;
 
-      const result = await uploadAttachment(
-        {
-          taskId,
-          fileName: file.name,
-          mimeType: file.type,
-          sizeBytes: file.size,
-        },
-        base64
-      );
+      for (const file of fileArray) {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('taskId', taskId);
 
-      if (result.success) {
-        toast.success(`"${file.name}" subido correctamente`);
-        return true;
-      } else {
-        toast.error(result.error || 'Error al subir el archivo');
-        return false;
+          const response = await fetch('/api/attachments/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            successCount++;
+          } else {
+            errorCount++;
+            toast.error(result.error || 'Error al subir archivo');
+          }
+        } catch {
+          errorCount++;
+          toast.error(`Error al procesar ${file.name}`);
+        }
       }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast.error(`Error al subir "${file.name}"`);
-      return false;
-    }
-  };
 
-  const handleFiles = async (files: FileList | File[]) => {
-    if (disabled || files.length === 0) return;
+      setIsUploading(false);
 
-    setUploading(true);
-    const fileArray = Array.from(files);
-    setUploadingFiles(fileArray.map(f => f.name));
-
-    let successCount = 0;
-
-    for (const file of fileArray) {
-      const success = await uploadFile(file);
-      if (success) {
-        successCount++;
+      if (successCount > 0) {
+        const message =
+          successCount === 1
+            ? 'Archivo subido correctamente'
+            : `${successCount} archivos subidos correctamente`;
+        toast.success(message);
+        onUploadComplete?.();
       }
-      // Update remaining files
-      setUploadingFiles(prev => prev.filter(name => name !== file.name));
-    }
 
-    setUploading(false);
-    setUploadingFiles([]);
+      if (errorCount > 0 && successCount > 0) {
+        toast.warning(`${errorCount} archivo(s) no se pudieron subir`);
+      }
+    },
+    [taskId, disabled, isUploading, onUploadComplete]
+  );
 
-    if (successCount > 0) {
-      onUploadComplete?.();
-    }
-  };
+  /**
+   * Drag event handlers
+   */
+  const handleDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (disabled) return;
 
-  const handleDrop = (e: React.DragEvent) => {
+      dragCounterRef.current++;
+      if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+        setIsDragging(true);
+      }
+    },
+    [disabled]
+  );
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
 
-    if (disabled) return;
-
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFiles(files);
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
     }
+  }, []);
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (disabled) return;
+    },
+    [disabled]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+
+      if (disabled) return;
+
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleUpload(files);
+      }
+    },
+    [disabled, handleUpload]
+  );
+
+  /**
+   * Click handler to open file browser
+   */
+  const handleClick = () => {
+    if (disabled || isUploading) return;
+    fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /**
+   * File input change handler
+   */
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      handleFiles(files);
+      handleUpload(files);
     }
-    // Reset input to allow re-selecting same file
+    // Reset the input so the same file can be uploaded again
     e.target.value = '';
   };
 
-  const handleClick = () => {
-    if (!disabled && !uploading) {
-      fileInputRef.current?.click();
-    }
-  };
-
-  if (disabled) {
-    return (
-      <div className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl border border-dashed border-white/10 bg-white/5 text-muted-foreground text-sm">
-        <Upload className="h-4 w-4" />
-        <span>Adjuntos bloqueados en tareas completadas</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-3">
-      {/* Hidden file input */}
+    <div
+      className={cn(
+        'relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer',
+        isDragging
+          ? 'border-primary bg-primary/10'
+          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
+        disabled && 'opacity-50 cursor-not-allowed hover:bg-white/5 hover:border-white/10',
+        isUploading && 'pointer-events-none'
+      )}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onClick={handleClick}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+    >
       <input
         ref={fileInputRef}
         type="file"
         multiple
-        onChange={handleFileSelect}
         className="hidden"
+        onChange={handleFileChange}
+        disabled={disabled}
+        accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md"
       />
 
-      {/* Dropzone area */}
-      <div
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onClick={handleClick}
-        className={`
-          flex flex-col items-center justify-center gap-2 py-6 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all
-          ${isDragging
-            ? 'border-primary/50 bg-primary/10'
-            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-          }
-          ${uploading ? 'pointer-events-none opacity-60' : ''}
-        `}
-      >
-        {uploading ? (
+      <div className="flex flex-col items-center justify-center gap-2 py-6 px-4">
+        {isUploading ? (
           <>
-            <Loader2 className="h-6 w-6 text-primary animate-spin" />
-            <span className="text-sm text-muted-foreground">
-              Subiendo {uploadingFiles.length} archivo{uploadingFiles.length !== 1 ? 's' : ''}...
-            </span>
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-sm text-muted-foreground">Subiendo archivos...</p>
           </>
         ) : (
           <>
-            <Upload className={`h-6 w-6 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+            <Upload
+              className={cn(
+                'h-8 w-8 transition-transform',
+                isDragging ? 'text-primary scale-110 animate-bounce' : 'text-muted-foreground'
+              )}
+            />
             <div className="text-center">
-              <span className="text-sm text-muted-foreground">
-                Arrastra archivos aquí o{' '}
-              </span>
-              <span className="text-sm text-primary hover:underline">
-                haz clic para agregar
-              </span>
+              <p className="text-sm text-foreground/80">
+                {isDragging
+                  ? 'Suelta los archivos aquí'
+                  : 'Arrastra archivos aquí o haz clic para agregar'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Imágenes, videos o documentos
+              </p>
             </div>
           </>
         )}
       </div>
-
-      {/* Uploading files list */}
-      {uploadingFiles.length > 0 && (
-        <div className="space-y-1">
-          {uploadingFiles.map((fileName, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/5"
-            >
-              <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
-              <span className="flex-1 text-sm text-muted-foreground truncate">
-                {fileName}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

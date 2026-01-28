@@ -268,3 +268,130 @@
 .dashboard-grid > *:nth-child(6) { animation-delay: 0.30s; }
 .dashboard-grid > *:nth-child(7) { animation-delay: 0.35s; }
 .dashboard-grid > *:nth-child(8) { animation-delay: 0.40s; }
+
+/* Prose styles for markdown rendering in dark mode */
+.prose-invert {
+  --tw-prose-body: rgb(255 255 255 / 0.9);
+  --tw-prose-headings: rgb(255 255 255);
+  --tw-prose-lead: rgb(255 255 255 / 0.7);
+  --tw-prose-links: rgb(96 165 250);
+  --tw-prose-bold: rgb(255 255 255);
+  --tw-prose-counters: rgb(255 255 255 / 0.6);
+  --tw-prose-bullets: rgb(255 255 255 / 0.4);
+  --tw-prose-hr: rgb(255 255 255 / 0.1);
+  --tw-prose-quotes: rgb(255 255 255 / 0.9);
+  --tw-prose-quote-borders: rgb(255 255 255 / 0.2);
+  --tw-prose-captions: rgb(255 255 255 / 0.6);
+  --tw-prose-code: rgb(251 191 36);
+  --tw-prose-pre-code: rgb(255 255 255 / 0.9);
+  --tw-prose-pre-bg: rgb(0 0 0 / 0.4);
+  --tw-prose-th-borders: rgb(255 255 255 / 0.2);
+  --tw-prose-td-borders: rgb(255 255 255 / 0.1);
+  color: var(--tw-prose-body);
+}
+
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert h4,
+.prose-invert h5,
+.prose-invert h6 {
+  color: var(--tw-prose-headings);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.prose-invert h1 { font-size: 1.75rem; }
+.prose-invert h2 { font-size: 1.5rem; }
+.prose-invert h3 { font-size: 1.25rem; }
+
+.prose-invert p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.prose-invert a {
+  color: var(--tw-prose-links);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-invert a:hover {
+  color: rgb(147 197 253);
+}
+
+.prose-invert strong {
+  color: var(--tw-prose-bold);
+  font-weight: 600;
+}
+
+.prose-invert code {
+  color: var(--tw-prose-code);
+  background: rgb(0 0 0 / 0.3);
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose-invert pre {
+  background: var(--tw-prose-pre-bg);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose-invert pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--tw-prose-pre-code);
+}
+
+.prose-invert blockquote {
+  border-left: 3px solid var(--tw-prose-quote-borders);
+  padding-left: 1em;
+  color: var(--tw-prose-quotes);
+  font-style: italic;
+  margin: 1em 0;
+}
+
+.prose-invert ul,
+.prose-invert ol {
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+
+.prose-invert li {
+  margin: 0.25em 0;
+}
+
+.prose-invert ul > li::marker {
+  color: var(--tw-prose-bullets);
+}
+
+.prose-invert ol > li::marker {
+  color: var(--tw-prose-counters);
+}
+
+.prose-invert hr {
+  border-color: var(--tw-prose-hr);
+  margin: 2em 0;
+}
+
+.prose-invert table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose-invert th {
+  border-bottom: 1px solid var(--tw-prose-th-borders);
+  padding: 0.5em;
+  text-align: left;
+}
+
+.prose-invert td {
+  border-bottom: 1px solid var(--tw-prose-td-borders);
+  padding: 0.5em;
+}

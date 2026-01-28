@@ -1,86 +1,78 @@
 /**
- * Formats the duration between two dates into a human-readable string.
+ * Formatea la duración entre dos fechas en formato legible.
  *
- * @param startedAt - The start timestamp
- * @param completedAt - The end timestamp
- * @returns Formatted duration string (e.g., "2h 30m", "1d 4h", "45m")
+ * @param startedAt - Fecha de inicio (cuando la tarea pasó a In Progress)
+ * @param completedAt - Fecha de finalización (cuando se completó)
+ * @returns String formateado: "2h 30m", "1d 4h", o "-" si no aplica
  *
- * Rules:
- * - If startedAt is null/undefined, returns "-"
- * - If duration > 24h, shows days (e.g., "1d 4h")
- * - If duration < 1h, shows only minutes (e.g., "45m")
- * - Otherwise shows hours and minutes (e.g., "2h 30m")
+ * Comportamiento:
+ * - Si no hay startedAt → "-"
+ * - Si no hay completedAt → calcula desde startedAt hasta ahora (tiempo transcurrido)
+ * - Si < 1 hora → muestra solo minutos: "45m"
+ * - Si >= 1 hora y < 24 horas → horas y minutos: "2h 30m"
+ * - Si >= 24 horas → días y horas: "1d 4h"
  */
 export function formatDuration(
   startedAt: Date | string | null | undefined,
-  completedAt: Date | string | null | undefined
+  completedAt?: Date | string | null
 ): string {
+  // Sin fecha de inicio, no hay duración que calcular
   if (!startedAt) {
-    return '-'
+    return "-";
   }
 
-  const start = typeof startedAt === 'string' ? new Date(startedAt) : startedAt
+  const start = startedAt instanceof Date ? startedAt : new Date(startedAt);
   const end = completedAt
-    ? typeof completedAt === 'string'
-      ? new Date(completedAt)
-      : completedAt
-    : new Date()
+    ? completedAt instanceof Date
+      ? completedAt
+      : new Date(completedAt)
+    : new Date(); // Si no hay completedAt, usar tiempo actual
 
-  const diffMs = end.getTime() - start.getTime()
+  // Calcular diferencia en milisegundos
+  const diffMs = end.getTime() - start.getTime();
 
-  if (diffMs < 0) {
-    return '-'
+  // Si la diferencia es negativa o cero, retornar indicador
+  if (diffMs <= 0) {
+    return "-";
   }
 
-  const totalMinutes = Math.floor(diffMs / (1000 * 60))
-  const totalHours = Math.floor(totalMinutes / 60)
-  const totalDays = Math.floor(totalHours / 24)
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  const minutes = totalMinutes % 60
-  const hours = totalHours % 24
-
-  if (totalDays > 0) {
-    if (hours > 0) {
-      return `${totalDays}d ${hours}h`
+  // >= 24 horas: mostrar días y horas restantes
+  if (days >= 1) {
+    const remainingHours = hours - days * 24;
+    if (remainingHours > 0) {
+      return `${days}d ${remainingHours}h`;
     }
-    return `${totalDays}d`
+    return `${days}d`;
   }
 
-  if (totalHours > 0) {
-    if (minutes > 0) {
-      return `${totalHours}h ${minutes}m`
+  // >= 1 hora: mostrar horas y minutos restantes
+  if (hours >= 1) {
+    const remainingMinutes = minutes - hours * 60;
+    if (remainingMinutes > 0) {
+      return `${hours}h ${remainingMinutes}m`;
     }
-    return `${totalHours}h`
+    return `${hours}h`;
   }
 
-  if (totalMinutes > 0) {
-    return `${totalMinutes}m`
+  // < 1 hora: mostrar solo minutos
+  if (minutes >= 1) {
+    return `${minutes}m`;
   }
 
-  return '< 1m'
+  // Menos de 1 minuto
+  return "<1m";
 }
 
 /**
- * Calculates the duration in milliseconds between two dates.
- *
- * @param startedAt - The start timestamp
- * @param completedAt - The end timestamp (defaults to now if not provided)
- * @returns Duration in milliseconds, or 0 if startedAt is null
+ * Verifica si una tarea está en progreso (tiene startedAt pero no completedAt)
  */
-export function getDurationMs(
+export function isTaskInProgress(
   startedAt: Date | string | null | undefined,
   completedAt: Date | string | null | undefined
-): number {
-  if (!startedAt) {
-    return 0
-  }
-
-  const start = typeof startedAt === 'string' ? new Date(startedAt) : startedAt
-  const end = completedAt
-    ? typeof completedAt === 'string'
-      ? new Date(completedAt)
-      : completedAt
-    : new Date()
-
-  return Math.max(0, end.getTime() - start.getTime())
+): boolean {
+  return !!startedAt && !completedAt;
 }

@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '60mb', // 50MB archivo + overhead base64 (~37%)
+    },
+  },
 };
 
 export default nextConfig;

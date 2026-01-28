@@ -1,13 +1,22 @@
 import { google, drive_v3 } from 'googleapis';
 
-// Root folder ID where Mira stores all attachments
-export const MIRA_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID;
+/**
+ * Google Drive client for managing task attachments.
+ * Uses Service Account authentication for server-side access.
+ */
 
 // Singleton instance
 let driveClient: drive_v3.Drive | null = null;
 
 /**
- * Get or create a Google Drive client instance using Service Account credentials
+ * Root folder ID in Google Drive where Mira stores all task attachments.
+ * Structure: {MIRA_FOLDER_ID}/tasks/{taskId}/{filename}
+ */
+export const MIRA_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '';
+
+/**
+ * Get or create a Google Drive client using Service Account credentials.
+ * Uses singleton pattern to avoid recreating auth on each request.
  */
 export function getGoogleDriveClient(): drive_v3.Drive {
   if (driveClient) {
@@ -30,14 +39,24 @@ export function getGoogleDriveClient(): drive_v3.Drive {
   };
 
   try {
-    credentials = JSON.parse(serviceAccountKey);
+    // Parse the Service Account key (supports both JSON string and base64)
+    const keyString = serviceAccountKey.startsWith('{')
+      ? serviceAccountKey
+      : Buffer.from(serviceAccountKey, 'base64').toString('utf-8');
+
+    credentials = JSON.parse(keyString);
   } catch {
-    throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_KEY: must be valid JSON');
+    throw new Error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY. Ensure it is valid JSON or base64-encoded JSON.');
   }
 
   const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
+    credentials: {
+      client_email: credentials.client_email,
+      private_key: credentials.private_key,
+    },
+    // Full drive scope needed to access folder shared with service account
+    // TODO: Consider using drive.file with app-created folders for better security
+    scopes: ['https://www.googleapis.com/auth/drive'],
   });
 
   driveClient = google.drive({ version: 'v3', auth });
@@ -46,75 +65,134 @@ export function getGoogleDriveClient(): drive_v3.Drive {
 }
 
 /**
- * Create a folder for a task under the Mira root folder
- * Returns the folder ID
+ * Find or create a folder for a specific task inside the Mira root folder.
+ * Structure: {MIRA_FOLDER_ID}/tasks/{taskId}/
  */
-export async function createTaskFolder(taskId: string): Promise<string> {
+export async function getOrCreateTaskFolder(taskId: string): Promise<string> {
   const drive = getGoogleDriveClient();
 
-  // Check if folder already exists
-  const existingFolder = await drive.files.list({
-    q: `name='${taskId}' and '${MIRA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id, name)',
-  });
+  // First, check if 'tasks' folder exists under root
+  const tasksFolder = await findFolder(drive, 'tasks', MIRA_FOLDER_ID);
+  const tasksFolderId = tasksFolder || await createFolder(drive, 'tasks', MIRA_FOLDER_ID);
 
-  if (existingFolder.data.files && existingFolder.data.files.length > 0) {
-    return existingFolder.data.files[0].id!;
-  }
+  // Then, check if taskId folder exists under 'tasks'
+  const taskFolder = await findFolder(drive, taskId, tasksFolderId);
+  const taskFolderId = taskFolder || await createFolder(drive, taskId, tasksFolderId);
 
-  // Create new folder
-  const folder = await drive.files.create({
-    requestBody: {
-      name: taskId,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: [MIRA_FOLDER_ID!],
-    },
-    fields: 'id',
-  });
-
-  return folder.data.id!;
+  return taskFolderId;
 }
 
 /**
- * Upload a file to the task folder
- * Returns the Drive file ID
+ * Escape single quotes in strings for Google Drive API queries.
+ * Prevents query injection attacks.
+ */
+function escapeQueryString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/**
+ * Find a folder by name within a parent folder.
+ * Supports both regular Drive and Shared Drives.
+ */
+async function findFolder(
+  drive: drive_v3.Drive,
+  name: string,
+  parentId: string
+): Promise<string | null> {
+  // Escape special characters to prevent query injection
+  const safeName = escapeQueryString(name);
+  const safeParentId = escapeQueryString(parentId);
+
+  const response = await drive.files.list({
+    q: `name='${safeName}' and '${safeParentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+    spaces: 'drive',
+    // Required for Shared Drives
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  return response.data.files?.[0]?.id || null;
+}
+
+/**
+ * Create a new folder within a parent folder.
+ * Supports both regular Drive and Shared Drives.
+ */
+async function createFolder(
+  drive: drive_v3.Drive,
+  name: string,
+  parentId: string
+): Promise<string> {
+  const response = await drive.files.create({
+    requestBody: {
+      name,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [parentId],
+    },
+    fields: 'id',
+    // Required for Shared Drives
+    supportsAllDrives: true,
+  });
+
+  if (!response.data.id) {
+    throw new Error(`Failed to create folder '${name}'`);
+  }
+
+  return response.data.id;
+}
+
+/**
+ * Upload a file to a specific task's folder in Google Drive.
+ * Returns the file ID and web view link.
  */
 export async function uploadFileToDrive(
   taskId: string,
   fileName: string,
   mimeType: string,
   fileBuffer: Buffer
-): Promise<string> {
+): Promise<{ fileId: string; webViewLink: string | null }> {
   const drive = getGoogleDriveClient();
-  const folderId = await createTaskFolder(taskId);
+  const taskFolderId = await getOrCreateTaskFolder(taskId);
 
   const { Readable } = await import('stream');
-  const stream = Readable.from(fileBuffer);
+  const readable = new Readable();
+  readable.push(fileBuffer);
+  readable.push(null);
 
-  const file = await drive.files.create({
+  const response = await drive.files.create({
     requestBody: {
       name: fileName,
-      parents: [folderId],
+      parents: [taskFolderId],
     },
     media: {
       mimeType,
-      body: stream,
+      body: readable,
     },
-    fields: 'id',
+    fields: 'id, webViewLink',
+    // Required for Shared Drives
+    supportsAllDrives: true,
   });
 
-  return file.data.id!;
+  if (!response.data.id) {
+    throw new Error('Failed to upload file to Google Drive');
+  }
+
+  return {
+    fileId: response.data.id,
+    webViewLink: response.data.webViewLink || null,
+  };
 }
 
 /**
- * Download a file from Google Drive
- * Returns the file as a Buffer
+ * Download a file from Google Drive by its file ID.
+ * Returns the file content as a Buffer.
  */
-export async function downloadFileFromDrive(driveFileId: string): Promise<Buffer> {
+export async function downloadFileFromDrive(fileId: string): Promise<Buffer> {
   const drive = getGoogleDriveClient();
 
   const response = await drive.files.get(
-    { fileId: driveFileId, alt: 'media' },
+    { fileId, alt: 'media' },
     { responseType: 'arraybuffer' }
   );
 
@@ -122,27 +200,57 @@ export async function downloadFileFromDrive(driveFileId: string): Promise<Buffer
 }
 
 /**
- * Delete a file from Google Drive
+ * Delete a file from Google Drive by its file ID.
+ * Supports both regular Drive and Shared Drives.
  */
-export async function deleteFileFromDrive(driveFileId: string): Promise<void> {
+export async function deleteFileFromDrive(fileId: string): Promise<void> {
   const drive = getGoogleDriveClient();
-  await drive.files.delete({ fileId: driveFileId });
+
+  await drive.files.delete({ fileId, supportsAllDrives: true });
 }
 
 /**
- * Delete a task folder and all its contents from Google Drive
+ * Delete an entire task folder and all its contents.
+ * Used when a task is deleted or for cleanup.
  */
 export async function deleteTaskFolder(taskId: string): Promise<void> {
   const drive = getGoogleDriveClient();
 
-  // Find the task folder
-  const folder = await drive.files.list({
-    q: `name='${taskId}' and '${MIRA_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id)',
-  });
+  // Find 'tasks' folder
+  const tasksFolder = await findFolder(drive, 'tasks', MIRA_FOLDER_ID);
+  if (!tasksFolder) return;
 
-  if (folder.data.files && folder.data.files.length > 0) {
-    // Deleting a folder also deletes all its contents
-    await drive.files.delete({ fileId: folder.data.files[0].id! });
+  // Find task folder
+  const taskFolder = await findFolder(drive, taskId, tasksFolder);
+  if (!taskFolder) return;
+
+  // Delete the folder (this deletes all contents recursively)
+  await drive.files.delete({ fileId: taskFolder, supportsAllDrives: true });
+}
+
+/**
+ * Get metadata for a file in Google Drive.
+ */
+export async function getFileMetadata(fileId: string): Promise<{
+  name: string;
+  mimeType: string;
+  size: string;
+} | null> {
+  const drive = getGoogleDriveClient();
+
+  try {
+    const response = await drive.files.get({
+      fileId,
+      fields: 'name, mimeType, size',
+      supportsAllDrives: true,
+    });
+
+    return {
+      name: response.data.name || 'unknown',
+      mimeType: response.data.mimeType || 'application/octet-stream',
+      size: response.data.size || '0',
+    };
+  } catch {
+    return null;
   }
 }

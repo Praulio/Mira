@@ -51,8 +51,8 @@ export const tasks = pgTable('tasks', {
   completionNotes: text('completion_notes'),
   completionLinks: jsonb('completion_links').$type<string[]>(),
   completionMentions: jsonb('completion_mentions').$type<string[]>(),
-  startedAt: timestamp('started_at'), // When task moved to In Progress
-  parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }), // For derived tasks
+  startedAt: timestamp('started_at'),
+  parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -79,13 +79,14 @@ export const activity = pgTable('activity', {
 }));
 
 /**
- * Attachments table - files attached to tasks, stored in Google Drive
+ * Attachments table - stores file references for tasks
+ * Files are stored in Google Drive, this table holds metadata
  */
 export const attachments = pgTable('attachments', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
-  driveFileId: text('drive_file_id').notNull(), // Google Drive file ID
-  name: text('name').notNull(), // Original filename
+  driveFileId: text('drive_file_id').notNull(),
+  name: text('name').notNull(),
   mimeType: text('mime_type').notNull(),
   sizeBytes: integer('size_bytes').notNull(),
   uploadedBy: text('uploaded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),

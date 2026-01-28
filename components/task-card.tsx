@@ -3,7 +3,7 @@
 import { User, MoreVertical, Trash2, Clock, Paperclip } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { deleteTask } from '@/app/actions/tasks';
@@ -24,23 +24,44 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
-  const [, forceUpdate] = useState(0);
-
-  // Live timer for in_progress tasks - updates every minute
-  useEffect(() => {
-    if (task.status !== 'in_progress' || !task.startedAt) return;
-
-    const interval = setInterval(() => {
-      forceUpdate(n => n + 1);
-    }, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [task.status, task.startedAt]);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
     disabled: showMenu || showDetail, // Disable drag when interaction is happening
   });
+
+  // Calculate if this is an in_progress task that needs live updates
+  const isInProgressWithTime = task.status === 'in_progress' && !!task.startedAt;
+
+  // Static duration for completed tasks (memoized to avoid recalculation)
+  const staticDuration = useMemo(
+    () => formatDuration(task.startedAt, task.completedAt),
+    [task.startedAt, task.completedAt]
+  );
+
+  // Live duration state only used for in_progress tasks with timer
+  const [liveCounter, setLiveCounter] = useState(0);
+
+  // Timer effect: only runs for in_progress tasks, increments counter every minute
+  useEffect(() => {
+    if (!isInProgressWithTime) {
+      return;
+    }
+
+    // Update every minute for live display
+    const interval = setInterval(() => {
+      setLiveCounter((c) => c + 1);
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [isInProgressWithTime]);
+
+  // Calculate display duration: for in_progress use live calculation, otherwise use static
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _forceUpdate = liveCounter; // Ensure re-render when counter changes
+  const displayDuration = isInProgressWithTime
+    ? formatDuration(task.startedAt, null)
+    : staticDuration;
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -150,7 +171,7 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           </p>
         )}
 
-        {/* Footer: Assignee, attachments and time */}
+        {/* Footer: Assignee, attachments, and duration/status */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {/* Assignee */}
           <div className="flex items-center gap-2">
@@ -170,31 +191,29 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
             <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
           </div>
 
-          {/* Right side: attachments + duration/status */}
-          <div className="flex items-center gap-3">
-            {/* Attachment count */}
+          {/* Right side: attachment count + duration/status */}
+          <div className="flex items-center gap-2">
+            {/* Attachment indicator */}
             {task.attachmentCount > 0 && (
-              <div className="flex items-center gap-1 text-muted-foreground/70">
+              <div className="flex items-center gap-0.5 text-muted-foreground/70">
                 <Paperclip className="h-3 w-3" />
                 <span>{task.attachmentCount}</span>
               </div>
             )}
 
-            {/* Duration or Status Indicator */}
-            {task.status === 'done' && task.startedAt ? (
-              // Completed task - show final duration in green
-              <div className="flex items-center gap-1 text-emerald-400">
+            {/* Duration (for done/in_progress) or Status Indicator */}
+            {(task.status === 'done' || task.status === 'in_progress') && displayDuration !== '-' ? (
+              <div
+                className={`flex items-center gap-1 ${
+                  task.status === 'done'
+                    ? 'text-emerald-400'
+                    : 'text-amber-400 animate-pulse'
+                }`}
+              >
                 <Clock className="h-3 w-3" />
-                <span>{formatDuration(task.startedAt, task.completedAt)}</span>
-              </div>
-            ) : task.status === 'in_progress' && task.startedAt ? (
-              // In progress - show live duration with amber pulse
-              <div className="flex items-center gap-1 text-amber-400 animate-pulse">
-                <Clock className="h-3 w-3" />
-                <span>{formatDuration(task.startedAt, null)}</span>
+                <span>{displayDuration}</span>
               </div>
             ) : (
-              // Default - show status dot
               <div
                 className="h-1.5 w-1.5 rounded-full"
                 style={{ backgroundColor: `var(--status-${task.status.replace('_', '')})` }}

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch } from 'lucide-react';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
 import { getTaskAttachments } from '@/app/actions/attachments';
@@ -13,10 +13,15 @@ import { CompleteTaskModal } from './complete-task-modal';
 import { FileDropzone } from './file-dropzone';
 import { AttachmentList } from './attachment-list';
 import { formatDuration } from '@/lib/format-duration';
-import { Paperclip } from 'lucide-react';
+
+// Extended task type to include time tracking fields (added by task 4.4)
+type ExtendedKanbanTaskData = KanbanTaskData & {
+  startedAt?: Date | string | null;
+  completedAt?: Date | string | null;
+};
 
 type TaskDetailDialogProps = {
-  task: KanbanTaskData;
+  task: ExtendedKanbanTaskData;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -36,9 +41,6 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [completedAtInput, setCompletedAtInput] = useState(
-    task.completedAt ? new Date(task.completedAt).toISOString().slice(0, 16) : ''
-  );
   const [isUpdatingCompletedAt, setIsUpdatingCompletedAt] = useState(false);
   const [isCreatingDerived, setIsCreatingDerived] = useState(false);
   const [attachmentsList, setAttachmentsList] = useState<{
@@ -51,27 +53,47 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     uploadedBy: string;
     uploadedAt: Date;
   }[]>([]);
+  const [isLoadingAttachments, setIsLoadingAttachments] = useState(true);
 
   // Check if current user is owner (assignee or creator)
   const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
+  const isDone = task.status === 'done';
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
-    // Load attachments when dialog opens
-    getTaskAttachments({ taskId: task.id }).then((result) => {
-      if (result.success && result.data) {
-        setAttachmentsList(result.data);
-      }
-    });
-  }, [task.id]);
+  }, []);
 
-  // Function to reload attachments after upload/delete
-  async function reloadAttachments() {
+  // Load attachments for the task
+  const loadAttachments = useCallback(async () => {
+    setIsLoadingAttachments(true);
     const result = await getTaskAttachments({ taskId: task.id });
     if (result.success && result.data) {
       setAttachmentsList(result.data);
     }
-  }
+    setIsLoadingAttachments(false);
+  }, [task.id]);
+
+  // Initial load of attachments
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAttachments() {
+      setIsLoadingAttachments(true);
+      const result = await getTaskAttachments({ taskId: task.id });
+      if (!cancelled && result.success && result.data) {
+        setAttachmentsList(result.data);
+      }
+      if (!cancelled) {
+        setIsLoadingAttachments(false);
+      }
+    }
+
+    fetchAttachments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [task.id]);
 
   async function handleSave() {
     setIsSaving(true);
@@ -103,6 +125,7 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     toast.success('Task updated');
     setIsSaving(false);
     router.refresh();
+    onClose();
   }
 
   async function handleDelete() {
@@ -124,17 +147,17 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     onClose();
   }
 
-  async function handleUpdateCompletedAt() {
-    if (!completedAtInput) return;
+  async function handleUpdateCompletedAt(newDate: string) {
+    if (!isOwner || !isDone) return;
 
     setIsUpdatingCompletedAt(true);
     const result = await updateCompletedAt({
       taskId: task.id,
-      completedAt: new Date(completedAtInput),
+      completedAt: new Date(newDate),
     });
 
     if (result.success) {
-      toast.success('Fecha de completado actualizada');
+      toast.success('Fecha de finalización actualizada');
       router.refresh();
     } else {
       toast.error(result.error || 'Error al actualizar fecha');
@@ -143,6 +166,8 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   }
 
   async function handleCreateDerivedTask() {
+    if (!isDone) return;
+
     setIsCreatingDerived(true);
     const result = await createDerivedTask({
       parentTaskId: task.id,
@@ -243,68 +268,56 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               </label>
               <div className="space-y-2 text-xs font-bold">
                 <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="opacity-40">Created</span>
+                  <span className="opacity-40">Creada</span>
                   <span>{new Date(task.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="opacity-40">Last Updated</span>
+                  <span className="opacity-40">Última actualización</span>
                   <span>{new Date(task.updatedAt).toLocaleTimeString()}</span>
                 </div>
+                {/* Time tracking - only show if task has been started */}
                 {task.startedAt && (
                   <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="opacity-40">Iniciado</span>
+                    <span className="opacity-40">Iniciada</span>
                     <span>{new Date(task.startedAt).toLocaleString()}</span>
                   </div>
                 )}
-                {task.status === 'done' && task.completedAt && (
-                  <>
-                    <div className="flex justify-between items-center py-1 border-b border-white/5">
-                      <span className="opacity-40">Completado</span>
-                      {isOwner ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="datetime-local"
-                            value={completedAtInput}
-                            onChange={(e) => setCompletedAtInput(e.target.value)}
-                            max={new Date().toISOString().slice(0, 16)}
-                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary/40"
-                          />
-                          <button
-                            onClick={handleUpdateCompletedAt}
-                            disabled={isUpdatingCompletedAt || !completedAtInput}
-                            className="text-primary hover:text-primary/80 disabled:opacity-50"
-                            title="Guardar fecha"
-                          >
-                            <Check className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <span>{new Date(task.completedAt).toLocaleString()}</span>
-                      )}
-                    </div>
-                    {/* Duration - prominent display */}
-                    <div className="flex justify-between items-center py-2 mt-2 bg-emerald-500/10 rounded-lg px-3">
-                      <span className="flex items-center gap-2 text-emerald-400">
-                        <Clock className="h-4 w-4" /> Duración
+                {/* Completed at - editable for owners of done tasks */}
+                {isDone && (
+                  <div className="flex justify-between items-center py-1 border-b border-white/5">
+                    <span className="opacity-40">Completada</span>
+                    {isOwner ? (
+                      <input
+                        type="datetime-local"
+                        value={task.completedAt ? new Date(task.completedAt).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleUpdateCompletedAt(e.target.value)}
+                        disabled={isUpdatingCompletedAt}
+                        max={new Date().toISOString().slice(0, 16)}
+                        className="bg-transparent border border-white/10 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-primary/50 disabled:opacity-50"
+                      />
+                    ) : (
+                      <span>
+                        {task.completedAt
+                          ? new Date(task.completedAt).toLocaleString()
+                          : '-'}
                       </span>
-                      <span className="text-emerald-400 text-sm font-black">
-                        {formatDuration(task.startedAt, task.completedAt)}
-                      </span>
-                    </div>
-                  </>
-                )}
-                {task.status === 'in_progress' && task.startedAt && (
-                  <div className="flex justify-between items-center py-2 mt-2 bg-amber-500/10 rounded-lg px-3">
-                    <span className="flex items-center gap-2 text-amber-400">
-                      <Clock className="h-4 w-4 animate-pulse" /> En progreso
-                    </span>
-                    <span className="text-amber-400 text-sm font-black animate-pulse">
-                      {formatDuration(task.startedAt, null)}
-                    </span>
+                    )}
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Duration Section - only show if task has startedAt */}
+            {task.startedAt && (
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-3 w-3" /> Duración
+                </label>
+                <div className={`text-2xl font-black ${isDone ? 'text-green-400' : 'text-amber-400'}`}>
+                  {formatDuration(task.startedAt, task.completedAt)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Description Section */}
@@ -316,7 +329,7 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={6}
-              className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none"
+              className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none overflow-y-auto max-h-60"
               placeholder="Add more context to this task..."
             />
           </div>
@@ -326,53 +339,66 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
               <Paperclip className="h-3 w-3" /> Adjuntos
               {attachmentsList.length > 0 && (
-                <span className="text-xs font-bold text-muted-foreground/70">
-                  ({attachmentsList.length})
+                <span className="ml-1 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
+                  {attachmentsList.length}
                 </span>
               )}
             </label>
-            <FileDropzone
-              taskId={task.id}
-              onUploadComplete={reloadAttachments}
-              disabled={task.status === 'done'}
-            />
-            <AttachmentList
-              attachments={attachmentsList}
-              onDelete={reloadAttachments}
-              readonly={task.status === 'done'}
-            />
+
+            {/* FileDropzone - disabled for done tasks */}
+            {!isDone && (
+              <FileDropzone
+                taskId={task.id}
+                onUploadComplete={loadAttachments}
+                disabled={isDone}
+              />
+            )}
+
+            {/* Attachment List */}
+            {isLoadingAttachments ? (
+              <div className="text-sm text-muted-foreground py-4 text-center">
+                Cargando adjuntos...
+              </div>
+            ) : (
+              <AttachmentList
+                attachments={attachmentsList}
+                onDelete={loadAttachments}
+                readonly={isDone}
+              />
+            )}
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/5 flex justify-between items-center bg-white/5">
-          {/* Left side - Derived Task button for done tasks */}
+        <div className="p-6 border-t border-white/5 flex justify-between gap-3 bg-white/5">
+          {/* Left side: Create derived task button (only for done tasks) */}
           <div>
-            {task.status === 'done' && (
+            {isDone && (
               <button
                 onClick={handleCreateDerivedTask}
                 disabled={isCreatingDerived}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-amber-400 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-xl hover:bg-amber-400/20 transition-all disabled:opacity-50"
+                title="Crear tarea derivada para continuar el trabajo"
               >
                 <GitBranch className="h-4 w-4" />
-                {isCreatingDerived ? 'Creando...' : 'Crear tarea derivada'}
+                {isCreatingDerived ? 'Creando...' : 'Crear derivada'}
               </button>
             )}
           </div>
-          {/* Right side - Close and Save */}
+          {/* Right side: Close and Save buttons */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
               className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-all"
             >
-              Close
+              Cerrar
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving}
               className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             >
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </div>

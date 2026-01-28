@@ -1,125 +1,131 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { tasks, attachments } from '@/db/schema';
-import { eq, and, lte, isNotNull } from 'drizzle-orm';
-import { deleteFileFromDrive, deleteTaskFolder } from '@/lib/google-drive';
+import { eq, and, lte, inArray } from 'drizzle-orm';
+import { deleteTaskFolder } from '@/lib/google-drive';
 
 /**
- * Cron job to cleanup attachments from tasks completed more than 3 days ago
- * Scheduled to run at 3am UTC daily via vercel.json
+ * Cron job to cleanup attachments from completed tasks.
+ *
+ * Runs daily at 3 AM UTC (configured in vercel.json).
+ * Deletes attachments from tasks that have been in 'done' status for more than 3 days.
+ *
+ * @see https://vercel.com/docs/cron-jobs
  */
-export async function GET(req: Request) {
-  // Validate CRON_SECRET
-  const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    console.error('CRON_SECRET is not configured');
-    return NextResponse.json(
-      { error: 'Server configuration error' },
-      { status: 500 }
-    );
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
+export async function GET(request: NextRequest) {
   try {
+    // Validate CRON_SECRET to ensure request is from Vercel cron
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+
+    if (!cronSecret) {
+      console.error('CRON_SECRET environment variable is not set');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Accept both "Bearer <secret>" format and raw secret
+    const providedSecret = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : authHeader;
+
+    if (providedSecret !== cronSecret) {
+      console.warn('Unauthorized cron job access attempt');
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     // Calculate the cutoff date (3 days ago)
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 3);
 
-    // Find tasks that are done and completed more than 3 days ago
-    const expiredTasks = await db
+    console.log(`[Cron] Starting cleanup for tasks completed before ${cutoffDate.toISOString()}`);
+
+    // Find all 'done' tasks with completedAt older than 3 days that have attachments
+    const tasksToClean = await db
       .select({
-        id: tasks.id,
+        taskId: tasks.id,
         completedAt: tasks.completedAt,
       })
       .from(tasks)
+      .innerJoin(attachments, eq(attachments.taskId, tasks.id))
       .where(
         and(
           eq(tasks.status, 'done'),
-          isNotNull(tasks.completedAt),
           lte(tasks.completedAt, cutoffDate)
         )
-      );
+      )
+      .groupBy(tasks.id, tasks.completedAt);
 
-    if (expiredTasks.length === 0) {
+    console.log(`[Cron] Found ${tasksToClean.length} tasks with attachments to clean`);
+
+    if (tasksToClean.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'No expired attachments to cleanup',
+        message: 'No tasks to clean',
         stats: {
           tasksProcessed: 0,
           attachmentsDeleted: 0,
           foldersDeleted: 0,
+          errors: 0,
         },
       });
     }
 
+    // Process each task
     let attachmentsDeleted = 0;
     let foldersDeleted = 0;
-    const errors: string[] = [];
+    let errors = 0;
 
-    for (const task of expiredTasks) {
-      // Get all attachments for this task
-      const taskAttachments = await db
-        .select()
-        .from(attachments)
-        .where(eq(attachments.taskId, task.id));
+    const taskIds = tasksToClean.map((t) => t.taskId);
 
-      if (taskAttachments.length === 0) {
-        continue;
-      }
+    // Delete all attachments from database in a single query for efficiency
+    const deletedRecords = await db
+      .delete(attachments)
+      .where(inArray(attachments.taskId, taskIds))
+      .returning({ id: attachments.id, taskId: attachments.taskId });
 
-      // Delete each attachment from Google Drive
-      for (const attachment of taskAttachments) {
-        try {
-          await deleteFileFromDrive(attachment.driveFileId);
-          attachmentsDeleted++;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          errors.push(`Failed to delete file ${attachment.driveFileId}: ${errorMessage}`);
-          console.error(`Failed to delete file ${attachment.driveFileId}:`, error);
-        }
-      }
+    attachmentsDeleted = deletedRecords.length;
 
-      // Delete all attachment records from DB for this task
-      await db.delete(attachments).where(eq(attachments.taskId, task.id));
+    console.log(`[Cron] Deleted ${attachmentsDeleted} attachment records from database`);
 
-      // Delete the task folder from Drive
+    // Delete folders from Google Drive (one per task)
+    for (const task of tasksToClean) {
       try {
-        await deleteTaskFolder(task.id);
+        await deleteTaskFolder(task.taskId);
         foldersDeleted++;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        errors.push(`Failed to delete folder for task ${task.id}: ${errorMessage}`);
-        console.error(`Failed to delete folder for task ${task.id}:`, error);
+        console.log(`[Cron] Deleted Drive folder for task ${task.taskId}`);
+      } catch (driveError) {
+        errors++;
+        console.error(`[Cron] Error deleting Drive folder for task ${task.taskId}:`, driveError);
+        // Continue with other tasks even if one fails
       }
     }
 
-    console.log(
-      `Cleanup completed: ${expiredTasks.length} tasks processed, ${attachmentsDeleted} attachments deleted, ${foldersDeleted} folders deleted`
-    );
+    const stats = {
+      tasksProcessed: tasksToClean.length,
+      attachmentsDeleted,
+      foldersDeleted,
+      errors,
+    };
+
+    console.log('[Cron] Cleanup completed:', stats);
 
     return NextResponse.json({
       success: true,
-      message: 'Cleanup completed',
-      stats: {
-        tasksProcessed: expiredTasks.length,
-        attachmentsDeleted,
-        foldersDeleted,
-        errors: errors.length > 0 ? errors : undefined,
-      },
+      message: `Cleanup completed: ${attachmentsDeleted} attachments from ${tasksToClean.length} tasks`,
+      stats,
     });
   } catch (error) {
-    console.error('Cleanup cron job failed:', error);
+    console.error('[Cron] Unexpected error during cleanup:', error);
     return NextResponse.json(
       {
-        error: 'Cleanup failed',
+        success: false,
+        error: 'Internal server error during cleanup',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }

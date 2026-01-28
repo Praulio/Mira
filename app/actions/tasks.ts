@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { tasks, activity } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { deleteTaskFolder } from '@/lib/google-drive';
 
 /**
  * Standardized action response type
@@ -21,7 +22,7 @@ type ActionResponse<T = unknown> = {
  */
 const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
-  description: z.string().max(2000, 'Description must be 2000 characters or less').optional(),
+  description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
   assigneeId: z.string().optional(),
 });
 
@@ -52,24 +53,26 @@ const toggleCriticalSchema = z.object({
  */
 const completeTaskSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
-  notes: z.string().max(2000, 'Notes must be 2000 characters or less').optional(),
+  notes: z.string().max(50000, 'Las notas no pueden exceder 50,000 caracteres').optional(),
   links: z.array(z.string().url('Invalid URL')).max(10, 'Maximum 10 links').optional(),
   mentions: z.array(z.string()).optional(),
 });
 
 /**
- * Zod schema for updating completedAt
+ * Zod schema for updating completedAt timestamp
+ * Only the owner (assignee or creator) can edit this value
  */
 const updateCompletedAtSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
   completedAt: z.coerce.date().refine(
     (date) => date <= new Date(),
-    'La fecha de completado no puede ser en el futuro'
+    'La fecha de finalización no puede ser en el futuro'
   ),
 });
 
 /**
  * Zod schema for creating a derived task
+ * A derived task links to a parent task via parentTaskId
  */
 const createDerivedTaskSchema = z.object({
   parentTaskId: z.string().uuid('Invalid parent task ID'),
@@ -82,7 +85,7 @@ const createDerivedTaskSchema = z.object({
 const updateTaskMetadataSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
-  description: z.string().max(2000, 'Description must be 2000 characters or less').optional(),
+  description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
 }).refine(
   (data) => data.title !== undefined || data.description !== undefined,
   'At least one field (title or description) must be provided'
@@ -244,7 +247,7 @@ export async function updateTaskStatus(
       if (newStatus === 'in_progress' && currentTask.assigneeId) {
         await tx
           .update(tasks)
-          .set({ 
+          .set({
             status: 'todo',
             updatedAt: new Date(),
           })
@@ -257,26 +260,25 @@ export async function updateTaskStatus(
           );
       }
 
-      // Determine startedAt value based on status transition
-      // Capture startedAt when moving to in_progress, reset when moving back to backlog/todo
-      let startedAtValue: Date | null | undefined = undefined;
+      // Build update data for status change
+      const updateData: Partial<typeof tasks.$inferInsert> = {
+        status: newStatus,
+        updatedAt: new Date(),
+      };
 
+      // TIME TRACKING LOGIC:
+      // - Capture startedAt when moving to 'in_progress' (only if not already set)
+      // - Reset startedAt when moving back to 'backlog' or 'todo'
       if (newStatus === 'in_progress' && !currentTask.startedAt) {
-        // First time entering in_progress - capture timestamp
-        startedAtValue = new Date();
-      } else if ((newStatus === 'backlog' || newStatus === 'todo') && currentTask.startedAt) {
-        // Moving back from in_progress - reset startedAt
-        startedAtValue = null;
+        updateData.startedAt = new Date();
+      } else if (newStatus === 'backlog' || newStatus === 'todo') {
+        updateData.startedAt = null;
       }
 
       // Update the target task with the new status
       const [updatedTask] = await tx
         .update(tasks)
-        .set({
-          status: newStatus,
-          updatedAt: new Date(),
-          ...(startedAtValue !== undefined && { startedAt: startedAtValue }),
-        })
+        .set(updateData)
         .where(eq(tasks.id, taskId))
         .returning();
 
@@ -364,6 +366,16 @@ export async function deleteTask(
         success: false,
         error: 'Task not found',
       };
+    }
+
+    // Delete attachments from Google Drive before deleting the task
+    // This runs outside the transaction because Drive operations can be slow
+    // and we don't want to block the DB. The cron job handles orphaned files if this fails.
+    try {
+      await deleteTaskFolder(taskId);
+    } catch (driveError) {
+      console.error('Error deleting task folder from Google Drive:', driveError);
+      // Continue with task deletion even if Drive cleanup fails
     }
 
     // Execute deletion in transaction to ensure activity is logged before task is deleted
@@ -815,8 +827,13 @@ export async function completeTask(
 /**
  * Server Action: Update completedAt timestamp
  *
- * Allows the task owner (assignee or creator) to edit the completedAt timestamp.
- * Used when the automatic timestamp doesn't reflect the actual completion time.
+ * Allows the owner (assignee or creator) to edit the completion timestamp
+ * of a task that is already in 'done' status.
+ *
+ * Rules:
+ * - Only assignee or creator can edit completedAt
+ * - Task must be in 'done' status
+ * - New date cannot be in the future
  *
  * @param input - Task ID and new completedAt date
  * @returns ActionResponse with updated task data or error message
@@ -861,21 +878,21 @@ export async function updateCompletedAt(
       };
     }
 
-    // Validate ownership: only assignee or creator can edit completedAt
+    // Verify task is in 'done' status
+    if (currentTask.status !== 'done') {
+      return {
+        success: false,
+        error: 'Solo se puede editar la fecha de finalización de tareas completadas',
+      };
+    }
+
+    // Verify ownership: user must be assignee OR creator
     const isOwner = currentTask.assigneeId === userId || currentTask.creatorId === userId;
 
     if (!isOwner) {
       return {
         success: false,
-        error: 'Solo el asignado o creador puede editar la fecha de completado',
-      };
-    }
-
-    // Task must be in 'done' status to edit completedAt
-    if (currentTask.status !== 'done') {
-      return {
-        success: false,
-        error: 'Solo se puede editar la fecha de tareas completadas',
+        error: 'Solo el asignado o creador de la tarea puede editar la fecha de finalización',
       };
     }
 
@@ -901,9 +918,9 @@ export async function updateCompletedAt(
         action: 'updated',
         metadata: {
           taskTitle: updatedTask.title,
-          field: 'completedAt',
-          oldValue: currentTask.completedAt?.toISOString() || null,
-          newValue: completedAt.toISOString(),
+          oldCompletedAt: currentTask.completedAt?.toISOString() || null,
+          newCompletedAt: completedAt.toISOString(),
+          fieldUpdated: 'completedAt',
         },
       });
 
@@ -931,9 +948,14 @@ export async function updateCompletedAt(
 /**
  * Server Action: Create a derived task
  *
- * Creates a new task that inherits from a completed parent task.
- * Used when a completed task needs follow-up work.
- * Inherits description and assignee from the parent task.
+ * Creates a new task linked to a parent task via parentTaskId.
+ * Used when a completed task needs follow-up work without "reopening" it.
+ *
+ * Behavior:
+ * - Inherits description and assignee from parent task
+ * - Custom title optional (defaults to "Continuación: {parentTitle}")
+ * - New task starts in 'backlog' status
+ * - Logs activity with derivedFrom metadata
  *
  * @param input - Parent task ID and optional custom title
  * @returns ActionResponse with created task data or error message
@@ -962,7 +984,7 @@ export async function createDerivedTask(
       };
     }
 
-    const { parentTaskId, title } = validationResult.data;
+    const { parentTaskId, title: customTitle } = validationResult.data;
 
     // Fetch the parent task
     const [parentTask] = await db
@@ -978,19 +1000,12 @@ export async function createDerivedTask(
       };
     }
 
-    // Parent task must be in 'done' status to create derived task
-    if (parentTask.status !== 'done') {
-      return {
-        success: false,
-        error: 'Solo se pueden crear tareas derivadas de tareas completadas',
-      };
-    }
+    // Generate title: custom or "Continuación: {parentTitle}"
+    const derivedTitle = customTitle || `Continuación: ${parentTask.title}`;
 
     // Execute creation in transaction
     const result = await db.transaction(async (tx) => {
-      // Create derived task with inherited properties
-      const derivedTitle = title || `Seguimiento: ${parentTask.title}`;
-
+      // Insert derived task
       const [newTask] = await tx
         .insert(tasks)
         .values({
@@ -1007,7 +1022,7 @@ export async function createDerivedTask(
         throw new Error('Failed to create derived task');
       }
 
-      // Log activity for the new task creation
+      // Log activity for the new task
       await tx.insert(activity).values({
         taskId: newTask.id,
         userId,
@@ -1020,7 +1035,7 @@ export async function createDerivedTask(
         },
       });
 
-      // If assigned at creation, log assignment activity
+      // If inherited assignee, log assignment activity
       if (newTask.assigneeId) {
         await tx.insert(activity).values({
           taskId: newTask.id,
@@ -1029,6 +1044,7 @@ export async function createDerivedTask(
           metadata: {
             assigneeId: newTask.assigneeId,
             taskTitle: newTask.title,
+            inheritedFrom: parentTaskId,
           },
         });
       }
@@ -1053,4 +1069,3 @@ export async function createDerivedTask(
     };
   }
 }
-

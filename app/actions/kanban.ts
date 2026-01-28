@@ -59,18 +59,9 @@ export async function getKanbanData(): Promise<KanbanData> {
   }
 
   try {
-    // Subquery to count attachments per task
-    const attachmentCountSubquery = db
-      .select({
-        taskId: attachments.taskId,
-        count: sql<number>`count(*)::int`.as('count'),
-      })
-      .from(attachments)
-      .groupBy(attachments.taskId)
-      .as('attachment_counts');
-
     // Single query with JOINs to fetch all tasks with assignee and creator data
     // Using LEFT JOIN for assignee (nullable) and INNER JOIN for creator (required)
+    // Subquery counts attachments per task for showing clip icon
     const allTasks = await db
       .select({
         id: tasks.id,
@@ -85,11 +76,10 @@ export async function getKanbanData(): Promise<KanbanData> {
         updatedAt: tasks.updatedAt,
         startedAt: tasks.startedAt,
         completedAt: tasks.completedAt,
-        attachmentCount: sql<number>`coalesce(${attachmentCountSubquery.count}, 0)`,
+        attachmentCount: sql<number>`(SELECT COUNT(*) FROM ${attachments} WHERE ${attachments.taskId} = ${tasks.id})`.as('attachment_count'),
       })
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
-      .leftJoin(attachmentCountSubquery, eq(tasks.id, attachmentCountSubquery.taskId))
       .orderBy(desc(tasks.updatedAt));
 
     // Need to fetch creator data separately since we can't have two joins on the same table
@@ -125,7 +115,7 @@ export async function getKanbanData(): Promise<KanbanData> {
           updatedAt: task.updatedAt,
           startedAt: task.startedAt,
           completedAt: task.completedAt,
-          attachmentCount: task.attachmentCount,
+          attachmentCount: Number(task.attachmentCount) || 0,
         } as KanbanTaskData;
       })
     );

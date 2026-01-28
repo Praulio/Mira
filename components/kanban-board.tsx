@@ -153,9 +153,9 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       return;
     }
 
-    // Block dragging from Done - completed tasks cannot be moved
+    // Block drag from Done column - completed tasks cannot be moved
     if (task.status === 'done') {
-      toast.error('Las tareas completadas no se pueden mover');
+      toast.error('Las tareas completadas no se pueden mover. Crea una tarea derivada si necesitas continuar el trabajo.');
       return;
     }
 

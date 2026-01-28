@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, X, User as UserIcon, Check } from 'lucide-react';
+import { Plus, X, Check, Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createTask } from '@/app/actions/tasks';
 import { getTeamUsers } from '@/app/actions/users';
+import { PendingFilePicker } from '@/components/pending-file-picker';
 
 /**
  * CreateTaskDialog - Simple dialog for creating new tasks
@@ -16,6 +17,8 @@ export function CreateTaskDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [teamUsers, setTeamUsers] = useState<{ id: string; name: string; imageUrl: string | null }[]>([]);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
 
   // Fetch team users when dialog opens
   useEffect(() => {
@@ -39,18 +42,69 @@ export function CreateTaskDialog() {
       assigneeId: selectedAssigneeId || undefined,
     });
 
-    setIsSubmitting(false);
-
-    if (result.success) {
-      toast.success('Tarea creada exitosamente');
-      setIsOpen(false);
-      setSelectedAssigneeId(null);
-      // Reset form
-      (e.target as HTMLFormElement).reset();
-      router.refresh();
-    } else {
+    if (!result.success) {
+      setIsSubmitting(false);
       toast.error(result.error || 'Error al crear la tarea');
+      return;
     }
+
+    // Upload pending files if any
+    const taskId = result.data?.id;
+    if (pendingFiles.length > 0 && taskId) {
+      setUploadProgress({ current: 0, total: pendingFiles.length });
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i];
+        setUploadProgress({ current: i + 1, total: pendingFiles.length });
+
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', file);
+          uploadFormData.append('taskId', taskId);
+
+          const response = await fetch('/api/attachments/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          const uploadResult = await response.json();
+
+          if (uploadResult.success) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch {
+          errorCount++;
+        }
+      }
+
+      setUploadProgress(null);
+
+      // Show appropriate toast based on upload results
+      if (errorCount > 0 && successCount > 0) {
+        toast.warning(
+          `Tarea creada. ${successCount} archivo(s) subido(s), ${errorCount} fallido(s).`
+        );
+      } else if (errorCount > 0 && successCount === 0) {
+        toast.warning('Tarea creada, pero los archivos no se pudieron subir.');
+      } else {
+        toast.success('Tarea creada con adjuntos');
+      }
+    } else {
+      toast.success('Tarea creada exitosamente');
+    }
+
+    setIsSubmitting(false);
+    setIsOpen(false);
+    setSelectedAssigneeId(null);
+    setPendingFiles([]);
+    // Reset form
+    (e.target as HTMLFormElement).reset();
+    router.refresh();
   }
 
   if (!isOpen) {
@@ -114,9 +168,8 @@ export function CreateTaskDialog() {
               id="description"
               name="description"
               rows={3}
-              maxLength={2000}
               data-testid="task-description-input"
-              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all resize-none overflow-y-auto max-h-40"
               placeholder="Agrega algunos detalles..."
             />
           </div>
@@ -133,8 +186,8 @@ export function CreateTaskDialog() {
                   type="button"
                   onClick={() => setSelectedAssigneeId(selectedAssigneeId === user.id ? null : user.id)}
                   className={`group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
-                    selectedAssigneeId === user.id 
-                      ? 'bg-primary/20 ring-1 ring-primary/50' 
+                    selectedAssigneeId === user.id
+                      ? 'bg-primary/20 ring-1 ring-primary/50'
                       : 'hover:bg-white/5'
                   }`}
                 >
@@ -165,6 +218,19 @@ export function CreateTaskDialog() {
             </div>
           </div>
 
+          {/* Attachments */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Paperclip className="h-3 w-3" />
+              Adjuntos
+            </label>
+            <PendingFilePicker
+              files={pendingFiles}
+              onFilesChange={setPendingFiles}
+              disabled={isSubmitting}
+            />
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -181,7 +247,16 @@ export function CreateTaskDialog() {
               data-testid="submit-task-button"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-black text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
             >
-              {isSubmitting ? 'Creando...' : 'Crear Tarea'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {uploadProgress
+                    ? `Subiendo ${uploadProgress.current}/${uploadProgress.total}...`
+                    : 'Creando...'}
+                </>
+              ) : (
+                'Crear Tarea'
+              )}
             </button>
           </div>
         </form>
