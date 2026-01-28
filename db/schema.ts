@@ -79,6 +79,31 @@ export const activity = pgTable('activity', {
 }));
 
 /**
+ * Enum for notification types
+ */
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'assigned',
+  'mentioned'
+]);
+
+/**
+ * Notifications table - in-app notifications for users
+ */
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  recipientId: text('recipient_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  actorId: text('actor_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum('type').notNull(),
+  isRead: boolean('is_read').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  recipientIdx: index('notifications_recipient_idx').on(table.recipientId),
+  recipientReadIdx: index('notifications_recipient_read_idx').on(table.recipientId, table.isRead),
+  createdAtIdx: index('notifications_created_at_idx').on(table.createdAt),
+}));
+
+/**
  * Attachments table - stores file references for tasks
  * Files are stored in Google Drive, this table holds metadata
  */

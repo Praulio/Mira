@@ -32,7 +32,7 @@ Validación Fase 0:
 
 ## Fase 1: Schema y Migración
 
-- [ ] **1.1** Agregar tabla notifications y enum notificationTypeEnum a schema
+- [x] **1.1** Agregar tabla notifications y enum notificationTypeEnum a schema
   - Input: db/schema.ts línea 97 (después de tabla attachments)
   - Output: Enum `notification_type` ('assigned', 'mentioned') y tabla `notifications` con columns: id (uuid PK), recipientId (text FK users CASCADE), actorId (text FK users CASCADE), taskId (uuid FK tasks CASCADE), type (enum), isRead (boolean default false), createdAt (timestamp)
   - Comportamiento: Índices en recipientId, (recipientId + isRead) compuesto, createdAt

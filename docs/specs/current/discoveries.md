@@ -86,3 +86,9 @@ Log de aprendizajes entre sesiones de Ralph Loop.
   1 passed (52.2s)
 ```
 Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failures are pre-existing DB-related issues (ri_ReportViolation), not Playwright configuration problems. Validation passed.
+
+### Session 4 - 2026-01-28
+**Task:** 1.1 - Agregar tabla notifications y enum notificationTypeEnum a schema
+**Files:** db/schema.ts
+**Patterns:** Followed activity table pattern: uuid PK, references to users/tasks with cascade, indexes. Added notificationTypeEnum pgEnum with 'assigned'/'mentioned'. Composite index on (recipientId, isRead) for efficient unread count queries.
+**Notes:** Build passes (0 errors, 13 warnings pre-existing). Table has: id, recipientId, actorId, taskId, type, isRead, createdAt with 3 indexes.
