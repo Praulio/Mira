@@ -128,3 +128,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** app/actions/tasks.ts
 **Patterns:** Deduplicated mentions with `[...new Set(mentions)]` before iterating. Notification insert added inside the existing mentions loop, within the transaction for atomicity. No email for mentions (only assignments get emails per spec).
 **Notes:** Added notification insert with type='mentioned' for each unique mentionedUserId !== userId inside the completeTask mentions loop. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 11 - 2026-01-28
+**Task:** 4.3 - Insertar notificación al mencionar en descripción (updateTaskMetadata)
+**Files:** app/actions/tasks.ts
+**Patterns:** Imported extractMentionIds from components/mention-input.tsx. Diff logic: extract new mention IDs from updated description, compare with currentTask.descriptionMentions (old), filter out already-mentioned users and self. Dedup with Set. Update descriptionMentions column after inserting notifications.
+**Notes:** Added inside transaction after activity insert. Also updates descriptionMentions column to track current mentions for future diffs. Build passes (0 errors, 13 warnings pre-existing).

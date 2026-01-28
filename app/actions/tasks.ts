@@ -9,6 +9,7 @@ import { eq, and } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
 import { after } from 'next/server';
 import { sendTaskAssignedEmail } from '@/lib/email';
+import { extractMentionIds } from '@/components/mention-input';
 
 /**
  * Standardized action response type
@@ -534,6 +535,33 @@ export async function updateTaskMetadata(
           },
         },
       });
+
+      // Handle description mention notifications
+      if (description !== undefined) {
+        const newMentionIds = extractMentionIds(description);
+        const oldMentionIds: string[] = (currentTask.descriptionMentions as string[] | null) ?? [];
+        const addedIds = newMentionIds.filter(
+          (id) => !oldMentionIds.includes(id) && id !== userId
+        );
+
+        // Deduplicate
+        const uniqueAddedIds = [...new Set(addedIds)];
+
+        for (const mentionedUserId of uniqueAddedIds) {
+          await tx.insert(notifications).values({
+            recipientId: mentionedUserId,
+            actorId: userId,
+            taskId: updatedTask.id,
+            type: 'mentioned',
+          });
+        }
+
+        // Update descriptionMentions column
+        await tx
+          .update(tasks)
+          .set({ descriptionMentions: newMentionIds })
+          .where(eq(tasks.id, taskId));
+      }
 
       return updatedTask;
     });

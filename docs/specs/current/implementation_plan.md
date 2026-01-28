@@ -110,7 +110,7 @@ Validación Fase 3:
   - Comportamiento: Deduplicar: un solo insert por userId único. No enviar email para menciones.
   - Referencia: ver app/actions/tasks.ts:789-803 (mentions loop)
 
-- [ ] **4.3** Insertar notificación al mencionar en descripción (updateTaskMetadata)
+- [x] **4.3** Insertar notificación al mencionar en descripción (updateTaskMetadata)
   - Input: app/actions/tasks.ts función updateTaskMetadata (~línea 429)
   - Output: Al actualizar descripción, parsear mentions con extractMentionIds(), diff con task.descriptionMentions (old), guardar nuevos IDs en descriptionMentions column, crear notification type='mentioned' solo para IDs nuevos que no sean el currentUser
   - Comportamiento: Import extractMentionIds de components/mention-input. Diff: newIds.filter(id => !oldIds.includes(id) && id !== userId)
