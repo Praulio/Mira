@@ -1,6 +1,7 @@
 import { ReactNode } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { UserNav } from "@/components/user-nav"
+import { NotificationBell } from "@/components/notification-bell"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           
           {/* User menu */}
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <UserNav />
           </div>
         </header>

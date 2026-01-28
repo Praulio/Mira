@@ -138,7 +138,7 @@ Validación Fase 4:
   - Comportamiento: useEffect con setInterval(30s) fetch a /api/notifications/unread-count. Pausa polling cuando document.visibilityState === 'hidden'. Badge rojo con número exacto. Al abrir popover, fetch /api/notifications para lista. Cada card: avatar actorImage, texto "{actorName} te asignó/mencionó en: {taskTitle}", formatRelativeTime, dot azul si !isRead. Click en card → markNotificationRead(id) server action + router.push(`/dashboard?task=${taskId}`). Empty state: ícono Bell muted + "No tienes notificaciones".
   - Referencia: ver components/team-view-auto-refresh.tsx para polling pattern, components/mention-input.tsx:156-181 para dropdown styling
 
-- [ ] **5.3** Integrar NotificationBell en layout del dashboard
+- [x] **5.3** Integrar NotificationBell en layout del dashboard
   - Input: app/(dashboard)/layout.tsx línea 19-20
   - Output: `<NotificationBell />` antes de `<UserNav />` dentro del div flex items-center gap-4
   - Referencia: ver app/(dashboard)/layout.tsx:19-21

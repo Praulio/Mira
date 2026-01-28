@@ -146,3 +146,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** components/notification-bell.tsx (new)
 **Patterns:** Used Radix Popover (Root/Trigger/Portal/Content) with glassmorphism styling matching mention-input dropdown. Polling with setInterval(30s) + visibilitychange listener to pause when tab hidden. Fetch /api/notifications/unread-count for badge, /api/notifications for full list on popover open. markNotificationRead server action + router.push for click handling.
 **Notes:** Component features: bell icon with red badge (unread count), popover with notification cards (avatar, text, relative time, blue dot for unread), empty state with BellOff icon. Build passes (0 errors, 14 warnings pre-existing).
+
+### Session 14 - 2026-01-28
+**Task:** 5.3 - Integrar NotificationBell en layout del dashboard
+**Files:** app/(dashboard)/layout.tsx
+**Patterns:** Simple import + placement. NotificationBell goes before UserNav inside the flex items-center gap-4 div.
+**Notes:** Added import and `<NotificationBell />` before `<UserNav />` in header. Build passes (0 errors, 14 warnings pre-existing).
