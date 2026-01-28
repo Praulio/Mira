@@ -169,3 +169,14 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 Running 3 tests using 1 worker
   3 passed (7.8s)
 ```
+
+### Session 17 - 2026-01-28
+**Task:** 7.2 - Crear test E2E para campana y popover de notificaciones
+**Files:** e2e/notifications-bell.spec.ts (new)
+**Patterns:** Radix Popover content appears in a portal, but h3 selector works fine. Bell toggle (click to open, click again to close) works as expected. Empty state reliably shows for e2e test user with no notifications.
+**Notes:** 4 tests: bell visible, popover opens with header, empty state shown, popover closes on re-click. All pass.
+**Test Output:**
+```
+Running 4 tests using 1 worker
+  4 passed (10.7s)
+```

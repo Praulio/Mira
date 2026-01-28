@@ -179,7 +179,7 @@ Validación Fase 6:
   - Referencia: ver e2e/critical-flow.spec.ts para pattern de test E2E con auth bypass
   - **OBLIGATORIO:** Ejecutar `pnpm test:e2e e2e/notifications-assignment.spec.ts` y pegar output completo en discoveries.md
 
-- [ ] **7.2** Crear test E2E para campana y popover de notificaciones
+- [x] **7.2** Crear test E2E para campana y popover de notificaciones
   - Input: Nuevo archivo e2e/notifications-bell.spec.ts
   - Output: Test que: (1) navega al dashboard, (2) verifica que la campana existe en el header, (3) hace clic en la campana, (4) verifica que el popover se abre, (5) verifica estado vacío "No tienes notificaciones" si no hay notificaciones
   - Comportamiento: Verificar selectores reales del componente notification-bell.tsx
