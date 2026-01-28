@@ -84,7 +84,7 @@ Validación Fase 2:
 
 ## Fase 3: Email con Nodemailer
 
-- [ ] **3.1** Crear utilidad de email
+- [x] **3.1** Crear utilidad de email
   - Input: Nuevo archivo lib/email.ts
   - Output: Función sendTaskAssignedEmail({ to, assignerName, taskTitle, taskId })
   - Comportamiento: Configura transporter con `service: 'gmail'`, auth con GMAIL_USER/GMAIL_APP_PASSWORD. Envía texto plano con subject "Te asignaron una tarea: {título}" y body con enlace `{NEXT_PUBLIC_APP_URL}/dashboard?task={taskId}`. Try/catch retorna { success } sin propagar error.

@@ -110,3 +110,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** app/actions/notifications.ts (new), app/api/notifications/unread-count/route.ts (new), app/api/notifications/route.ts (new)
 **Patterns:** Zod error access uses `.issues[0].message` not `.errors[0].message` in this project's Zod version. API routes follow same `getAuthUserId()` pattern from attachments download route with E2E bypass. Server actions use `getAuth()` from mock-auth. Both patterns coexist: server actions use mock-auth, API routes use inline getAuthUserId.
 **Notes:** Three functions in server actions: getUnreadCount (count query with composite index), getNotifications (join users+tasks, limit 50, desc order), markNotificationRead (validates recipientId === currentUser). Two API routes mirror getUnreadCount and getNotifications. Build passes (0 errors, 14 warnings pre-existing).
+
+### Session 8 - 2026-01-28
+**Task:** 3.1 - Crear utilidad de email
+**Files:** lib/email.ts (new)
+**Patterns:** Followed google-drive.ts singleton pattern for nodemailer transporter. `service: 'gmail'` auto-configures host/port. Try/catch returns `{ success }` without propagating errors (non-blocking).
+**Notes:** Function sendTaskAssignedEmail sends plain text email with subject "Te asignaron una tarea: {título}" and body with direct link. Build passes (0 errors, 13 warnings pre-existing).
