@@ -1,0 +1,217 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "Mira" [ref=e6] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e11]: Mira
+        - navigation [ref=e12]:
+          - link "Vista de Equipo Ve en qué trabaja el equipo" [ref=e13] [cursor=pointer]:
+            - /url: /dashboard
+            - button "Vista de Equipo Ve en qué trabaja el equipo" [ref=e14]:
+              - img
+              - generic [ref=e15]:
+                - generic [ref=e16]: Vista de Equipo
+                - generic [ref=e17]: Ve en qué trabaja el equipo
+          - link "Tablero Kanban Arrastra y suelta tareas" [ref=e18] [cursor=pointer]:
+            - /url: /dashboard/kanban
+            - button "Tablero Kanban Arrastra y suelta tareas" [ref=e19]:
+              - img
+              - generic [ref=e20]:
+                - generic [ref=e21]: Tablero Kanban
+                - generic [ref=e22]: Arrastra y suelta tareas
+          - link "Pila de Tareas Prioriza trabajo pendiente" [ref=e23] [cursor=pointer]:
+            - /url: /dashboard/backlog
+            - button "Pila de Tareas Prioriza trabajo pendiente" [ref=e24]:
+              - img
+              - generic [ref=e25]:
+                - generic [ref=e26]: Pila de Tareas
+                - generic [ref=e27]: Prioriza trabajo pendiente
+          - link "Actividad Cambios recientes" [ref=e28] [cursor=pointer]:
+            - /url: /dashboard/activity
+            - button "Actividad Cambios recientes" [ref=e29]:
+              - img
+              - generic [ref=e30]:
+                - generic [ref=e31]: Actividad
+                - generic [ref=e32]: Cambios recientes
+        - paragraph [ref=e34]: Mira Tasker v1.0.0
+    - generic [ref=e35]:
+      - banner [ref=e36]:
+        - heading "Dashboard" [level=1] [ref=e38]
+      - main [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - heading "Tablero Kanban" [level=2] [ref=e43]
+              - paragraph [ref=e44]: Organiza y rastrea tus tareas a través de cuatro etapas - Arrastra para mover tareas
+            - generic [ref=e46]:
+              - generic [ref=e47]:
+                - heading "Crear Nueva Tarea" [level=2] [ref=e48]
+                - button [ref=e49]:
+                  - img [ref=e50]
+              - generic [ref=e53]:
+                - generic [ref=e54]:
+                  - generic [ref=e55]: Título *
+                  - textbox "Título *" [ref=e56]:
+                    - /placeholder: ¿Qué hay que hacer?
+                    - text: Blocked Dropzone Test 1769120950420
+                - generic [ref=e57]:
+                  - text: Descripción
+                  - textbox "Descripción" [ref=e58]:
+                    - /placeholder: Agrega algunos detalles...
+                - generic [ref=e59]:
+                  - text: Asignar a
+                  - generic [ref=e60]:
+                    - button "Nebula Tools Nebula" [ref=e61]:
+                      - img "Nebula Tools" [ref=e63]
+                      - generic [ref=e64]: Nebula
+                    - button "EL JULIUS ❄️ EL" [ref=e65]:
+                      - img "EL JULIUS ❄️" [ref=e67]
+                      - generic [ref=e68]: EL
+                    - button "Rogelio Guzmán Rogelio" [ref=e69]:
+                      - img "Rogelio Guzmán" [ref=e71]
+                      - generic [ref=e72]: Rogelio
+                - generic [ref=e73]:
+                  - button "Cancelar" [ref=e74]
+                  - button "Crear Tarea" [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e79]:
+                - heading "Pila de Tareas" [level=3] [ref=e81]
+                - generic [ref=e82]: "4"
+              - generic [ref=e83]:
+                - button "Análisis de listado de cálculos MRM Validar archivo markdown en repositorio Unassigned" [ref=e84]:
+                  - button [ref=e86]:
+                    - img [ref=e87]
+                  - heading "Análisis de listado de cálculos MRM" [level=4] [ref=e91]
+                  - paragraph [ref=e92]: Validar archivo markdown en repositorio
+                  - generic [ref=e94]:
+                    - img [ref=e96]
+                    - generic [ref=e99]: Unassigned
+                - button "Auditoría Backend & Proceso SFTP lista de ajustes pendiente de editar aquí... Unassigned" [ref=e102]:
+                  - button [ref=e104]:
+                    - img [ref=e105]
+                  - heading "Auditoría Backend & Proceso SFTP" [level=4] [ref=e109]
+                  - paragraph [ref=e110]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e112]:
+                    - img [ref=e114]
+                    - generic [ref=e117]: Unassigned
+                - button "Ajustes finales Front MRM lista de ajustes pendiente de editar aquí... Unassigned" [ref=e120]:
+                  - button [ref=e122]:
+                    - img [ref=e123]
+                  - heading "Ajustes finales Front MRM" [level=4] [ref=e127]
+                  - paragraph [ref=e128]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e130]:
+                    - img [ref=e132]
+                    - generic [ref=e135]: Unassigned
+                - button "Next Sprint HappyDreamers lista de ajustes pendiente de editar aquí... Unassigned" [ref=e138]:
+                  - button [ref=e140]:
+                    - img [ref=e141]
+                  - heading "Next Sprint HappyDreamers" [level=4] [ref=e145]
+                  - paragraph [ref=e146]: lista de ajustes pendiente de editar aquí...
+                  - generic [ref=e148]:
+                    - img [ref=e150]
+                    - generic [ref=e153]: Unassigned
+            - generic [ref=e156]:
+              - generic [ref=e158]:
+                - heading "Por Hacer" [level=3] [ref=e160]
+                - generic [ref=e161]: "4"
+              - generic [ref=e162]:
+                - button "Migración landings a nuevo VPS Mover proyectos EzyAI & Artra a server seguro. EL JULIUS ❄️ EL JULIUS ❄️" [ref=e163]:
+                  - button [ref=e165]:
+                    - img [ref=e166]
+                  - heading "Migración landings a nuevo VPS" [level=4] [ref=e170]
+                  - paragraph [ref=e171]: Mover proyectos EzyAI & Artra a server seguro.
+                  - generic [ref=e173]:
+                    - img "EL JULIUS ❄️" [ref=e175]
+                    - generic [ref=e176]: EL JULIUS ❄️
+                - button "Junta Seguimiento Revisión MRM EL JULIUS ❄️ EL JULIUS ❄️" [ref=e179]:
+                  - button [ref=e181]:
+                    - img [ref=e182]
+                  - heading "Junta Seguimiento Revisión MRM" [level=4] [ref=e186]
+                  - generic [ref=e188]:
+                    - img "EL JULIUS ❄️" [ref=e190]
+                    - generic [ref=e191]: EL JULIUS ❄️
+                - button "Junta Kick Off pt. 2 Zuli Validar notas y comentarios del alcance MVP EL JULIUS ❄️ EL JULIUS ❄️" [ref=e194]:
+                  - button [ref=e196]:
+                    - img [ref=e197]
+                  - heading "Junta Kick Off pt. 2 Zuli" [level=4] [ref=e201]
+                  - paragraph [ref=e202]: Validar notas y comentarios del alcance MVP
+                  - generic [ref=e204]:
+                    - img "EL JULIUS ❄️" [ref=e206]
+                    - generic [ref=e207]: EL JULIUS ❄️
+                - button "Workflow AI Afinando workflow con autonomia de implementacion Rogelio Guzmán Rogelio Guzmán" [ref=e210]:
+                  - button [ref=e212]:
+                    - img [ref=e213]
+                  - heading "Workflow AI" [level=4] [ref=e217]
+                  - paragraph [ref=e218]: Afinando workflow con autonomia de implementacion
+                  - generic [ref=e220]:
+                    - img "Rogelio Guzmán" [ref=e222]
+                    - generic [ref=e223]: Rogelio Guzmán
+            - generic [ref=e226]:
+              - generic [ref=e228]:
+                - heading "En Progreso" [level=3] [ref=e230]
+                - generic [ref=e231]: "2"
+              - generic [ref=e232]:
+                - button "Testing Ralph Loop 1st Try EL JULIUS ❄️ EL JULIUS ❄️" [ref=e233]:
+                  - button [ref=e235]:
+                    - img [ref=e236]
+                  - heading "Testing Ralph Loop 1st Try" [level=4] [ref=e240]
+                  - generic [ref=e242]:
+                    - img "EL JULIUS ❄️" [ref=e244]
+                    - generic [ref=e245]: EL JULIUS ❄️
+                - button "Revision de Documentacion HD sprint 1 revisar documentacion en https://docs.google.com/document/d/1r0FqAeEkLFh0HsIChyPxZt6TZNt3aVsTDSEPpMup08g/edit?usp=sharing esta como Sprint 1 HD - ATZ en el gem la conversacion completa Rogelio Guzmán Rogelio Guzmán" [ref=e248]:
+                  - button [ref=e250]:
+                    - img [ref=e251]
+                  - heading "Revision de Documentacion HD sprint 1" [level=4] [ref=e255]
+                  - paragraph [ref=e256]: revisar documentacion en https://docs.google.com/document/d/1r0FqAeEkLFh0HsIChyPxZt6TZNt3aVsTDSEPpMup08g/edit?usp=sharing esta como Sprint 1 HD - ATZ en el gem la conversacion completa
+                  - generic [ref=e258]:
+                    - img "Rogelio Guzmán" [ref=e260]
+                    - generic [ref=e261]: Rogelio Guzmán
+            - generic [ref=e264]:
+              - generic [ref=e266]:
+                - heading "Completado" [level=3] [ref=e268]
+                - generic [ref=e269]: "3"
+              - generic [ref=e270]:
+                - button "Generación Documento Priorizado Zuli EL JULIUS ❄️ EL JULIUS ❄️" [ref=e271]:
+                  - button [ref=e273]:
+                    - img [ref=e274]
+                  - heading "Generación Documento Priorizado Zuli" [level=4] [ref=e278]
+                  - generic [ref=e280]:
+                    - img "EL JULIUS ❄️" [ref=e282]
+                    - generic [ref=e283]: EL JULIUS ❄️
+                - button "Revisar documentación Zuli Validar 10 files del drive y agregar notas EL JULIUS ❄️ EL JULIUS ❄️" [ref=e286]:
+                  - button [ref=e288]:
+                    - img [ref=e289]
+                  - heading "Revisar documentación Zuli" [level=4] [ref=e293]
+                  - paragraph [ref=e294]: Validar 10 files del drive y agregar notas
+                  - generic [ref=e296]:
+                    - img "EL JULIUS ❄️" [ref=e298]
+                    - generic [ref=e299]: EL JULIUS ❄️
+                - button "AI MRM Ver el flujo y preparar documentacion para editar el flujo Rogelio Guzmán Rogelio Guzmán" [ref=e302]:
+                  - button [ref=e304]:
+                    - img [ref=e305]
+                  - heading "AI MRM" [level=4] [ref=e309]
+                  - paragraph [ref=e310]: Ver el flujo y preparar documentacion para editar el flujo
+                  - generic [ref=e312]:
+                    - img "Rogelio Guzmán" [ref=e314]
+                    - generic [ref=e315]: Rogelio Guzmán
+          - status [ref=e318]
+  - region "Notifications alt+T"
+  - generic [ref=e323] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e324]:
+      - img [ref=e325]
+    - generic [ref=e328]:
+      - button "Open issues overlay" [ref=e329]:
+        - generic [ref=e330]:
+          - generic [ref=e331]: "0"
+          - generic [ref=e332]: "1"
+        - generic [ref=e333]: Issue
+      - button "Collapse issues badge" [ref=e334]:
+        - img [ref=e335]
+  - alert [ref=e337]
+```
