@@ -122,3 +122,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** app/actions/tasks.ts
 **Patterns:** `after()` from `next/server` works in server actions for non-blocking async work (email sending). Notification insert goes inside transaction for assignTask (atomicity), but outside for createTask (simpler flow). Email query for actor name/recipient email done inside after() callback to avoid slowing down the main response.
 **Notes:** Added imports for notifications, users, after, sendTaskAssignedEmail. In createTask: after activity insert for assignment, insert notification + after() email if assigneeId !== userId. In assignTask: notification insert inside tx, email via after() outside tx. Both skip self-notification. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 10 - 2026-01-28
+**Task:** 4.2 - Insertar notificación al mencionar en completeTask
+**Files:** app/actions/tasks.ts
+**Patterns:** Deduplicated mentions with `[...new Set(mentions)]` before iterating. Notification insert added inside the existing mentions loop, within the transaction for atomicity. No email for mentions (only assignments get emails per spec).
+**Notes:** Added notification insert with type='mentioned' for each unique mentionedUserId !== userId inside the completeTask mentions loop. Build passes (0 errors, 13 warnings pre-existing).

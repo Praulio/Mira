@@ -104,7 +104,7 @@ Validación Fase 3:
   - Comportamiento: En assignTask: insert notification + after() con sendTaskAssignedEmail. En createTask: si assigneeId && assigneeId !== userId, misma lógica.
   - Referencia: ver app/actions/tasks.ts:576-588 (assignTask activity insert)
 
-- [ ] **4.2** Insertar notificación al mencionar en completeTask
+- [x] **4.2** Insertar notificación al mencionar en completeTask
   - Input: app/actions/tasks.ts función completeTask (~línea 789-803)
   - Output: Dentro del loop de mentions, si mentionedUserId !== userId, insertar en notifications con type='mentioned'
   - Comportamiento: Deduplicar: un solo insert por userId único. No enviar email para menciones.

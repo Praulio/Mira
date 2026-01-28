@@ -840,7 +840,8 @@ export async function completeTask(
 
       // Create 'mentioned' activity for each mentioned user
       if (mentions && mentions.length > 0) {
-        for (const mentionedUserId of mentions) {
+        const uniqueMentionIds = [...new Set(mentions)];
+        for (const mentionedUserId of uniqueMentionIds) {
           await tx.insert(activity).values({
             taskId: updatedTask.id,
             userId: mentionedUserId,
@@ -851,6 +852,16 @@ export async function completeTask(
               notes: notes || null,
             },
           });
+
+          // Insert notification for mentioned user (skip self-notification)
+          if (mentionedUserId !== userId) {
+            await tx.insert(notifications).values({
+              recipientId: mentionedUserId,
+              actorId: userId,
+              taskId: updatedTask.id,
+              type: 'mentioned',
+            });
+          }
         }
       }
 
