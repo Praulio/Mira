@@ -98,7 +98,7 @@ Validación Fase 3:
 
 ## Fase 4: Insertar Notificaciones en Task Actions
 
-- [ ] **4.1** Insertar notificación al asignar tarea
+- [x] **4.1** Insertar notificación al asignar tarea
   - Input: app/actions/tasks.ts funciones assignTask (~línea 576) y createTask (~línea 160)
   - Output: Después del insert de activity 'assigned', si newAssigneeId !== currentUserId, insertar en notifications con type='assigned'. Además, usar after() de next/server para enviar email non-blocking.
   - Comportamiento: En assignTask: insert notification + after() con sendTaskAssignedEmail. En createTask: si assigneeId && assigneeId !== userId, misma lógica.

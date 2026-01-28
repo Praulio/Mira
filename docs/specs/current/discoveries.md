@@ -116,3 +116,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** lib/email.ts (new)
 **Patterns:** Followed google-drive.ts singleton pattern for nodemailer transporter. `service: 'gmail'` auto-configures host/port. Try/catch returns `{ success }` without propagating errors (non-blocking).
 **Notes:** Function sendTaskAssignedEmail sends plain text email with subject "Te asignaron una tarea: {título}" and body with direct link. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 9 - 2026-01-28
+**Task:** 4.1 - Insertar notificación al asignar tarea
+**Files:** app/actions/tasks.ts
+**Patterns:** `after()` from `next/server` works in server actions for non-blocking async work (email sending). Notification insert goes inside transaction for assignTask (atomicity), but outside for createTask (simpler flow). Email query for actor name/recipient email done inside after() callback to avoid slowing down the main response.
+**Notes:** Added imports for notifications, users, after, sendTaskAssignedEmail. In createTask: after activity insert for assignment, insert notification + after() email if assigneeId !== userId. In assignTask: notification insert inside tx, email via after() outside tx. Both skip self-notification. Build passes (0 errors, 13 warnings pre-existing).

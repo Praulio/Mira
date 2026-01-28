@@ -4,9 +4,11 @@ import { getAuth } from '@/lib/mock-auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/db';
-import { tasks, activity } from '@/db/schema';
+import { tasks, activity, notifications, users } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
+import { after } from 'next/server';
+import { sendTaskAssignedEmail } from '@/lib/email';
 
 /**
  * Standardized action response type
@@ -167,6 +169,30 @@ export async function createTask(
           taskTitle: newTask.title,
         },
       });
+
+      // Notify assignee (skip self-notification)
+      if (newTask.assigneeId !== userId) {
+        await db.insert(notifications).values({
+          recipientId: newTask.assigneeId,
+          actorId: userId,
+          taskId: newTask.id,
+          type: 'assigned',
+        });
+
+        // Send email non-blocking
+        after(async () => {
+          const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1);
+          const [recipient] = await db.select({ email: users.email }).from(users).where(eq(users.id, newTask.assigneeId!)).limit(1);
+          if (actor && recipient) {
+            await sendTaskAssignedEmail({
+              to: recipient.email,
+              assignerName: actor.name,
+              taskTitle: newTask.title,
+              taskId: newTask.id,
+            });
+          }
+        });
+      }
     }
 
     // Revalidate relevant paths
@@ -585,8 +611,34 @@ export async function assignTask(
         },
       });
 
+      // Notify new assignee (skip self-notification and null assignee)
+      if (newAssigneeId && newAssigneeId !== currentUserId) {
+        await tx.insert(notifications).values({
+          recipientId: newAssigneeId,
+          actorId: currentUserId,
+          taskId: taskId,
+          type: 'assigned',
+        });
+      }
+
       return updatedTask;
     });
+
+    // Send email non-blocking (outside transaction)
+    if (newAssigneeId && newAssigneeId !== currentUserId) {
+      after(async () => {
+        const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, currentUserId)).limit(1);
+        const [recipient] = await db.select({ email: users.email }).from(users).where(eq(users.id, newAssigneeId)).limit(1);
+        if (actor && recipient) {
+          await sendTaskAssignedEmail({
+            to: recipient.email,
+            assignerName: actor.name,
+            taskTitle: currentTask.title,
+            taskId: taskId,
+          });
+        }
+      });
+    }
 
     revalidatePath('/');
     revalidatePath('/kanban');
