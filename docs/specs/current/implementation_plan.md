@@ -17,7 +17,7 @@ Fecha: 2026-01-28
   - Output: Variables GMAIL_USER, GMAIL_APP_PASSWORD, NEXT_PUBLIC_APP_URL agregadas
   - Referencia: ver .env.example para formato existente
 
-- [ ] **0.3** Validar que Playwright funciona correctamente
+- [x] **0.3** Validar que Playwright funciona correctamente
   - Input: playwright.config.ts existente, e2e/ directorio con specs existentes
   - Output: Ejecutar `pnpm exec playwright install --with-deps chromium` para asegurar browser instalado. Luego ejecutar `pnpm test:e2e --headed e2e/critical-flow.spec.ts` y verificar que el navegador se abre, la página carga y los tests corren (pass o fail es irrelevante, lo importante es que Playwright EJECUTA los tests y abre el browser).
   - Comportamiento: Si Playwright no puede abrir el browser o falla con error de configuración → RALPH_BLOCKED. Documentar el resultado exacto (stdout/stderr) en discoveries.md. NO marcar como completada si no se ve output real de ejecución de tests.

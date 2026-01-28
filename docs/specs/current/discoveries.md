@@ -72,3 +72,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Files:** .env.example
 **Patterns:** .env.example uses comment blocks per section with URLs for setup instructions.
 **Notes:** Added GMAIL_USER, GMAIL_APP_PASSWORD, NEXT_PUBLIC_APP_URL. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 3 - 2026-01-28
+**Task:** 0.3 - Validar que Playwright funciona correctamente
+**Files:** No files modified (validation only)
+**Patterns:** Playwright config uses `webServer` block to auto-start dev server. `reuseExistingServer: !process.env.CI` means it reuses if already running. Tests use `x-e2e-test: true` header for auth bypass.
+**Notes:** Ran `pnpm exec playwright install --with-deps chromium` successfully. Then ran `pnpm test:e2e e2e/critical-flow.spec.ts`.
+**Test Output:**
+```
+  2 failed
+    [chromium] › e2e/critical-flow.spec.ts:38:7 › Critical User Flow › complete flow: create task -> move to in progress -> verify in team view
+    [chromium] › e2e/critical-flow.spec.ts:150:7 › Critical User Flow › kanban drag and drop works across all columns
+  1 passed (52.2s)
+```
+Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failures are pre-existing DB-related issues (ri_ReportViolation), not Playwright configuration problems. Validation passed.
