@@ -134,3 +134,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** app/actions/tasks.ts
 **Patterns:** Imported extractMentionIds from components/mention-input.tsx. Diff logic: extract new mention IDs from updated description, compare with currentTask.descriptionMentions (old), filter out already-mentioned users and self. Dedup with Set. Update descriptionMentions column after inserting notifications.
 **Notes:** Added inside transaction after activity insert. Also updates descriptionMentions column to track current mentions for future diffs. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 12 - 2026-01-28
+**Task:** 5.1 - Crear helper de tiempo relativo
+**Files:** lib/format-relative-time.ts (new)
+**Patterns:** Followed format-duration.ts pattern: pure function, no dependencies, Date|string input. Spanish labels: "ahora", "hace Xm", "hace Xh", "hace Xd", fecha corta for >7d.
+**Notes:** Intervals: <1min="ahora", <60min="hace Xm", <24h="hace Xh", <7d="hace Xd", else toLocaleDateString("es"). Build passes (0 errors, 13 warnings pre-existing).

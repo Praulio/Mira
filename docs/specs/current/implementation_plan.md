@@ -126,7 +126,7 @@ Validación Fase 4:
 
 ## Fase 5: UI - Campana y Popover
 
-- [ ] **5.1** Crear helper de tiempo relativo
+- [x] **5.1** Crear helper de tiempo relativo
   - Input: Nuevo archivo lib/format-relative-time.ts
   - Output: Función formatRelativeTime(date: Date) → "hace 5 min", "hace 2h", "hace 3d", o fecha si > 7 días
   - Comportamiento: Puro, sin dependencias. Intervalos: <1min="ahora", <60min="hace Xm", <24h="hace Xh", <7d="hace Xd", else fecha corta
