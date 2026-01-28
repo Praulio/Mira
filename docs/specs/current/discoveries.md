@@ -140,3 +140,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** lib/format-relative-time.ts (new)
 **Patterns:** Followed format-duration.ts pattern: pure function, no dependencies, Date|string input. Spanish labels: "ahora", "hace Xm", "hace Xh", "hace Xd", fecha corta for >7d.
 **Notes:** Intervals: <1min="ahora", <60min="hace Xm", <24h="hace Xh", <7d="hace Xd", else toLocaleDateString("es"). Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 13 - 2026-01-28
+**Task:** 5.2 - Crear componente NotificationBell con popover
+**Files:** components/notification-bell.tsx (new)
+**Patterns:** Used Radix Popover (Root/Trigger/Portal/Content) with glassmorphism styling matching mention-input dropdown. Polling with setInterval(30s) + visibilitychange listener to pause when tab hidden. Fetch /api/notifications/unread-count for badge, /api/notifications for full list on popover open. markNotificationRead server action + router.push for click handling.
+**Notes:** Component features: bell icon with red badge (unread count), popover with notification cards (avatar, text, relative time, blue dot for unread), empty state with BellOff icon. Build passes (0 errors, 14 warnings pre-existing).

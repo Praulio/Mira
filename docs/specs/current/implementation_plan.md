@@ -132,7 +132,7 @@ Validación Fase 4:
   - Comportamiento: Puro, sin dependencias. Intervalos: <1min="ahora", <60min="hace Xm", <24h="hace Xh", <7d="hace Xd", else fecha corta
   - Referencia: ver lib/format-duration.ts para pattern de helper
 
-- [ ] **5.2** Crear componente NotificationBell con popover
+- [x] **5.2** Crear componente NotificationBell con popover
   - Input: Nuevo archivo components/notification-bell.tsx
   - Output: Client component ('use client') con campana + badge + popover Radix
   - Comportamiento: useEffect con setInterval(30s) fetch a /api/notifications/unread-count. Pausa polling cuando document.visibilityState === 'hidden'. Badge rojo con número exacto. Al abrir popover, fetch /api/notifications para lista. Cada card: avatar actorImage, texto "{actorName} te asignó/mencionó en: {taskTitle}", formatRelativeTime, dot azul si !isRead. Click en card → markNotificationRead(id) server action + router.push(`/dashboard?task=${taskId}`). Empty state: ícono Bell muted + "No tienes notificaciones".
