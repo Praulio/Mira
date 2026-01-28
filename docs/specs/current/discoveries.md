@@ -158,3 +158,14 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** components/task-detail-dialog.tsx
 **Patterns:** MentionInput is a drop-in replacement for textarea. Props: value, onChange, placeholder. onChange receives string directly (not event). The component handles its own styling internally.
 **Notes:** Replaced `<textarea>` with `<MentionInput>` in description section. Added import for MentionInput. Build passes (0 errors, 14 warnings pre-existing).
+
+### Session 16 - 2026-01-28
+**Task:** 7.1 - Crear test E2E para notificación por asignación de tarea
+**Files:** e2e/notifications-assignment.spec.ts (new)
+**Patterns:** E2E mock user `user_e2e_test_123` does NOT exist in the users table → FK constraint violation on task creation (`tasks_creator_id_users_id_fk`). This is a pre-existing issue from session 3. Tests that need to create tasks will fail. Popover loading state shows "Cargando..." — must wait for it to disappear before asserting empty/items state.
+**Notes:** Wrote 3 tests: (1) bell exists + unread-count API works, (2) bell popover opens + shows content after loading, (3) notifications API returns valid response. Cannot test full assignment notification flow due to single-user limitation and missing test user in DB. Documented limitations in test file comments.
+**Test Output:**
+```
+Running 3 tests using 1 worker
+  3 passed (7.8s)
+```

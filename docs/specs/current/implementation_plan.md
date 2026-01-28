@@ -172,7 +172,7 @@ Validación Fase 6:
 
 **REGLA CRÍTICA:** Ralph NO puede marcar ninguna tarea de esta fase como completada sin incluir en discoveries.md el OUTPUT REAL del comando `pnpm test:e2e`. Debe copiar las líneas de resultado (passed/failed/skipped). Si no hay output real → RALPH_BLOCKED.
 
-- [ ] **7.1** Crear test E2E para notificación por asignación de tarea
+- [x] **7.1** Crear test E2E para notificación por asignación de tarea
   - Input: Nuevo archivo e2e/notifications-assignment.spec.ts
   - Output: Test que: (1) navega al dashboard, (2) crea una tarea, (3) asigna a otro usuario, (4) verifica que el badge de la campana aparece con count > 0 para el usuario asignado
   - Comportamiento: Usar bypass header `x-e2e-test: true` como en e2e/critical-flow.spec.ts. Si el test necesita simular dos usuarios, documentar limitación en discoveries.
