@@ -43,7 +43,7 @@ Validación Fase 0:
   - Output: Campo `descriptionMentions: jsonb('description_mentions').$type<string[]>()`
   - Referencia: ver db/schema.ts:53 pattern de completionMentions
 
-- [ ] **1.3** Ejecutar migración
+- [x] **1.3** Ejecutar migración
   - Input: Schema actualizado
   - Output: Tablas/columnas creadas en Neon DB
   - Comando: `pnpm db:generate && pnpm db:push`

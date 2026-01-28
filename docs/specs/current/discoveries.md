@@ -98,3 +98,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** db/schema.ts
 **Patterns:** Followed completionMentions pattern exactly: `jsonb('description_mentions').$type<string[]>()`. Added after completionMentions on line 53.
 **Notes:** Build passes (0 errors, 13 warnings pre-existing). Column added to track which users were mentioned in task description for diff-based notification logic in task 4.3.
+
+### Session 6 - 2026-01-28
+**Task:** 1.3 - Ejecutar migración
+**Files:** db/migrations/0004_colorful_sugar_man.sql (generated)
+**Patterns:** `drizzle-kit push --force` skips interactive confirmation. Must use `dotenv -e .env.local --` prefix for env vars. `pnpm db:generate` creates SQL migration file, `drizzle-kit push --force` applies to Neon DB.
+**Notes:** Migration applied successfully: notifications table created with enum, FKs, and 3 indexes. description_mentions column added to tasks. Build passes (0 errors, 13 warnings pre-existing).
