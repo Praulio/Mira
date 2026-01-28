@@ -13,6 +13,7 @@ import { CompleteTaskModal } from './complete-task-modal';
 import { FileDropzone } from './file-dropzone';
 import { AttachmentList } from './attachment-list';
 import { formatDuration } from '@/lib/format-duration';
+import { MentionInput } from './mention-input';
 
 // Extended task type to include time tracking fields (added by task 4.4)
 type ExtendedKanbanTaskData = KanbanTaskData & {
@@ -325,11 +326,9 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
               <AlignLeft className="h-3 w-3" /> Description
             </label>
-            <textarea
+            <MentionInput
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={6}
-              className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none overflow-y-auto max-h-60"
+              onChange={setDescription}
               placeholder="Add more context to this task..."
             />
           </div>

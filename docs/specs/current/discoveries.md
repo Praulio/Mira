@@ -152,3 +152,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** app/(dashboard)/layout.tsx
 **Patterns:** Simple import + placement. NotificationBell goes before UserNav inside the flex items-center gap-4 div.
 **Notes:** Added import and `<NotificationBell />` before `<UserNav />` in header. Build passes (0 errors, 14 warnings pre-existing).
+
+### Session 15 - 2026-01-28
+**Task:** 6.1 - Reemplazar textarea de descripción con MentionInput en TaskDetailDialog
+**Files:** components/task-detail-dialog.tsx
+**Patterns:** MentionInput is a drop-in replacement for textarea. Props: value, onChange, placeholder. onChange receives string directly (not event). The component handles its own styling internally.
+**Notes:** Replaced `<textarea>` with `<MentionInput>` in description section. Added import for MentionInput. Build passes (0 errors, 14 warnings pre-existing).

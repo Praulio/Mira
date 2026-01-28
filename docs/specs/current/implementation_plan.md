@@ -154,7 +154,7 @@ Validación Fase 5:
 
 ## Fase 6: MentionInput en Descripción de Tarea
 
-- [ ] **6.1** Reemplazar textarea de descripción con MentionInput en TaskDetailDialog
+- [x] **6.1** Reemplazar textarea de descripción con MentionInput en TaskDetailDialog
   - Input: components/task-detail-dialog.tsx líneas 328-334 (textarea de descripción)
   - Output: Reemplazar `<textarea>` por `<MentionInput value={description} onChange={setDescription} placeholder="Add more context to this task..." />`
   - Comportamiento: MentionInput ya tiene autocomplete completo. El formato @[name](userId) se guarda en la descripción. Al guardar (handleSave), la tarea 4.3 ya se encarga de parsear y notificar.
