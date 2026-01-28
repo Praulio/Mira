@@ -57,19 +57,19 @@ Validación Fase 1:
 
 ## Fase 2: Server Actions de Notificaciones
 
-- [ ] **2.1** Crear server actions de notificaciones
+- [x] **2.1** Crear server actions de notificaciones
   - Input: Nuevo archivo app/actions/notifications.ts
   - Output: Funciones getUnreadCount(), getNotifications(limit=50), markNotificationRead(id)
   - Comportamiento: getUnreadCount retorna count de isRead=false para currentUser. getNotifications hace join con users para obtener actorName/actorImage. markNotificationRead valida recipientId === currentUser antes de actualizar.
   - Referencia: ver app/actions/tasks.ts para pattern ActionResponse, Zod, getAuth
 
-- [ ] **2.2** Crear API route GET /api/notifications/unread-count
+- [x] **2.2** Crear API route GET /api/notifications/unread-count
   - Input: Nuevo archivo app/api/notifications/unread-count/route.ts
   - Output: GET handler que retorna `{ count: number }`
   - Comportamiento: Auth via getAuth(), query count con índice compuesto
   - Referencia: ver app/api/attachments/[id]/download/route.ts para pattern de API route con auth
 
-- [ ] **2.3** Crear API route GET /api/notifications
+- [x] **2.3** Crear API route GET /api/notifications
   - Input: Nuevo archivo app/api/notifications/route.ts
   - Output: GET handler que retorna `{ items: NotificationWithActor[] }` (limit 50, join users)
   - Comportamiento: Auth via getAuth(), orderBy createdAt desc, join users para nombre/avatar del actor

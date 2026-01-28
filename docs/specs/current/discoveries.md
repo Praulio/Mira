@@ -104,3 +104,9 @@ Playwright EXECUTES correctly: browser opens, page loads, tests run. The 2 failu
 **Files:** db/migrations/0004_colorful_sugar_man.sql (generated)
 **Patterns:** `drizzle-kit push --force` skips interactive confirmation. Must use `dotenv -e .env.local --` prefix for env vars. `pnpm db:generate` creates SQL migration file, `drizzle-kit push --force` applies to Neon DB.
 **Notes:** Migration applied successfully: notifications table created with enum, FKs, and 3 indexes. description_mentions column added to tasks. Build passes (0 errors, 13 warnings pre-existing).
+
+### Session 7 - 2026-01-28
+**Task:** 2.1, 2.2, 2.3 - Crear server actions y API routes de notificaciones
+**Files:** app/actions/notifications.ts (new), app/api/notifications/unread-count/route.ts (new), app/api/notifications/route.ts (new)
+**Patterns:** Zod error access uses `.issues[0].message` not `.errors[0].message` in this project's Zod version. API routes follow same `getAuthUserId()` pattern from attachments download route with E2E bypass. Server actions use `getAuth()` from mock-auth. Both patterns coexist: server actions use mock-auth, API routes use inline getAuthUserId.
+**Notes:** Three functions in server actions: getUnreadCount (count query with composite index), getNotifications (join users+tasks, limit 50, desc order), markNotificationRead (validates recipientId === currentUser). Two API routes mirror getUnreadCount and getNotifications. Build passes (0 errors, 14 warnings pre-existing).
