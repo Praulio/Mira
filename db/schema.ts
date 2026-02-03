@@ -1,6 +1,16 @@
 import { pgTable, text, timestamp, integer, uuid, pgEnum, jsonb, index, boolean, type AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /**
+ * Enum for work areas (multi-tenancy)
+ */
+export const areaEnum = pgEnum('area', ['desarrollo', 'agencia']);
+
+/**
+ * Enum for user roles
+ */
+export const userRoleEnum = pgEnum('user_role', ['user', 'superadmin']);
+
+/**
  * Enum for task status
  */
 export const taskStatusEnum = pgEnum('task_status', [
@@ -32,6 +42,8 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   imageUrl: text('image_url'),
   slotIndex: integer('slot_index'), // 0-7 for team view positioning
+  area: areaEnum('area'), // NULL = pending assignment
+  role: userRoleEnum('role').default('user').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -53,6 +65,7 @@ export const tasks = pgTable('tasks', {
   completionMentions: jsonb('completion_mentions').$type<string[]>(),
   startedAt: timestamp('started_at'),
   parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
+  area: areaEnum('area').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -60,6 +73,7 @@ export const tasks = pgTable('tasks', {
   statusIdx: index('tasks_status_idx').on(table.status),
   creatorIdx: index('tasks_creator_idx').on(table.creatorId),
   parentTaskIdx: index('tasks_parent_task_idx').on(table.parentTaskId),
+  areaIdx: index('tasks_area_idx').on(table.area),
 }));
 
 /**
@@ -71,11 +85,13 @@ export const activity = pgTable('activity', {
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   action: activityActionEnum('action').notNull(),
   metadata: jsonb('metadata'), // Store old/new values, previous status, etc.
+  area: areaEnum('area').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   taskIdx: index('activity_task_idx').on(table.taskId),
   createdAtIdx: index('activity_created_at_idx').on(table.createdAt),
   userIdx: index('activity_user_idx').on(table.userId),
+  areaIdx: index('activity_area_idx').on(table.area),
 }));
 
 /**
@@ -90,8 +106,10 @@ export const attachments = pgTable('attachments', {
   mimeType: text('mime_type').notNull(),
   sizeBytes: integer('size_bytes').notNull(),
   uploadedBy: text('uploaded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  area: areaEnum('area').notNull(),
   uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
 }, (table) => ({
   taskIdx: index('attachments_task_idx').on(table.taskId),
   uploadedByIdx: index('attachments_uploaded_by_idx').on(table.uploadedBy),
+  areaIdx: index('attachments_area_idx').on(table.area),
 }));

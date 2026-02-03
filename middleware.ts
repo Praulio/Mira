@@ -12,6 +12,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/',
+  '/pending-assignment',
 ])
 
 // Create middleware based on whether we have valid Clerk keys

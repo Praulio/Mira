@@ -29,6 +29,13 @@
       "when": 1769471339234,
       "tag": "0003_silly_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770141516183,
+      "tag": "0004_lean_songbird",
+      "breakpoints": true
     }
   ]
 }

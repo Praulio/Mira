@@ -176,7 +176,7 @@ export async function uploadAttachment(
       };
     }
 
-    // Create attachment record in database
+    // Create attachment record in database (inherit area from task)
     const [newAttachment] = await db
       .insert(attachments)
       .values({
@@ -186,6 +186,7 @@ export async function uploadAttachment(
         mimeType,
         sizeBytes,
         uploadedBy: userId,
+        area: task.area,
       })
       .returning();
 

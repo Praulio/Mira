@@ -3,8 +3,9 @@
 import { getAuth } from '@/lib/mock-auth';
 import { db } from '@/db';
 import { users, tasks, attachments } from '@/db/schema';
-import { eq, desc, asc, sql } from 'drizzle-orm';
+import { eq, desc, asc, sql, and } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
+import { getCurrentArea } from '@/lib/area-context';
 
 /**
  * Type for a task in the Kanban view with related user data
@@ -53,15 +54,19 @@ export type KanbanData = {
  */
 export async function getKanbanData(): Promise<KanbanData> {
   const { userId } = await getAuth();
-  
+
   if (!userId) {
     redirect('/sign-in');
   }
 
   try {
+    // Get current area for filtering
+    const area = await getCurrentArea();
+
     // Single query with JOINs to fetch all tasks with assignee and creator data
     // Using LEFT JOIN for assignee (nullable) and INNER JOIN for creator (required)
     // Subquery counts attachments per task for showing clip icon
+    // Filtered by current area
     const allTasks = await db
       .select({
         id: tasks.id,
@@ -80,6 +85,7 @@ export async function getKanbanData(): Promise<KanbanData> {
       })
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
+      .where(eq(tasks.area, area))
       .orderBy(desc(tasks.updatedAt));
 
     // Need to fetch creator data separately since we can't have two joins on the same table
@@ -166,7 +172,10 @@ export async function getBacklogTasks(): Promise<BacklogTaskData[]> {
   }
 
   try {
-    // Fetch backlog tasks ordered by: isCritical DESC (true first), createdAt ASC (oldest first)
+    // Get current area for filtering
+    const area = await getCurrentArea();
+
+    // Fetch backlog tasks from current area, ordered by: isCritical DESC (true first), createdAt ASC (oldest first)
     const backlogTasks = await db
       .select({
         id: tasks.id,
@@ -183,7 +192,7 @@ export async function getBacklogTasks(): Promise<BacklogTaskData[]> {
       })
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
-      .where(eq(tasks.status, 'backlog'))
+      .where(and(eq(tasks.status, 'backlog'), eq(tasks.area, area)))
       .orderBy(desc(tasks.isCritical), asc(tasks.createdAt));
 
     // Fetch creator data separately (same pattern as getKanbanData)

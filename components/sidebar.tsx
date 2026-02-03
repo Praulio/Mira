@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutGrid, Columns3, ListTodo, Activity, Eye } from "lucide-react"
+import { LayoutGrid, Columns3, ListTodo, Activity, Eye, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -33,7 +33,18 @@ const navItems = [
   },
 ]
 
-export function Sidebar() {
+const adminNavItem = {
+  title: "Administracion",
+  href: "/dashboard/admin",
+  icon: Settings,
+  description: "Gestionar usuarios",
+}
+
+type SidebarProps = {
+  isSuperadmin?: boolean;
+}
+
+export function Sidebar({ isSuperadmin = false }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -77,6 +88,29 @@ export function Sidebar() {
               </Link>
             )
           })}
+
+          {/* Admin link - only for superadmin */}
+          {isSuperadmin && (
+            <Link href={adminNavItem.href}>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-4 px-4 py-7 text-sm font-medium transition-all duration-300 rounded-xl mt-4",
+                  pathname === adminNavItem.href
+                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"
+                )}
+              >
+                <adminNavItem.icon className={cn("h-5 w-5", pathname === adminNavItem.href ? "text-amber-500" : "text-muted-foreground")} />
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className={cn(pathname === adminNavItem.href ? "font-bold" : "font-semibold")}>{adminNavItem.title}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider opacity-60">
+                    {adminNavItem.description}
+                  </span>
+                </div>
+              </Button>
+            </Link>
+          )}
         </nav>
 
         {/* Footer */}

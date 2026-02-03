@@ -4,6 +4,7 @@ import { db } from '@/db'
 import { activity, users, tasks } from '@/db/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { getAuth } from '@/lib/mock-auth'
+import { getCurrentArea } from '@/lib/area-context'
 
 /**
  * Filter type for activity feed
@@ -42,22 +43,25 @@ export type ActivityData = {
  */
 export async function getActivityFeed(filter: ActivityFilter = 'all'): Promise<ActivityData[]> {
   try {
-    // Build where clause based on filter
-    let whereClause = undefined
+    // Get current area for filtering
+    const area = await getCurrentArea();
+
+    // Build where clause based on filter - always include area filter
+    const conditions = [eq(activity.area, area)];
 
     if (filter === 'completed') {
-      whereClause = eq(activity.action, 'completed')
+      conditions.push(eq(activity.action, 'completed'));
     } else if (filter === 'mentions') {
       const { userId } = await getAuth()
       if (!userId) {
         return []
       }
       // 'mentioned' activities are created with userId of the mentioned person
-      whereClause = and(
-        eq(activity.action, 'mentioned'),
-        eq(activity.userId, userId)
-      )
+      conditions.push(eq(activity.action, 'mentioned'));
+      conditions.push(eq(activity.userId, userId));
     }
+
+    const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
 
     // Fetch activity with user and task data in one query
     const activityData = await db

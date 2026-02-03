@@ -7,6 +7,7 @@ import { db } from '@/db';
 import { tasks, activity } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
+import { getCurrentArea } from '@/lib/area-context';
 
 /**
  * Standardized action response type
@@ -126,6 +127,9 @@ export async function createTask(
 
     const { title, description, assigneeId } = validationResult.data;
 
+    // Get current area
+    const area = await getCurrentArea();
+
     // Insert task into database
     const [newTask] = await db
       .insert(tasks)
@@ -135,6 +139,7 @@ export async function createTask(
         assigneeId: assigneeId || null,
         creatorId: userId,
         status: 'backlog', // Default status
+        area,
       })
       .returning();
 
@@ -150,6 +155,7 @@ export async function createTask(
       taskId: newTask.id,
       userId,
       action: 'created',
+      area,
       metadata: {
         title: newTask.title,
         assigneeId: newTask.assigneeId,
@@ -162,6 +168,7 @@ export async function createTask(
         taskId: newTask.id,
         userId,
         action: 'assigned',
+        area,
         metadata: {
           assigneeId: newTask.assigneeId,
           taskTitle: newTask.title,
@@ -286,11 +293,12 @@ export async function updateTaskStatus(
         throw new Error('Failed to update task');
       }
 
-      // Log the status change in activity
+      // Log the status change in activity (inherit area from task)
       await tx.insert(activity).values({
         taskId: updatedTask.id,
         userId,
         action: 'status_changed',
+        area: currentTask.area,
         metadata: {
           oldStatus: currentTask.status,
           newStatus: updatedTask.status,
@@ -380,11 +388,12 @@ export async function deleteTask(
 
     // Execute deletion in transaction to ensure activity is logged before task is deleted
     await db.transaction(async (tx) => {
-      // Log the deletion activity BEFORE deleting the task
+      // Log the deletion activity BEFORE deleting the task (inherit area from task)
       await tx.insert(activity).values({
         taskId: taskToDelete.id,
         userId,
         action: 'deleted',
+        area: taskToDelete.area,
         metadata: {
           title: taskToDelete.title,
           status: taskToDelete.status,
@@ -492,11 +501,12 @@ export async function updateTaskMetadata(
         throw new Error('Failed to update task');
       }
 
-      // Log the metadata update in activity
+      // Log the metadata update in activity (inherit area from task)
       await tx.insert(activity).values({
         taskId: updatedTask.id,
         userId,
         action: 'updated',
+        area: currentTask.area,
         metadata: {
           oldTitle: currentTask.title,
           newTitle: updatedTask.title,
@@ -573,11 +583,12 @@ export async function assignTask(
         .where(eq(tasks.id, taskId))
         .returning();
 
-      // Log activity
+      // Log activity (inherit area from task)
       await tx.insert(activity).values({
         taskId: taskId,
         userId: currentUserId,
         action: 'assigned',
+        area: currentTask.area,
         metadata: {
           oldAssigneeId: currentTask.assigneeId,
           newAssigneeId: newAssigneeId,
@@ -772,11 +783,12 @@ export async function completeTask(
         throw new Error('Failed to complete task');
       }
 
-      // Log completion activity
+      // Log completion activity (inherit area from task)
       await tx.insert(activity).values({
         taskId: updatedTask.id,
         userId,
         action: 'completed',
+        area: currentTask.area,
         metadata: {
           taskTitle: updatedTask.title,
           notes: notes || null,
@@ -793,6 +805,7 @@ export async function completeTask(
             taskId: updatedTask.id,
             userId: mentionedUserId,
             action: 'mentioned',
+            area: currentTask.area,
             metadata: {
               taskTitle: updatedTask.title,
               mentionedBy: userId,
@@ -911,11 +924,12 @@ export async function updateCompletedAt(
         throw new Error('Failed to update task');
       }
 
-      // Log the completedAt update in activity
+      // Log the completedAt update in activity (inherit area from task)
       await tx.insert(activity).values({
         taskId: updatedTask.id,
         userId,
         action: 'updated',
+        area: currentTask.area,
         metadata: {
           taskTitle: updatedTask.title,
           oldCompletedAt: currentTask.completedAt?.toISOString() || null,
@@ -1003,9 +1017,9 @@ export async function createDerivedTask(
     // Generate title: custom or "Continuación: {parentTitle}"
     const derivedTitle = customTitle || `Continuación: ${parentTask.title}`;
 
-    // Execute creation in transaction
+    // Execute creation in transaction (inherit area from parent task)
     const result = await db.transaction(async (tx) => {
-      // Insert derived task
+      // Insert derived task (inherits area from parent)
       const [newTask] = await tx
         .insert(tasks)
         .values({
@@ -1015,6 +1029,7 @@ export async function createDerivedTask(
           creatorId: userId,
           parentTaskId: parentTaskId,
           status: 'backlog',
+          area: parentTask.area,
         })
         .returning();
 
@@ -1022,11 +1037,12 @@ export async function createDerivedTask(
         throw new Error('Failed to create derived task');
       }
 
-      // Log activity for the new task
+      // Log activity for the new task (inherit area from parent)
       await tx.insert(activity).values({
         taskId: newTask.id,
         userId,
         action: 'created',
+        area: parentTask.area,
         metadata: {
           title: newTask.title,
           assigneeId: newTask.assigneeId,
@@ -1041,6 +1057,7 @@ export async function createDerivedTask(
           taskId: newTask.id,
           userId,
           action: 'assigned',
+          area: parentTask.area,
           metadata: {
             assigneeId: newTask.assigneeId,
             taskTitle: newTask.title,

@@ -3,6 +3,7 @@
 import { db } from '@/db';
 import { users, tasks } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
+import { getCurrentArea } from '@/lib/area-context';
 
 /**
  * Type for a team slot with user and their current in-progress task
@@ -36,7 +37,10 @@ export type TeamSlotData = {
  */
 export async function getTeamViewData(): Promise<TeamSlotData[]> {
   try {
-    // Fetch up to 8 users, prioritizing those with slot_index assigned
+    // Get current area for filtering
+    const area = await getCurrentArea();
+
+    // Fetch up to 8 users from the current area, prioritizing those with slot_index assigned
     // Then order by most recently updated users
     const allUsers = await db
       .select({
@@ -48,10 +52,11 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
         updatedAt: users.updatedAt,
       })
       .from(users)
+      .where(eq(users.area, area))
       .orderBy(users.slotIndex, desc(users.updatedAt))
       .limit(8);
 
-    // For each user, fetch their in_progress task (if any)
+    // For each user, fetch their in_progress task (if any) from the same area
     // Using Promise.all to parallelize these queries (Best Practice: 1.4)
     const teamSlots = await Promise.all(
       allUsers.map(async (user) => {
@@ -66,7 +71,8 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
           .where(
             and(
               eq(tasks.assigneeId, user.id),
-              eq(tasks.status, 'in_progress')
+              eq(tasks.status, 'in_progress'),
+              eq(tasks.area, area)
             )
           )
           .limit(1);
