@@ -117,7 +117,7 @@ Validación Fase 6:
 
 ## Fase 7: UI - TeamSlot Multi-Actividad
 
-- [ ] **7.1** Actualizar TeamSlot para array de tareas
+- [x] **7.1** Actualizar TeamSlot para array de tareas
   - Props: data.inProgressTasks (array)
   - Render: Badge cantidad, lista compacta (max 2), indicador blocker por tarea
   - Comportamiento: 0 tareas=inactivo, 1=vista normal, 2+=lista con "+N más"

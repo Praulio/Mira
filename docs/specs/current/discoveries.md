@@ -155,3 +155,32 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Textarea con `resize-none` para mantener diseño compacto
 
 **Notes:** Build pasa. Siguiente: 7.1 actualizar TeamSlot para array de tareas.
+
+### Session 9 - 2026-02-04
+**Task:** 7.1 - Actualizar TeamSlot para array de tareas
+**Files:** `components/team-slot.tsx`
+
+**Cambios realizados:**
+1. Importado `AlertTriangle` de lucide-react
+2. Refactorizado de `inProgressTask` (singular) a `inProgressTasks` (array)
+3. Variables: `taskCount`, `hasBlockedTask`, `firstTask`, `isActive`
+4. Estilos condicionales según blocker:
+   - Background gradient: cyan → naranja si hay blocker
+   - Border: `--accent-primary` → `--border-blocked`
+   - Badge de avatar: Zap → AlertTriangle si hay blocker
+5. Badge de cantidad: "N tareas" cuando taskCount >= 2
+6. Tres modos de visualización en Task Status Section:
+   - 0 tareas: Estado inactivo (sin cambios)
+   - 1 tarea: `SingleTaskView` - vista detallada con blocker visual
+   - 2+ tareas: `MultiTaskView` - lista compacta (max 2) + "+N más"
+7. Componente `SingleTaskView`: título, tiempo, razón de bloqueo, progress bar
+8. Componente `MultiTaskView`: lista compacta con indicador de blocker por tarea
+9. `getTimeElapsed` actualizado: "Ahora mismo" → "Ahora" para compactar
+
+**Patterns descubiertos:**
+- Descomposición de componentes internos (`SingleTaskView`, `MultiTaskView`) mantiene el componente principal limpio
+- Tipo local `InProgressTask` extrae la forma exacta del array para tipado fuerte
+- Variables CSS de blocker se aplican tanto en estilos inline (container) como en clases Tailwind (subcomponentes)
+- El patrón `tasks.slice(0, 2)` con `remainingCount = tasks.length - 2` es idiomático para "max N visible + '+M más'"
+
+**Notes:** Build pasa. Siguiente: 8.1 agregar PendingFilePicker a CompleteTaskModal.
