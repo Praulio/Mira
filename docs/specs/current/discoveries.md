@@ -214,3 +214,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - `.optional()` permite crear tareas sin fecha de entrega
 - El campo ya existe en el schema de DB (Session 1) y fluye a KanbanTaskData (Session 4)
 **Notes:** Tarea 2.1 completada. La action `createTask` ahora acepta dueDate. Siguiente: 2.2 (crear action updateTaskDueDate)
+
+### Session 11 - 2026-02-04
+**Task:** 2.2 - Crear action updateTaskDueDate
+**Files:** `app/actions/tasks.ts`
+**Changes:**
+- Agregado `updateDueDateSchema` con `taskId: z.string().uuid()` y `dueDate: z.coerce.date().nullable()`
+- Creada action `updateTaskDueDate` siguiendo patrón de `updateCompletedAt`
+- Permiso estricto: solo `creatorId === userId` puede editar (no assignee)
+- Logs activity con `fieldUpdated: 'dueDate'` y valores old/new en ISO format
+**Patterns:**
+- Para campos opcionales que pueden ser null, usar `.nullable()` en vez de `.optional()`
+- `z.coerce.date().nullable()` permite pasar `null` explícitamente para limpiar el campo
+- Usar `?.toISOString() || null` para serializar fechas en metadata de activity
+- Diferencia clave con `updateCompletedAt`: Due Date solo creador, CompletedAt permite assignee O creator
+**Notes:** Tarea 2.2 completada. Siguiente: 2.3 (date picker en CreateTaskDialog para dueDate)

@@ -74,6 +74,15 @@ const updateCompletedAtSchema = z.object({
 });
 
 /**
+ * Zod schema for updating dueDate timestamp
+ * Only the CREATOR can edit this value
+ */
+const updateDueDateSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+  dueDate: z.coerce.date().nullable(),
+});
+
+/**
  * Zod schema for creating a derived task
  * A derived task links to a parent task via parentTaskId
  */
@@ -1140,6 +1149,113 @@ export async function createDerivedTask(
     return {
       success: false,
       error: 'An unexpected error occurred while creating the derived task',
+    };
+  }
+}
+
+/**
+ * Server Action: Update task due date
+ *
+ * Allows the CREATOR of a task to edit or clear the due date.
+ * Only the creator has permission to modify this field.
+ *
+ * @param input - Task ID and new dueDate (or null to clear)
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function updateTaskDueDate(
+  input: z.infer<typeof updateDueDateSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to update tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = updateDueDateSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, dueDate } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Verify ownership: ONLY the creator can edit dueDate
+    if (currentTask.creatorId !== userId) {
+      return {
+        success: false,
+        error: 'Solo el creador de la tarea puede editar la fecha de entrega',
+      };
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          dueDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to update task');
+      }
+
+      // Log the dueDate update in activity (inherit area from task)
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        area: currentTask.area,
+        metadata: {
+          taskTitle: updatedTask.title,
+          oldDueDate: currentTask.dueDate?.toISOString() || null,
+          newDueDate: dueDate?.toISOString() || null,
+          fieldUpdated: 'dueDate',
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error updating dueDate:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating the due date',
     };
   }
 }

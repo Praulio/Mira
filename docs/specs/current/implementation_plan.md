@@ -91,7 +91,7 @@ Validación Fase 1.5:
   - Output: Schema acepta `dueDate: z.coerce.date().optional()`, action guarda el campo
   - Referencia: ver `createTaskSchema` líneas 24-28
 
-- [ ] **2.2** Crear action updateTaskDueDate
+- [x] **2.2** Crear action updateTaskDueDate
   - Archivo: `app/actions/tasks.ts`
   - Input: `{ taskId: string, dueDate: Date | null }`
   - Comportamiento: Solo el CREADOR puede editar
