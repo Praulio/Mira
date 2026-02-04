@@ -4,6 +4,7 @@ import { TeamSlot } from "@/components/team-slot"
 import { getTeamViewData } from "@/app/actions/team"
 import { syncCurrentUser } from "@/app/actions/users"
 import { TeamViewAutoRefresh } from "@/components/team-view-auto-refresh"
+import { Users } from "lucide-react"
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic'
@@ -24,11 +25,6 @@ export default async function DashboardPage() {
   // Fetch team data (users + their in-progress tasks)
   const teamSlots = await getTeamViewData()
 
-  // Ensure we always render 8 slots (fill empty ones if needed)
-  const slotsToRender = Array.from({ length: 8 }, (_, i) => {
-    return teamSlots[i] || null
-  })
-
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Auto-refresh component (client-side polling every 30s) */}
@@ -43,16 +39,25 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* 8-slot team grid */}
-      <div className="dashboard-grid grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {slotsToRender.map((slotData, index) => (
-          <TeamSlot
-            key={slotData?.user.id || `empty-${index}`}
-            data={slotData}
-            slotNumber={index + 1}
-          />
-        ))}
-      </div>
+      {/* Adaptive team grid */}
+      {teamSlots.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Users className="h-16 w-16 text-muted-foreground/30 mb-4" />
+          <p className="text-lg font-medium text-muted-foreground">No hay miembros en este equipo</p>
+          <p className="text-sm text-muted-foreground/60">Los miembros aparecerán aquí cuando se asignen al área</p>
+        </div>
+      ) : (
+        <div
+          className="dashboard-grid grid gap-6"
+          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+        >
+          {teamSlots.map((slotData, index) => (
+            <div key={slotData.user.id} style={{ '--item-index': index } as React.CSSProperties}>
+              <TeamSlot data={slotData} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

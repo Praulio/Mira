@@ -1,6 +1,8 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
+import { History } from 'lucide-react';
+import Link from 'next/link';
 import { TaskCard } from './task-card';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
@@ -11,37 +13,6 @@ type KanbanColumnProps = {
   statusColor: 'neutral' | 'blue' | 'amber' | 'green';
   isFiltered?: boolean;
 };
-
-/**
- * Get badge color classes based on status
- */
-function getColorClasses(color: 'neutral' | 'blue' | 'amber' | 'green'): {
-  badge: string;
-  count: string;
-} {
-  switch (color) {
-    case 'blue':
-      return {
-        badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-        count: 'text-blue-600 dark:text-blue-400',
-      };
-    case 'amber':
-      return {
-        badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-        count: 'text-amber-600 dark:text-amber-400',
-      };
-    case 'green':
-      return {
-        badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-        count: 'text-green-600 dark:text-green-400',
-      };
-    default:
-      return {
-        badge: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400',
-        count: 'text-neutral-600 dark:text-neutral-400',
-      };
-  }
-}
 
 /**
  * KanbanColumn component - Renders a single droppable column in the Kanban board
@@ -94,6 +65,17 @@ export function KanbanColumn({ id, title, tasks, isFiltered }: KanbanColumnProps
               {isFiltered ? 'No tienes tareas en esta etapa' : 'Sin tareas'}
             </p>
           </div>
+        )}
+
+        {/* History link for Done column */}
+        {id === 'done' && (
+          <Link
+            href="/dashboard/kanban/historial"
+            className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+          >
+            <History className="h-4 w-4" />
+            Ver historial completo
+          </Link>
         )}
       </div>
     </div>

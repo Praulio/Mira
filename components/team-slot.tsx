@@ -1,30 +1,15 @@
-import { User, Clock, Zap, AlertTriangle } from 'lucide-react';
+import { Clock, Zap, AlertTriangle } from 'lucide-react';
 import type { TeamSlotData } from '@/app/actions/team';
 
 type TeamSlotProps = {
-  data: TeamSlotData | null;
-  slotNumber: number;
+  data: TeamSlotData;
 };
 
 /**
  * TeamSlot Component - Professional Glassmorphism version
+ * Now only renders actual team members (no empty slots)
  */
-export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
-  // Empty slot - no user assigned yet
-  if (!data) {
-    return (
-      <div className="flex h-56 flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/5 p-4 backdrop-blur-md transition-all hover:bg-white/10">
-        <div className="text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-white/10 bg-white/5 opacity-30">
-            <User className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Espacio {slotNumber}</p>
-          <p className="text-xs font-bold text-muted-foreground/60">Disponible</p>
-        </div>
-      </div>
-    );
-  }
-
+export function TeamSlot({ data }: TeamSlotProps) {
   const { user, inProgressTasks } = data;
 
   // Multi-activity mode: count tasks, detect blockers

@@ -143,8 +143,20 @@ export async function getKanbanData(): Promise<KanbanData> {
       done: [],
     };
 
+    // Calculate 7 days ago for Done filter
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
     for (const task of tasksWithCreators) {
-      kanbanData[task.status].push(task);
+      // Filter Done tasks to only show last 7 days
+      if (task.status === 'done') {
+        if (task.completedAt && new Date(task.completedAt) >= sevenDaysAgo) {
+          kanbanData.done.push(task);
+        }
+      } else {
+        kanbanData[task.status].push(task);
+      }
     }
 
     return kanbanData;

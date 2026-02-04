@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/db';
 import { tasks, activity, notifications, users } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, gte, lte, lt, desc } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
 import { after } from 'next/server';
 import { sendTaskAssignedEmail } from '@/lib/email';
@@ -1731,6 +1731,152 @@ export async function removeBlocker(
     return {
       success: false,
       error: 'An unexpected error occurred while removing the blocker',
+    };
+  }
+}
+
+// ============================================================================
+// HISTORIAL FUNCTIONS
+// ============================================================================
+
+/**
+ * Type for historial task data
+ */
+export type HistorialTask = {
+  id: string;
+  title: string;
+  description: string | null;
+  assigneeId: string | null;
+  assigneeName: string | null;
+  assigneeImage: string | null;
+  completedAt: Date | null;
+  startedAt: Date | null;
+  completionNotes: string | null;
+  completionLinks: string[] | null;
+};
+
+/**
+ * Type for historial filter parameters
+ */
+export type HistorialFilters = {
+  date: Date;
+  userId?: string;
+};
+
+/**
+ * Type for historial data response
+ */
+export type HistorialData = {
+  tasks: HistorialTask[];
+  users: { id: string; name: string; imageUrl: string | null }[];
+  hasOlderTasks: boolean;
+  hasNewerTasks: boolean;
+};
+
+/**
+ * Fetch completed tasks for a specific day with optional user filter
+ *
+ * Returns tasks completed on the specified date, grouped by day.
+ * Also returns users in the area for the filter dropdown and
+ * indicators for whether older/newer tasks exist.
+ */
+export async function getHistorialData(
+  filters: HistorialFilters
+): Promise<HistorialData> {
+  const { userId } = await getAuth();
+
+  if (!userId) {
+    return {
+      tasks: [],
+      users: [],
+      hasOlderTasks: false,
+      hasNewerTasks: false,
+    };
+  }
+
+  try {
+    const area = await getCurrentArea();
+
+    // Calculate day range
+    const startOfDay = new Date(filters.date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(filters.date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Build conditions array
+    const conditions = [
+      eq(tasks.area, area),
+      eq(tasks.status, 'done'),
+      gte(tasks.completedAt, startOfDay),
+      lte(tasks.completedAt, endOfDay),
+    ];
+
+    // Add user filter if provided
+    if (filters.userId) {
+      conditions.push(eq(tasks.assigneeId, filters.userId));
+    }
+
+    // Query tasks for the day
+    const dayTasks = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        description: tasks.description,
+        assigneeId: tasks.assigneeId,
+        assigneeName: users.name,
+        assigneeImage: users.imageUrl,
+        completedAt: tasks.completedAt,
+        startedAt: tasks.startedAt,
+        completionNotes: tasks.completionNotes,
+        completionLinks: tasks.completionLinks,
+      })
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assigneeId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(tasks.completedAt));
+
+    // Fetch users in the area for filter dropdown
+    const areaUsers = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        imageUrl: users.imageUrl,
+      })
+      .from(users)
+      .where(eq(users.area, area));
+
+    // Check if there are older completed tasks
+    const [olderTask] = await db
+      .select({ id: tasks.id })
+      .from(tasks)
+      .where(
+        and(
+          eq(tasks.area, area),
+          eq(tasks.status, 'done'),
+          lt(tasks.completedAt, startOfDay)
+        )
+      )
+      .limit(1);
+
+    // Check if there are newer tasks (date is before today)
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const hasNewerTasks = endOfDay < today;
+
+    return {
+      tasks: dayTasks as HistorialTask[],
+      users: areaUsers,
+      hasOlderTasks: !!olderTask,
+      hasNewerTasks,
+    };
+  } catch (error) {
+    console.error('Error fetching historial data:', error);
+    return {
+      tasks: [],
+      users: [],
+      hasOlderTasks: false,
+      hasNewerTasks: false,
     };
   }
 }
