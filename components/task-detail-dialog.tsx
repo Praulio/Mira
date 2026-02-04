@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch, Paperclip } from 'lucide-react';
+import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch, Paperclip, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask, updateTaskProgress } from '@/app/actions/tasks';
+import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask, updateTaskProgress, addBlocker, removeBlocker } from '@/app/actions/tasks';
 import { getTaskAttachments } from '@/app/actions/attachments';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
@@ -57,6 +57,11 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(true);
   const [progress, setProgress] = useState(task.progress || 0);
   const [isSavingProgress, setIsSavingProgress] = useState(false);
+
+  // Blocker state
+  const [blockerReason, setBlockerReason] = useState('');
+  const [isAddingBlocker, setIsAddingBlocker] = useState(false);
+  const [isRemovingBlocker, setIsRemovingBlocker] = useState(false);
 
   // Check if current user is owner (assignee or creator)
   const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
@@ -212,6 +217,42 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
       setProgress(task.progress || 0);
     }
     setIsSavingProgress(false);
+  }
+
+  async function handleAddBlocker() {
+    if (!isOwner || !blockerReason.trim()) return;
+
+    setIsAddingBlocker(true);
+    const result = await addBlocker({
+      taskId: task.id,
+      reason: blockerReason.trim(),
+    });
+
+    if (result.success) {
+      toast.success('Blocker agregado');
+      setBlockerReason('');
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al agregar blocker');
+    }
+    setIsAddingBlocker(false);
+  }
+
+  async function handleRemoveBlocker() {
+    if (!isOwner) return;
+
+    setIsRemovingBlocker(true);
+    const result = await removeBlocker({
+      taskId: task.id,
+    });
+
+    if (result.success) {
+      toast.success('Blocker removido');
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al remover blocker');
+    }
+    setIsRemovingBlocker(false);
   }
 
   return (
@@ -386,6 +427,87 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
               )}
             </div>
           </div>
+
+          {/* Blocker Section - only show for non-done tasks and owners */}
+          {!isDone && (
+            <div className="space-y-4 pt-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                <AlertTriangle className="h-3 w-3" /> Blocker
+                {task.blockerReason && (
+                  <span className="ml-1 text-xs bg-[var(--status-blocked-bg)] text-[var(--status-blocked)] px-1.5 py-0.5 rounded-full">
+                    Activo
+                  </span>
+                )}
+              </label>
+
+              {task.blockerReason ? (
+                // Existing blocker view
+                <div className="rounded-xl border border-[var(--border-blocked)] bg-[var(--status-blocked-bg)] p-4 space-y-3">
+                  <p className="text-sm text-[var(--status-blocked)]">
+                    {task.blockerReason}
+                  </p>
+                  {isOwner && (
+                    <button
+                      onClick={handleRemoveBlocker}
+                      disabled={isRemovingBlocker}
+                      className="flex items-center gap-2 text-xs font-bold text-[var(--status-blocked)] hover:opacity-80 transition-all disabled:opacity-50"
+                    >
+                      {isRemovingBlocker ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Removiendo...
+                        </>
+                      ) : (
+                        <>
+                          <X className="h-3 w-3" />
+                          Remover blocker
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              ) : isOwner ? (
+                // Add blocker form (only for owners)
+                <div className="space-y-3">
+                  <textarea
+                    value={blockerReason}
+                    onChange={(e) => setBlockerReason(e.target.value)}
+                    placeholder="¿Qué está bloqueando esta tarea?"
+                    maxLength={500}
+                    rows={2}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--border-blocked)] transition-all resize-none"
+                  />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {blockerReason.length}/500
+                    </span>
+                    <button
+                      onClick={handleAddBlocker}
+                      disabled={isAddingBlocker || !blockerReason.trim()}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-[var(--status-blocked)] text-white hover:opacity-90 transition-all disabled:opacity-50"
+                    >
+                      {isAddingBlocker ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Agregando...
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="h-3 w-3" />
+                          Marcar como bloqueada
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Non-owner view when no blocker
+                <p className="text-xs text-muted-foreground/60 italic">
+                  Sin blocker activo
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Description Section */}
           <div className="space-y-4 pt-4">

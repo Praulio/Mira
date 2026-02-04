@@ -132,3 +132,26 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - `line-clamp-2` de Tailwind limita texto a 2 líneas con ellipsis
 
 **Notes:** Build pasa. Siguiente: 6.1 agregar sección Blocker en TaskDetailDialog.
+
+### Session 8 - 2026-02-04
+**Task:** 6.1 - Agregar sección Blocker en TaskDetailDialog
+**Files:** `components/task-detail-dialog.tsx`
+
+**Cambios realizados:**
+1. Importados `AlertTriangle` y `Loader2` de lucide-react
+2. Importados `addBlocker` y `removeBlocker` de tasks actions
+3. Agregados estados: `blockerReason`, `isAddingBlocker`, `isRemovingBlocker`
+4. Agregadas funciones: `handleAddBlocker()` y `handleRemoveBlocker()`
+5. Agregada sección UI "Blocker" con 3 estados visuales:
+   - Con blocker: muestra razón + botón remover (solo owners)
+   - Sin blocker (owner): textarea + botón "Marcar como bloqueada"
+   - Sin blocker (no owner): texto "Sin blocker activo"
+6. Sección solo visible para tareas no completadas (!isDone)
+
+**Patterns descubiertos:**
+- El componente usa `isOwner` (línea 62) que ya verifica assignee OR creator - reutilizado para permisos de blocker
+- Variables CSS de blocker (`--status-blocked`, `--border-blocked`, etc.) se aplican con `var()` en clases de Tailwind
+- Patrón de form con contador de caracteres: `{value.length}/maxLength`
+- Textarea con `resize-none` para mantener diseño compacto
+
+**Notes:** Build pasa. Siguiente: 7.1 actualizar TeamSlot para array de tareas.

@@ -102,7 +102,7 @@ Validación Fase 5:
 
 ## Fase 6: UI - TaskDetailDialog con Blocker
 
-- [ ] **6.1** Agregar sección Blocker en TaskDetailDialog
+- [x] **6.1** Agregar sección Blocker en TaskDetailDialog
   - Props: task.blockerReason, addBlocker, removeBlocker actions
   - Render: Input para razón + botón agregar, o vista de blocker + botón X
   - Comportamiento: Agregar blocker → llama addBlocker, quitar → llama removeBlocker
