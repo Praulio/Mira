@@ -26,6 +26,7 @@ const createTaskSchema = z.object({
   description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
   assigneeId: z.string().optional(),
   mentions: z.array(z.string()).optional(),
+  dueDate: z.coerce.date().optional(),
 });
 
 /**
@@ -127,7 +128,7 @@ export async function createTask(
       };
     }
 
-    const { title, description, assigneeId, mentions } = validationResult.data;
+    const { title, description, assigneeId, mentions, dueDate } = validationResult.data;
 
     // Get current area
     const area = await getCurrentArea();
@@ -145,6 +146,7 @@ export async function createTask(
           status: 'backlog', // Default status
           area,
           mentions: mentions || null,
+          dueDate: dueDate || null,
         })
         .returning();
 

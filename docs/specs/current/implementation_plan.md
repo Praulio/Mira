@@ -86,7 +86,7 @@ Validación Fase 1.5:
 
 ## Fase 2: Due Date Feature
 
-- [ ] **2.1** Agregar dueDate a createTaskSchema y createTask action
+- [x] **2.1** Agregar dueDate a createTaskSchema y createTask action
   - Archivo: `app/actions/tasks.ts`
   - Output: Schema acepta `dueDate: z.coerce.date().optional()`, action guarda el campo
   - Referencia: ver `createTaskSchema` líneas 24-28

@@ -201,3 +201,16 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Integración más simple que CreateTaskDialog porque no hay reset de formulario
 - La lógica de diff de menciones (crear activities solo para nuevas) ya está en el servidor (Session 7)
 **Notes:** ¡Fase 1.5 COMPLETADA! Menciones unificadas funcionan en creación, edición y completado de tareas. Siguiente: Fase 2 (Due Date Feature)
+
+### Session 10 - 2026-02-04
+**Task:** 2.1 - Agregar dueDate a createTaskSchema y createTask action
+**Files:** `app/actions/tasks.ts`
+**Changes:**
+- Agregado `dueDate: z.coerce.date().optional()` al `createTaskSchema` (línea 29)
+- Actualizado destructuring para extraer `dueDate` de `validationResult.data`
+- Agregado `dueDate: dueDate || null` al insert de la tarea
+**Patterns:**
+- `z.coerce.date()` convierte automáticamente strings ISO a Date objects
+- `.optional()` permite crear tareas sin fecha de entrega
+- El campo ya existe en el schema de DB (Session 1) y fluye a KanbanTaskData (Session 4)
+**Notes:** Tarea 2.1 completada. La action `createTask` ahora acepta dueDate. Siguiente: 2.2 (crear action updateTaskDueDate)
