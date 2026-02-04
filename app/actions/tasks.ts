@@ -253,14 +253,17 @@ export async function createTask(
 }
 
 /**
- * Server Action: Update task status (with Single In-Progress Logic)
- * 
- * Updates a task's status. If the new status is 'in_progress', it automatically
- * moves any other 'in_progress' tasks for the same assignee back to 'todo'.
- * This ensures the "Single In-Progress Task" rule: only one active task per user.
- * 
+ * Server Action: Update task status
+ *
+ * Updates a task's status. Users can have multiple tasks in 'in_progress'
+ * simultaneously (Multi-Activity mode).
+ *
+ * Time tracking behavior:
+ * - startedAt is set when moving to 'in_progress' (if not already set)
+ * - startedAt is cleared when moving back to 'backlog' or 'todo'
+ *
  * Uses an atomic transaction to guarantee consistency.
- * 
+ *
  * @param input - Task status update data (taskId, newStatus)
  * @returns ActionResponse with updated task data or error message
  */
@@ -306,25 +309,6 @@ export async function updateTaskStatus(
 
     // Execute atomic transaction
     const result = await db.transaction(async (tx) => {
-      // CRITICAL LOGIC: Single In-Progress Task Rule
-      // If moving to 'in_progress' and task has an assignee,
-      // move all other 'in_progress' tasks for that assignee to 'todo'
-      if (newStatus === 'in_progress' && currentTask.assigneeId) {
-        await tx
-          .update(tasks)
-          .set({
-            status: 'todo',
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(tasks.assigneeId, currentTask.assigneeId),
-              eq(tasks.status, 'in_progress'),
-              // Don't update the current task yet (it will be updated next)
-            )
-          );
-      }
-
       // Build update data for status change
       const updateData: Partial<typeof tasks.$inferInsert> = {
         status: newStatus,
@@ -639,9 +623,9 @@ export async function updateTaskMetadata(
 
 /**
  * Server Action: Assign a task to a user
- * 
- * Updates the assignee of a task. If the task is 'in_progress', it moves
- * any other 'in_progress' tasks for the NEW assignee back to 'todo'.
+ *
+ * Updates the assignee of a task. Users can have multiple tasks in 'in_progress'
+ * simultaneously (Multi-Activity mode).
  */
 export async function assignTask(
   taskId: string,
@@ -666,20 +650,6 @@ export async function assignTask(
     }
 
     const result = await db.transaction(async (tx) => {
-      // If task is in_progress and we are assigning to someone,
-      // clear other in_progress tasks for that person
-      if (currentTask.status === 'in_progress' && newAssigneeId) {
-        await tx
-          .update(tasks)
-          .set({ status: 'todo', updatedAt: new Date() })
-          .where(
-            and(
-              eq(tasks.assigneeId, newAssigneeId),
-              eq(tasks.status, 'in_progress')
-            )
-          );
-      }
-
       const [updatedTask] = await tx
         .update(tasks)
         .set({ assigneeId: newAssigneeId, updatedAt: new Date() })

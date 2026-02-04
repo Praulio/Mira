@@ -7,7 +7,7 @@ Fecha: 2026-02-04
 
 ## Fase 0: Activation & Smoke Test
 
-- [ ] **0.1** Agregar campo `blockerReason` al schema de tasks
+- [x] **0.1** Agregar campo `blockerReason` al schema de tasks
   - Output: Campo `blocker_reason text` en tabla tasks
   - Comportamiento: Ejecutar `npx drizzle-kit generate && npx drizzle-kit push`
   - Referencia: ver `db/schema.ts:69` (campo progress)
@@ -20,7 +20,7 @@ Validación Fase 0:
 
 ## Fase 1: Backend - Multi-Actividad
 
-- [ ] **1.1** Eliminar restricción Single In-Progress en updateTaskStatus
+- [x] **1.1** Eliminar restricción Single In-Progress en updateTaskStatus
   - Input: Archivo `app/actions/tasks.ts`
   - Output: Bloque líneas 286-303 eliminado
   - Comportamiento: Usuarios pueden tener múltiples tareas in_progress

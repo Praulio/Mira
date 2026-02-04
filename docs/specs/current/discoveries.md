@@ -38,3 +38,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Movimiento tarea bloqueada: Permitido libremente
 - Tareas en TeamSlot: Máximo 2, luego "+N más"
 - Límite in_progress: Sin límite
+
+### Session 1 - 2026-02-04
+**Task:** 0.1 - Agregar campo blockerReason al schema
+**Files:** `db/schema.ts:70`
+**Patterns:** Campo ya existía (pre-migrado). El patrón de campo nullable `text` es preferible a tabla separada para relaciones 1:1 simples.
+**Notes:** Build pasa, tarea 0.1 completada. Siguiente: 1.1 eliminar restricción Single In-Progress.
+
+### Session 2 - 2026-02-04
+**Task:** 1.1 - Eliminar restricción Single In-Progress
+**Files:** `app/actions/tasks.ts`
+**Patterns:** La restricción estaba en DOS lugares:
+1. `updateTaskStatus()` líneas 309-326 - bloque que movía otras tareas a 'todo'
+2. `assignTask()` líneas 668-681 - mismo comportamiento al asignar
+
+**Cambios realizados:**
+- Eliminado bloque condicional en `updateTaskStatus()` que demotaba otras tareas
+- Eliminado bloque condicional en `assignTask()` con mismo comportamiento
+- Actualizados docstrings para reflejar "Multi-Activity mode"
+- MANTENIDO: lógica de `startedAt` para time tracking (cada tarea tiene su propio timestamp)
+
+**Notes:** Build pasa. Los usuarios ahora pueden tener múltiples tareas "En Progreso" simultáneamente.

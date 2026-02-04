@@ -67,6 +67,7 @@ export const tasks = pgTable('tasks', {
   parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
   dueDate: timestamp('due_date'),
   progress: integer('progress').default(0),
+  blockerReason: text('blocker_reason'), // NULL = no bloqueada, string = razón del bloqueo
   area: areaEnum('area').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
