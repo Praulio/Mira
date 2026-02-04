@@ -44,6 +44,46 @@ Validación Fase 1:
 
 ---
 
+## Fase 1.5: Unified Mentions
+
+- [x] **1.5.1** Renombrar completionMentions → mentions en schema
+  - Archivo: `db/schema.ts:65`
+  - Output: Campo `mentions: jsonb('mentions').$type<string[]>()`
+  - Migración: `ALTER TABLE tasks RENAME COLUMN completion_mentions TO mentions`
+
+- [ ] **1.5.2** Actualizar createTask para aceptar mentions
+  - Archivo: `app/actions/tasks.ts`
+  - Input: Agregar `mentions: z.array(z.string()).optional()` al schema
+  - Comportamiento: Guardar mentions + crear activity 'mentioned'
+  - Referencia: ver patrón en completeTask líneas 801-816
+
+- [ ] **1.5.3** Actualizar updateTaskMetadata para procesar mentions
+  - Archivo: `app/actions/tasks.ts`
+  - Comportamiento: Al editar descripción, guardar mentions + crear activity para NUEVAS menciones
+  - Nota: Solo crear activity para menciones que no existían antes (diff)
+
+- [x] **1.5.4** Actualizar completeTask para usar campo mentions
+  - Archivo: `app/actions/tasks.ts`
+  - Cambio: Reemplazar `completionMentions` → `mentions`
+
+- [ ] **1.5.5** Agregar MentionInput a CreateTaskDialog
+  - Archivo: `components/create-task-dialog.tsx`
+  - Output: Reemplazar textarea descripción con MentionInput
+  - Comportamiento: Extraer mentions con extractMentionIds() y pasarlos a createTask()
+
+- [ ] **1.5.6** Agregar MentionInput a TaskDetailDialog
+  - Archivo: `components/task-detail-dialog.tsx:328-334`
+  - Output: Reemplazar textarea descripción con MentionInput
+  - Comportamiento: Al guardar, extraer mentions y pasarlos a updateTaskMetadata()
+
+Validación Fase 1.5:
+• `pnpm build` pasa
+• Crear task con @mención → aparece en "Mis Menciones" del mencionado
+• Editar descripción con @mención → aparece en "Mis Menciones"
+• Completar task con @mención → sigue funcionando
+
+---
+
 ## Fase 2: Due Date Feature
 
 - [ ] **2.1** Agregar dueDate a createTaskSchema y createTask action
@@ -152,10 +192,11 @@ Validación Fase 5:
 
 | Fase | Tareas | Descripción |
 |------|--------|-------------|
-| 0 | 2 | Schema & Migration |
+| 0 | 2 | Schema & Migration ✅ |
 | 1 | 3 | Data Layer |
+| **1.5** | **6** | **Unified Mentions** |
 | 2 | 4 | Due Date Feature |
 | 3 | 3 | Eliminar Backlog |
 | 4 | 3 | Filtro Mis Tareas |
 | 5 | 4 | Progress Bar |
-| **Total** | **19** | |
+| **Total** | **25** | |

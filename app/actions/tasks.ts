@@ -773,7 +773,7 @@ export async function completeTask(
           completedAt: new Date(),
           completionNotes: notes || null,
           completionLinks: links || null,
-          completionMentions: mentions || null,
+          mentions: mentions || null,
           updatedAt: new Date(),
         })
         .where(eq(tasks.id, taskId))

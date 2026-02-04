@@ -62,7 +62,7 @@ export const tasks = pgTable('tasks', {
   completedAt: timestamp('completed_at'),
   completionNotes: text('completion_notes'),
   completionLinks: jsonb('completion_links').$type<string[]>(),
-  completionMentions: jsonb('completion_mentions').$type<string[]>(),
+  mentions: jsonb('mentions').$type<string[]>(),
   startedAt: timestamp('started_at'),
   parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
   dueDate: timestamp('due_date'),
