@@ -1,6 +1,8 @@
 import { getKanbanData } from '@/app/actions/kanban';
 import { KanbanBoard } from '@/components/kanban-board';
 import { CreateTaskDialog } from '@/components/create-task-dialog';
+import { getAuth } from '@/lib/mock-auth';
+import { redirect } from 'next/navigation';
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic';
@@ -19,6 +21,12 @@ export const dynamic = 'force-dynamic';
  * - Updates are handled by server actions with revalidation
  */
 export default async function KanbanPage() {
+  const { userId } = await getAuth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   // Fetch kanban data server-side (no client-side waterfalls)
   const kanbanData = await getKanbanData();
 
@@ -36,7 +44,7 @@ export default async function KanbanPage() {
       </div>
 
       {/* Kanban Board with Drag and Drop */}
-      <KanbanBoard initialData={kanbanData} />
+      <KanbanBoard initialData={kanbanData} currentUserId={userId} />
     </div>
   );
 }

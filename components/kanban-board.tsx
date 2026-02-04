@@ -21,6 +21,7 @@ import { updateTaskStatus } from '@/app/actions/tasks';
 
 type KanbanBoardProps = {
   initialData: KanbanData;
+  currentUserId: string;
 };
 
 /**
@@ -38,7 +39,7 @@ type KanbanBoardProps = {
  * - Shows drag overlay for better UX
  * - Implements optimistic updates: UI changes immediately, reverts on error
  */
-export function KanbanBoard({ initialData }: KanbanBoardProps) {
+export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
   const router = useRouter();
 
   // State for drag overlay

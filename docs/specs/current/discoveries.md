@@ -297,3 +297,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El patrón `from.*filename|import.*ComponentName` captura ambos estilos de import
 - Archivos de documentación (specs, plans) pueden seguir mencionando archivos eliminados - eso es OK
 **Notes:** Fase 3 COMPLETADA. Backlog eliminado: redirect en page.tsx, link removido de sidebar, archivos de componentes eliminados. Siguiente: Fase 4 (Filtro Mis Tareas)
+
+### Session 17 - 2026-02-04
+**Task:** 4.1 - Pasar currentUserId a KanbanBoard
+**Files:** `app/(dashboard)/dashboard/kanban/page.tsx`, `components/kanban-board.tsx`
+**Changes:**
+- Agregado import `getAuth` y `redirect` en kanban page.tsx
+- Agregado chequeo de auth con redirect a `/sign-in` si no hay userId
+- Actualizado tipo `KanbanBoardProps` para incluir `currentUserId: string`
+- Pasado prop `currentUserId={userId}` a KanbanBoard
+**Patterns:**
+- El patrón de auth en páginas protegidas: `const { userId } = await getAuth()` + redirect si null
+- Mismo patrón usado en dashboard/page.tsx
+- Props de componentes cliente se pasan desde server components para datos de auth
+**Notes:** El warning de lint `'currentUserId' is defined but never used` es esperado - tarea 4.2 usará el prop para el filtro

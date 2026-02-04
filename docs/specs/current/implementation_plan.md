@@ -137,7 +137,7 @@ Validación Fase 3:
 
 ## Fase 4: Filtro Mis Tareas
 
-- [ ] **4.1** Pasar currentUserId a KanbanBoard
+- [x] **4.1** Pasar currentUserId a KanbanBoard
   - Archivo: `app/(dashboard)/dashboard/kanban/page.tsx`
   - Output: `<KanbanBoard initialData={data} currentUserId={userId} />`
 
