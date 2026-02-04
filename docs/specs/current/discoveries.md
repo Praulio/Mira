@@ -113,3 +113,22 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Patrón de 4 variables por status: base, bg (con alpha), glow (con alpha), border (con alpha)
 - Las variables se agregan junto a otras de status para mantener organización semántica
 **Notes:** Build pasa. Siguiente: 5.1 agregar visualización de blocker en TaskCard.
+
+### Session 7 - 2026-02-04
+**Task:** 5.1 - Agregar visualización de blocker en TaskCard
+**Files:** `components/task-card.tsx`
+**Cambios realizados:**
+1. Importado `AlertTriangle` de lucide-react
+2. Agregado badge naranja "Bloqueada" después del título cuando `task.blockerReason` existe
+3. Agregada caja con razón del bloqueo (max 2 líneas con `line-clamp-2`)
+4. Variable `isBlocked = !!task.blockerReason` para controlar estilos
+5. `cardStyle` ahora usa `--border-blocked` y `--glow-blocked` cuando bloqueada
+6. Handlers `onMouseEnter/onMouseLeave` actualizados para mantener estilo naranja
+
+**Patterns descubiertos:**
+- El componente usa inline styles para estados dinámicos (hover, drag, blocked)
+- Variables CSS se referencian con `var(--nombre)` directamente en objetos JS
+- El patrón de badge usa: `bg-[var(--status-blocked-bg)]` + `text-[var(--status-blocked)]`
+- `line-clamp-2` de Tailwind limita texto a 2 líneas con ellipsis
+
+**Notes:** Build pasa. Siguiente: 6.1 agregar sección Blocker en TaskDetailDialog.

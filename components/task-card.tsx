@@ -1,6 +1,6 @@
 'use client';
 
-import { User, MoreVertical, Trash2, Clock, Paperclip, CalendarDays } from 'lucide-react';
+import { User, MoreVertical, Trash2, Clock, Paperclip, CalendarDays, AlertTriangle } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useEffect, useMemo } from 'react';
@@ -153,14 +153,22 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
       }
     : undefined;
 
+  // Check if task is blocked for styling
+  const isBlocked = !!task.blockerReason;
+
   // Merge transform and custom styles
   const cardStyle = {
     ...style,
-    ...(isDragging || isDeleting 
-      ? {} 
+    ...(isDragging || isDeleting
+      ? {}
       : {
           background: 'var(--glass-dark)',
-          border: '1px solid var(--border-subtle)',
+          border: isBlocked
+            ? '1px solid var(--border-blocked)'
+            : '1px solid var(--border-subtle)',
+          boxShadow: isBlocked
+            ? '0 0 20px var(--glow-blocked)'
+            : undefined,
         }
     ),
   };
@@ -182,13 +190,17 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
         onMouseEnter={(e) => {
           if (!isDragging && !isDeleting) {
             e.currentTarget.style.background = 'var(--glass-medium)';
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.borderColor = isBlocked
+              ? 'var(--status-blocked)'
+              : 'var(--accent-primary)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isDragging && !isDeleting) {
             e.currentTarget.style.background = 'var(--glass-dark)';
-            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+            e.currentTarget.style.borderColor = isBlocked
+              ? 'var(--border-blocked)'
+              : 'var(--border-subtle)';
           }
         }}
       >
@@ -224,6 +236,21 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
         <h4 className="mb-2 pr-6 font-semibold text-foreground tracking-tight">
           {task.title}
         </h4>
+
+        {/* Blocker badge - shown when task is blocked */}
+        {task.blockerReason && (
+          <div className="mb-2 flex items-center gap-1.5 rounded-full bg-[var(--status-blocked-bg)] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--status-blocked)]">
+            <AlertTriangle className="h-3 w-3" />
+            <span>Bloqueada</span>
+          </div>
+        )}
+
+        {/* Blocker reason - shown when task is blocked */}
+        {task.blockerReason && (
+          <p className="mb-3 line-clamp-2 text-xs text-[var(--status-blocked)] bg-[var(--status-blocked-bg)] rounded-lg p-2 border border-[var(--border-blocked)]">
+            {task.blockerReason}
+          </p>
+        )}
 
         {/* Task description (if exists) - with mention chips */}
         {task.description && (

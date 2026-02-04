@@ -88,7 +88,7 @@ Validación Fase 4:
 
 ## Fase 5: UI - TaskCard con Blocker
 
-- [ ] **5.1** Agregar visualización de blocker en TaskCard
+- [x] **5.1** Agregar visualización de blocker en TaskCard
   - Props: task.blockerReason (ya viene de KanbanTaskData)
   - Render: Badge "Bloqueada" naranja + razón del bloqueo (2 líneas max)
   - Comportamiento: Si blockerReason existe → mostrar badge + razón + borde naranja
