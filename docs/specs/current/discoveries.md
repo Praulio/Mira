@@ -342,3 +342,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Diferencia con `updateTaskDueDate`: dueDate = solo creator, progress = assignee preferente
 - El progress se almacena como `integer` en DB (0-100), validación en schema Zod con `.int().min(0).max(100)`
 **Notes:** Fase 5 iniciada. Siguiente: 5.2 (mini progress bar en TaskCard)
+
+### Session 20 - 2026-02-04
+**Task:** 5.2 - Agregar mini progress bar en TaskCard
+**Files:** `components/task-card.tsx`
+**Changes:**
+- Agregada mini progress bar entre descripción y footer (línea ~198-206)
+- Solo se renderiza si `task.progress > 0` (no ocupa espacio si no hay progreso)
+- Estilos: `h-1.5` altura, `bg-white/10` fondo, `bg-primary` barra interna
+- `rounded-full` para bordes redondeados, `transition-all` para animación suave
+**Patterns:**
+- Renderizado condicional `{valor > 0 && JSX}` para evitar elementos vacíos
+- Usar `style={{ width: \`\${value}%\` }}` para ancho dinámico en CSS
+- `overflow-hidden` en contenedor padre para que barra interna no se desborde
+**Notes:** Progress bar visual completada. Siguiente: 5.3 (progress slider en TaskDetailDialog)

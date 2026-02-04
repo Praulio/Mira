@@ -196,6 +196,16 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           </p>
         )}
 
+        {/* Mini progress bar (visual only, if progress > 0) */}
+        {task.progress > 0 && (
+          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${task.progress}%` }}
+            />
+          </div>
+        )}
+
         {/* Footer: Assignee, attachments, and duration/status */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {/* Assignee */}

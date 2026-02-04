@@ -167,7 +167,7 @@ Validación Fase 4:
   - Comportamiento: Solo assignee O creador (si no hay assignee) puede editar
   - Referencia: ver permisos en `updateCompletedAt`
 
-- [ ] **5.2** Agregar mini progress bar en TaskCard
+- [x] **5.2** Agregar mini progress bar en TaskCard
   - Archivo: `components/task-card.tsx`
   - Render: Barra horizontal (h-1.5) si progress > 0
   - Comportamiento: Solo visual, no editable
