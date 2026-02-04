@@ -25,6 +25,7 @@ const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
   description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
   assigneeId: z.string().optional(),
+  mentions: z.array(z.string()).optional(),
 });
 
 /**
@@ -125,65 +126,87 @@ export async function createTask(
       };
     }
 
-    const { title, description, assigneeId } = validationResult.data;
+    const { title, description, assigneeId, mentions } = validationResult.data;
 
     // Get current area
     const area = await getCurrentArea();
 
-    // Insert task into database
-    const [newTask] = await db
-      .insert(tasks)
-      .values({
-        title,
-        description: description || null,
-        assigneeId: assigneeId || null,
-        creatorId: userId,
-        status: 'backlog', // Default status
-        area,
-      })
-      .returning();
+    // Execute creation in transaction
+    const result = await db.transaction(async (tx) => {
+      // Insert task into database
+      const [newTask] = await tx
+        .insert(tasks)
+        .values({
+          title,
+          description: description || null,
+          assigneeId: assigneeId || null,
+          creatorId: userId,
+          status: 'backlog', // Default status
+          area,
+          mentions: mentions || null,
+        })
+        .returning();
 
-    if (!newTask) {
-      return {
-        success: false,
-        error: 'Failed to create task',
-      };
-    }
+      if (!newTask) {
+        throw new Error('Failed to create task');
+      }
 
-    // Log activity
-    await db.insert(activity).values({
-      taskId: newTask.id,
-      userId,
-      action: 'created',
-      area,
-      metadata: {
-        title: newTask.title,
-        assigneeId: newTask.assigneeId,
-      },
-    });
-
-    // If assigned at creation, log assignment activity too
-    if (newTask.assigneeId) {
-      await db.insert(activity).values({
+      // Log activity
+      await tx.insert(activity).values({
         taskId: newTask.id,
         userId,
-        action: 'assigned',
+        action: 'created',
         area,
         metadata: {
+          title: newTask.title,
           assigneeId: newTask.assigneeId,
-          taskTitle: newTask.title,
+          mentions: mentions || null,
         },
       });
-    }
+
+      // If assigned at creation, log assignment activity too
+      if (newTask.assigneeId) {
+        await tx.insert(activity).values({
+          taskId: newTask.id,
+          userId,
+          action: 'assigned',
+          area,
+          metadata: {
+            assigneeId: newTask.assigneeId,
+            taskTitle: newTask.title,
+          },
+        });
+      }
+
+      // Create 'mentioned' activity for each mentioned user
+      if (mentions && mentions.length > 0) {
+        for (const mentionedUserId of mentions) {
+          await tx.insert(activity).values({
+            taskId: newTask.id,
+            userId: mentionedUserId,
+            action: 'mentioned',
+            area,
+            metadata: {
+              taskTitle: newTask.title,
+              mentionedBy: userId,
+              context: 'creation',
+            },
+          });
+        }
+      }
+
+      return newTask;
+    });
 
     // Revalidate relevant paths
     revalidatePath('/');
     revalidatePath('/kanban');
     revalidatePath('/backlog');
+    revalidatePath('/activity');
 
     return {
       success: true,
-      data: newTask,
+      data: result,
     };
   } catch (error) {
     console.error('Error creating task:', error);

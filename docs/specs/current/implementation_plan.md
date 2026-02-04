@@ -51,7 +51,7 @@ Validación Fase 1:
   - Output: Campo `mentions: jsonb('mentions').$type<string[]>()`
   - Migración: `ALTER TABLE tasks RENAME COLUMN completion_mentions TO mentions`
 
-- [ ] **1.5.2** Actualizar createTask para aceptar mentions
+- [x] **1.5.2** Actualizar createTask para aceptar mentions
   - Archivo: `app/actions/tasks.ts`
   - Input: Agregar `mentions: z.array(z.string()).optional()` al schema
   - Comportamiento: Guardar mentions + crear activity 'mentioned'

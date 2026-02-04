@@ -136,3 +136,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Cuando Drizzle retorna objeto nullable y el tipo exige campos non-null, usar spread con override: `{ ...obj, campo: obj.campo ?? default }`
 - El patrón de `getTeamViewData` es: query users → Promise.all map → query in_progress task por user
 **Notes:** Fase 1 completada. Data Layer actualizado para dueDate y progress en Kanban y Team View. Siguiente: Fase 1.5 (Unified Mentions)
+
+### Session 6 - 2026-02-04
+**Task:** 1.5.2 - Actualizar createTask para aceptar mentions
+**Files:** `app/actions/tasks.ts`
+**Changes:**
+- Agregado `mentions: z.array(z.string()).optional()` a `createTaskSchema` (línea 28)
+- Actualizado `createTask` para extraer `mentions` de validationResult.data
+- Cambiado insert de task para incluir `mentions: mentions || null`
+- Envuelto toda la lógica de creación en transacción `db.transaction()`
+- Agregado loop para crear actividades `action: 'mentioned'` por cada usuario mencionado
+- Agregado `context: 'creation'` en metadata para diferenciar de menciones al completar
+**Patterns:**
+- Las actividades 'mentioned' siempre tienen `userId` = el mencionado (para que aparezca en "Mis Menciones")
+- El campo `mentionedBy` en metadata indica quién hizo la mención
+- Contexto en metadata diferencia origen: 'creation', 'edit', o ausente (completar tarea)
+- Envolver en transacción cuando hay múltiples inserts relacionados
+**Notes:** Ahora las menciones funcionan desde la creación de tareas. Siguiente: 1.5.3 (menciones al editar descripción)
