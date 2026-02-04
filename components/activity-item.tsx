@@ -119,9 +119,16 @@ function getActivityMessage(activity: ActivityData): string {
     }
 
     case 'mentioned': {
+      // Use mentionedByName from metadata instead of activity.user (which is the mentioned person)
+      const mentionedByName = (metadata as { mentionedByName?: string })?.mentionedByName;
+      if (mentionedByName) {
+        return task
+          ? `${mentionedByName} te mencionó en "${task.title}"`
+          : `${mentionedByName} te mencionó en una tarea`
+      }
       return task
-        ? `te mencionó en "${task.title}"`
-        : 'te mencionó en una tarea'
+        ? `te mencionaron en "${task.title}"`
+        : 'te mencionaron en una tarea'
     }
   }
 }
@@ -237,12 +244,16 @@ export function ActivityItem({ activity }: ActivityItemProps) {
             <div className="h-5 w-5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
           )}
 
-          {/* Message */}
+          {/* Message - for mentions, don't show activity.user.name as prefix since it's the mentioned person */}
           <p className="text-sm">
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
-              {activity.user.name}
-            </span>
-            {' '}
+            {activity.action !== 'mentioned' && (
+              <>
+                <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                  {activity.user.name}
+                </span>
+                {' '}
+              </>
+            )}
             <span className="text-neutral-600 dark:text-neutral-400">
               {message}
             </span>

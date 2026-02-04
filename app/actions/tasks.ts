@@ -4,7 +4,7 @@ import { getAuth } from '@/lib/mock-auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/db';
-import { tasks, activity } from '@/db/schema';
+import { tasks, activity, users } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
 import { getCurrentArea } from '@/lib/area-context';
@@ -151,6 +151,19 @@ export async function createTask(
     // Get current area
     const area = await getCurrentArea();
 
+    // Get current user's name for mention activities
+    let currentUserName = 'Alguien';
+    if (mentions && mentions.length > 0) {
+      const [currentUser] = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      if (currentUser) {
+        currentUserName = currentUser.name;
+      }
+    }
+
     // Execute creation in transaction
     const result = await db.transaction(async (tx) => {
       // Insert task into database
@@ -210,6 +223,7 @@ export async function createTask(
             metadata: {
               taskTitle: newTask.title,
               mentionedBy: userId,
+              mentionedByName: currentUserName,
               context: 'creation',
             },
           });
@@ -544,6 +558,19 @@ export async function updateTaskMetadata(
       ? mentions.filter((m) => !existingMentions.includes(m))
       : [];
 
+    // Get current user's name for mention activities
+    let currentUserName = 'Alguien';
+    if (newMentions.length > 0) {
+      const [currentUser] = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      if (currentUser) {
+        currentUserName = currentUser.name;
+      }
+    }
+
     // Execute update in transaction
     const result = await db.transaction(async (tx) => {
       // Update the task
@@ -587,6 +614,7 @@ export async function updateTaskMetadata(
             metadata: {
               taskTitle: updatedTask.title,
               mentionedBy: userId,
+              mentionedByName: currentUserName,
               context: 'edit',
             },
           });
@@ -838,6 +866,19 @@ export async function completeTask(
       };
     }
 
+    // Get current user's name for mention activities
+    let currentUserName = 'Alguien';
+    if (mentions && mentions.length > 0) {
+      const [currentUser] = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      if (currentUser) {
+        currentUserName = currentUser.name;
+      }
+    }
+
     // Execute completion in transaction
     const result = await db.transaction(async (tx) => {
       // Update task to done with completion data
@@ -884,6 +925,7 @@ export async function completeTask(
             metadata: {
               taskTitle: updatedTask.title,
               mentionedBy: userId,
+              mentionedByName: currentUserName,
               notes: notes || null,
             },
           });

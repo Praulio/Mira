@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { AtSign } from 'lucide-react';
 import { getTeamUsers } from '@/app/actions/users';
 
 type User = {
@@ -142,6 +143,11 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
 
   return (
     <div className="relative">
+      {/* Hint for mentions */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2 px-1">
+        <AtSign className="h-3 w-3" />
+        <span>Usa @ para mencionar a alguien</span>
+      </div>
       <textarea
         ref={textareaRef}
         value={value}
@@ -209,4 +215,38 @@ export function extractMentionIds(text: string): string[] {
   }
 
   return ids;
+}
+
+/**
+ * Render mentions as styled chips instead of raw @[name](id) format
+ * Converts @[Juan Pérez](user_123) → <span className="chip">@Juan Pérez</span>
+ */
+export function renderMentions(text: string): React.ReactNode[] {
+  const regex = /@\[([^\]]+)\]\([^)]+\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Text before the mention
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Mention chip
+    parts.push(
+      <span
+        key={`mention-${keyIndex++}`}
+        className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded bg-primary/20 text-primary text-xs font-semibold"
+      >
+        @{match[1]}
+      </span>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  // Remaining text after last mention
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
 }

@@ -5,10 +5,12 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
-import { deleteTask } from '@/app/actions/tasks';
+import { deleteTask, updateTaskProgress } from '@/app/actions/tasks';
 import { TaskDetailDialog } from './task-detail-dialog';
 import { formatDuration } from '@/lib/format-duration';
+import { renderMentions } from '@/components/mention-input';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
 type TaskCardProps = {
@@ -46,9 +48,37 @@ function formatDueDate(date: Date): string {
  */
 export function TaskCard({ task, isDragging = false }: TaskCardProps) {
   const router = useRouter();
+  const { user } = useUser();
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [localProgress, setLocalProgress] = useState(task.progress);
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
+
+  // Can user edit progress? Only in in_progress, and only assignee or creator (if no assignee)
+  const canEditProgress =
+    task.status === 'in_progress' && (
+      user?.id === task.assignee?.id ||
+      (!task.assignee && user?.id === task.creator.id)
+    );
+
+  // Sync localProgress when task.progress changes externally
+  useEffect(() => {
+    setLocalProgress(task.progress);
+  }, [task.progress]);
+
+  async function handleProgressSave() {
+    if (localProgress === task.progress) return;
+    setIsSavingProgress(true);
+    const result = await updateTaskProgress({ taskId: task.id, progress: localProgress });
+    if (result.success) {
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al guardar progreso');
+      setLocalProgress(task.progress);
+    }
+    setIsSavingProgress(false);
+  }
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
@@ -189,21 +219,39 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
           {task.title}
         </h4>
 
-        {/* Task description (if exists) */}
+        {/* Task description (if exists) - with mention chips */}
         {task.description && (
           <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-            {task.description}
+            {renderMentions(task.description)}
           </p>
         )}
 
-        {/* Mini progress bar (visual only, if progress > 0) */}
-        {task.progress > 0 && (
-          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${task.progress}%` }}
-            />
-          </div>
+        {/* Progress bar / slider - hidden when done */}
+        {task.status !== 'done' && (
+          canEditProgress ? (
+            // Editable slider for in_progress tasks when user has permission
+            <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={localProgress}
+                onChange={(e) => setLocalProgress(Number(e.target.value))}
+                onMouseUp={handleProgressSave}
+                onTouchEnd={handleProgressSave}
+                disabled={isSavingProgress}
+                className="w-full h-1.5 rounded-full bg-white/10 accent-primary cursor-pointer disabled:opacity-50"
+              />
+            </div>
+          ) : task.progress > 0 ? (
+            // Read-only progress bar for other statuses or users without permission
+            <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${task.progress}%` }}
+              />
+            </div>
+          ) : null
         )}
 
         {/* Footer: Assignee, attachments, and duration/status */}
