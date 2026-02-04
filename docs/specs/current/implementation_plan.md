@@ -161,7 +161,7 @@ Validación Fase 4:
 
 ## Fase 5: Progress Bar
 
-- [ ] **5.1** Crear action updateTaskProgress
+- [x] **5.1** Crear action updateTaskProgress
   - Archivo: `app/actions/tasks.ts`
   - Input: `{ taskId: string, progress: number (0-100) }`
   - Comportamiento: Solo assignee O creador (si no hay assignee) puede editar

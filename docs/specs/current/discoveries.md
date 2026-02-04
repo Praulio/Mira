@@ -328,3 +328,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Filtro client-side es apropiado porque el estado es local (no persiste entre sesiones)
 - El prop `statusColor` estaba sin uso pero se mantiene en tipo para compatibilidad futura
 **Notes:** Tareas 4.2 y 4.3 completadas juntas porque 4.2 dependía de la prop `isFiltered` de 4.3
+
+### Session 19 - 2026-02-04
+**Task:** 5.1 - Crear action updateTaskProgress
+**Files:** `app/actions/tasks.ts`
+**Changes:**
+- Agregado `updateProgressSchema` con `taskId: z.string().uuid()` y `progress: z.number().int().min(0).max(100)`
+- Creada action `updateTaskProgress` siguiendo patrón de `updateTaskDueDate`
+- Permisos diferenciados: assignee O creator (solo si no hay assignee)
+- Log activity con `fieldUpdated: 'progress'` y valores old/new como numbers
+**Patterns:**
+- Para permisos contextuales: `const canEdit = condición1 || (condición2 && condición3)`
+- Diferencia con `updateTaskDueDate`: dueDate = solo creator, progress = assignee preferente
+- El progress se almacena como `integer` en DB (0-100), validación en schema Zod con `.int().min(0).max(100)`
+**Notes:** Fase 5 iniciada. Siguiente: 5.2 (mini progress bar en TaskCard)

@@ -83,6 +83,15 @@ const updateDueDateSchema = z.object({
 });
 
 /**
+ * Zod schema for updating task progress
+ * Only the ASSIGNEE can edit (or CREATOR if no assignee)
+ */
+const updateProgressSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+  progress: z.number().int().min(0).max(100),
+});
+
+/**
  * Zod schema for creating a derived task
  * A derived task links to a parent task via parentTaskId
  */
@@ -1256,6 +1265,121 @@ export async function updateTaskDueDate(
     return {
       success: false,
       error: 'An unexpected error occurred while updating the due date',
+    };
+  }
+}
+
+/**
+ * Server Action: Update task progress
+ *
+ * Allows the assignee (or creator if no assignee) to update the progress
+ * percentage of a task (0-100).
+ *
+ * Rules:
+ * - Assignee can always edit progress
+ * - Creator can edit ONLY if there is no assignee
+ * - Progress must be an integer between 0 and 100
+ *
+ * @param input - Task ID and new progress value (0-100)
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function updateTaskProgress(
+  input: z.infer<typeof updateProgressSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to update tasks',
+      };
+    }
+
+    // Validate input
+    const validationResult = updateProgressSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, progress } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Verify permissions: assignee OR creator (if no assignee)
+    const canEdit =
+      currentTask.assigneeId === userId ||
+      (!currentTask.assigneeId && currentTask.creatorId === userId);
+
+    if (!canEdit) {
+      return {
+        success: false,
+        error: 'Solo el asignado puede actualizar el progreso',
+      };
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          progress,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to update task');
+      }
+
+      // Log the progress update in activity (inherit area from task)
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        area: currentTask.area,
+        metadata: {
+          taskTitle: updatedTask.title,
+          oldProgress: currentTask.progress,
+          newProgress: progress,
+          fieldUpdated: 'progress',
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating the progress',
     };
   }
 }
