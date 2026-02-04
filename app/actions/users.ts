@@ -6,6 +6,7 @@ import { desc, eq, not, like, and } from 'drizzle-orm';
 import { getAuth } from '@/lib/mock-auth';
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { getCurrentArea } from '@/lib/area-context';
 
 /**
  * Sync current user from Clerk to our database
@@ -87,13 +88,16 @@ export async function cleanupTestUsers() {
  */
 export async function getTeamUsers() {
   const { userId } = await getAuth();
-  
+
   if (!userId) {
     redirect('/sign-in');
   }
 
   try {
-    // Only show real-looking users (start with user_ or are the E2E test user)
+    // Get current area for filtering
+    const area = await getCurrentArea();
+
+    // Only show real-looking users from the current area
     // and exclude those with generic "User" names that were manually injected
     const teamUsers = await db
       .select({
@@ -104,6 +108,7 @@ export async function getTeamUsers() {
       .from(users)
       .where(
         and(
+          eq(users.area, area),
           not(like(users.name, 'User %')),
           not(eq(users.name, 'Droid'))
         )

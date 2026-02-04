@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create attachment record in database
+    // Create attachment record in database (inherit area from task)
     const [newAttachment] = await db
       .insert(attachments)
       .values({
@@ -213,6 +213,7 @@ export async function POST(request: NextRequest) {
         mimeType,
         sizeBytes,
         uploadedBy: userId,
+        area: task.area,
       })
       .returning();
 

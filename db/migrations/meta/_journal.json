@@ -33,8 +33,15 @@
     {
       "idx": 4,
       "version": "7",
+      "when": 1770141516183,
+      "tag": "0004_lean_songbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
       "when": 1769626136407,
-      "tag": "0004_colorful_sugar_man",
+      "tag": "0005_notifications_and_mentions",
       "breakpoints": true
     }
   ]
