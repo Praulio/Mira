@@ -6,7 +6,7 @@ import { eq, desc, and } from 'drizzle-orm';
 import { getCurrentArea } from '@/lib/area-context';
 
 /**
- * Type for a team slot with user and their current in-progress task
+ * Type for a team slot with user and their current in-progress tasks (multi-activity mode)
  */
 export type TeamSlotData = {
   user: {
@@ -16,24 +16,26 @@ export type TeamSlotData = {
     imageUrl: string | null;
     slotIndex: number | null;
   };
-  inProgressTask: {
+  inProgressTasks: Array<{
     id: string;
     title: string;
     description: string | null;
     updatedAt: Date;
+    startedAt: Date | null;
     progress: number;
-  } | null;
+    blockerReason: string | null;
+  }>;
 };
 
 /**
- * Fetch team view data: up to 8 users with their in-progress tasks
- * 
+ * Fetch team view data: up to 8 users with ALL their in-progress tasks (multi-activity mode)
+ *
  * Returns users sorted by slot_index (if assigned) or by most recently active.
- * Each user includes their current in_progress task (if any).
- * 
+ * Each user includes ALL their in_progress tasks (ordered by startedAt DESC).
+ *
  * Following React Best Practices:
  * - Server-side data fetching with no client-side waterfalls
- * - Single query for users, then parallel fetch for each user's task
+ * - Single query for users, then parallel fetch for each user's tasks
  * - Returns minimal serializable data across RSC boundary
  */
 export async function getTeamViewData(): Promise<TeamSlotData[]> {
@@ -57,17 +59,19 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
       .orderBy(users.slotIndex, desc(users.updatedAt))
       .limit(8);
 
-    // For each user, fetch their in_progress task (if any) from the same area
+    // For each user, fetch ALL their in_progress tasks from the same area (multi-activity mode)
     // Using Promise.all to parallelize these queries (Best Practice: 1.4)
     const teamSlots = await Promise.all(
       allUsers.map(async (user) => {
-        const [inProgressTask] = await db
+        const inProgressTasks = await db
           .select({
             id: tasks.id,
             title: tasks.title,
             description: tasks.description,
             updatedAt: tasks.updatedAt,
+            startedAt: tasks.startedAt,
             progress: tasks.progress,
+            blockerReason: tasks.blockerReason,
           })
           .from(tasks)
           .where(
@@ -77,16 +81,14 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
               eq(tasks.area, area)
             )
           )
-          .limit(1);
+          .orderBy(desc(tasks.startedAt));
 
         return {
           user,
-          inProgressTask: inProgressTask
-            ? {
-                ...inProgressTask,
-                progress: inProgressTask.progress ?? 0,
-              }
-            : null,
+          inProgressTasks: inProgressTasks.map((task) => ({
+            ...task,
+            progress: task.progress ?? 0,
+          })),
         };
       })
     );

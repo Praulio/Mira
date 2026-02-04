@@ -61,7 +61,7 @@ Validación Fase 2:
   - Comportamiento: Kanban recibe datos de blocker
   - Referencia: ver `app/actions/kanban.ts:33` (tipo KanbanTaskData)
 
-- [ ] **3.2** Cambiar TeamSlotData de singular a array
+- [x] **3.2** Cambiar TeamSlotData de singular a array
   - Input: Archivo `app/actions/team.ts`
   - Output: `inProgressTasks` array con blockerReason incluido
   - Comportamiento: Quitar `.limit(1)`, ordenar por startedAt DESC

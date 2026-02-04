@@ -83,3 +83,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Al agregar campo nuevo a query de Drizzle, actualizar 3 lugares: tipo → select → objeto retorno
 - El campo viene de `tasks.blockerReason` del schema ya migrado
 **Notes:** Build pasa. Siguiente: 3.2 cambiar TeamSlotData de singular a array.
+
+### Session 5 - 2026-02-04
+**Task:** 3.2 - Cambiar TeamSlotData de singular a array
+**Files:**
+- `app/actions/team.ts:11-26` (tipo TeamSlotData)
+- `app/actions/team.ts:62-91` (query getTeamViewData)
+- `components/team-slot.tsx:28-33` (adaptación temporal)
+
+**Cambios realizados:**
+1. Tipo `inProgressTask` (singular, nullable) → `inProgressTasks` (array)
+2. Shape ampliado con `startedAt` y `blockerReason`
+3. Query: eliminado `.limit(1)`, agregado `orderBy(desc(tasks.startedAt))`
+4. Select: agregados `startedAt` y `blockerReason`
+5. TeamSlot: adaptación temporal `const inProgressTask = inProgressTasks[0] || null` con TODO(7.1)
+
+**Patterns descubiertos:**
+- Al hacer breaking changes en tipos, agregar adaptación temporal en consumidores para mantener build verde
+- El TODO con referencia a tarea futura (7.1) sirve como reminder para siguiente sesión
+- `startedAt` es preferible a `updatedAt` para calcular tiempo transcurrido (más preciso)
+
+**Notes:** Build pasa. Siguiente: 4.1 agregar variables CSS para blocker.

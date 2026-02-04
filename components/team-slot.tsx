@@ -25,11 +25,13 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
     );
   }
 
-  const { user, inProgressTask } = data;
+  const { user, inProgressTasks } = data;
+  // TODO(7.1): Update to show multiple tasks - for now show first task for compatibility
+  const inProgressTask = inProgressTasks[0] || null;
 
   // Calculate time elapsed
   const timeElapsed = inProgressTask
-    ? getTimeElapsed(inProgressTask.updatedAt)
+    ? getTimeElapsed(inProgressTask.startedAt || inProgressTask.updatedAt)
     : null;
 
   return (
