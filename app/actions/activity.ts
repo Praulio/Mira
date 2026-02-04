@@ -2,7 +2,7 @@
 
 import { db } from '@/db'
 import { activity, users, tasks } from '@/db/schema'
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, ne } from 'drizzle-orm'
 import { getAuth } from '@/lib/mock-auth'
 import { getCurrentArea } from '@/lib/area-context'
 
@@ -49,7 +49,10 @@ export async function getActivityFeed(filter: ActivityFilter = 'all'): Promise<A
     // Build where clause based on filter - always include area filter
     const conditions = [eq(activity.area, area)];
 
-    if (filter === 'completed') {
+    if (filter === 'all') {
+      // Exclude 'mentioned' activities from general feed - they're personal notifications
+      conditions.push(ne(activity.action, 'mentioned'));
+    } else if (filter === 'completed') {
       conditions.push(eq(activity.action, 'completed'));
     } else if (filter === 'mentions') {
       const { userId } = await getAuth()
