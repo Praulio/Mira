@@ -124,7 +124,7 @@ Validación Fase 2:
   - Archivo: `components/sidebar.tsx`
   - Output: Remover item con `href: "/dashboard/backlog"` del array navItems
 
-- [ ] **3.3** Limpiar archivos no usados
+- [x] **3.3** Limpiar archivos no usados
   - Archivos: `components/backlog-list.tsx`, `components/backlog-task-card.tsx`
   - Comportamiento: Eliminar si no tienen otros usos
 

@@ -285,3 +285,15 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Al eliminar items de navegación, siempre verificar si el icono importado queda huérfano
 - El array `navItems` está antes del componente, facilitando modificaciones sin tocar JSX
 **Notes:** Sidebar ya no muestra "Pila de Tareas". Siguiente: 3.3 (limpiar archivos backlog no usados)
+
+### Session 16 - 2026-02-04
+**Task:** 3.3 - Limpiar archivos no usados (backlog components)
+**Files:** `components/backlog-list.tsx`, `components/backlog-task-card.tsx`
+**Changes:**
+- Eliminados ambos archivos que ya no tenían imports desde ningún otro archivo del proyecto
+- Verificación con grep confirmó que solo se referenciaban entre sí
+**Patterns:**
+- Antes de eliminar archivos, verificar dependencias con grep para imports
+- El patrón `from.*filename|import.*ComponentName` captura ambos estilos de import
+- Archivos de documentación (specs, plans) pueden seguir mencionando archivos eliminados - eso es OK
+**Notes:** Fase 3 COMPLETADA. Backlog eliminado: redirect en page.tsx, link removido de sidebar, archivos de componentes eliminados. Siguiente: Fase 4 (Filtro Mis Tareas)
