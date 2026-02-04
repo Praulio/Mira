@@ -66,7 +66,7 @@ Validación Fase 1:
   - Archivo: `app/actions/tasks.ts`
   - Cambio: Reemplazar `completionMentions` → `mentions`
 
-- [ ] **1.5.5** Agregar MentionInput a CreateTaskDialog
+- [x] **1.5.5** Agregar MentionInput a CreateTaskDialog
   - Archivo: `components/create-task-dialog.tsx`
   - Output: Reemplazar textarea descripción con MentionInput
   - Comportamiento: Extraer mentions con extractMentionIds() y pasarlos a createTask()

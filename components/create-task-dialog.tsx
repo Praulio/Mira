@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { createTask } from '@/app/actions/tasks';
 import { getTeamUsers } from '@/app/actions/users';
 import { PendingFilePicker } from '@/components/pending-file-picker';
+import { MentionInput, extractMentionIds } from '@/components/mention-input';
 
 /**
  * CreateTaskDialog - Simple dialog for creating new tasks
@@ -19,6 +20,7 @@ export function CreateTaskDialog() {
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
+  const [description, setDescription] = useState('');
 
   // Fetch team users when dialog opens
   useEffect(() => {
@@ -33,13 +35,16 @@ export function CreateTaskDialog() {
 
     const formData = new FormData(e.currentTarget);
     const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
+
+    // Extract mention IDs from description
+    const mentionIds = extractMentionIds(description);
 
     // Call server action
     const result = await createTask({
       title,
       description: description || undefined,
       assigneeId: selectedAssigneeId || undefined,
+      mentions: mentionIds.length > 0 ? mentionIds : undefined,
     });
 
     if (!result.success) {
@@ -102,6 +107,7 @@ export function CreateTaskDialog() {
     setIsOpen(false);
     setSelectedAssigneeId(null);
     setPendingFiles([]);
+    setDescription('');
     // Reset form
     (e.target as HTMLFormElement).reset();
     router.refresh();
@@ -158,19 +164,13 @@ export function CreateTaskDialog() {
           </div>
 
           <div className="space-y-2">
-            <label
-              htmlFor="description"
-              className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-            >
+            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Descripción
             </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              data-testid="task-description-input"
-              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all resize-none overflow-y-auto max-h-40"
-              placeholder="Agrega algunos detalles..."
+            <MentionInput
+              value={description}
+              onChange={setDescription}
+              placeholder="Agrega algunos detalles... Usa @ para mencionar"
             />
           </div>
 

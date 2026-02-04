@@ -170,3 +170,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El campo `mentions` en DB es `jsonb.$type<string[]>()`, TypeScript lo ve como `unknown`, cast a `string[] | null`
 - `fieldsUpdated` en metadata del activity ahora incluye `mentions: boolean` para trazabilidad
 **Notes:** Menciones funcionan al editar descripción. Siguiente: 1.5.5 (MentionInput en CreateTaskDialog)
+
+### Session 8 - 2026-02-04
+**Task:** 1.5.5 - Agregar MentionInput a CreateTaskDialog
+**Files:** `components/create-task-dialog.tsx`
+**Changes:**
+- Importado `MentionInput` y `extractMentionIds` de `@/components/mention-input`
+- Agregado estado controlado `description` con `useState('')`
+- Reemplazado textarea de descripción con componente `MentionInput`
+- Extraído `mentionIds` usando `extractMentionIds(description)` antes de llamar `createTask()`
+- Pasado `mentions: mentionIds.length > 0 ? mentionIds : undefined` a `createTask()`
+- Agregado `setDescription('')` al resetear el formulario
+**Patterns:**
+- `MentionInput` requiere estado controlado (`value` + `onChange`)
+- El patrón es: componente controla estado → al submit extrae IDs → pasa a server action
+- Mismo patrón usado en `CompleteTaskModal` (línea 8, 39, 59)
+**Notes:** Ahora al crear tareas con @menciones, los usuarios mencionados verán la mención en "Mis Menciones". Siguiente: 1.5.6 (MentionInput en TaskDetailDialog)
