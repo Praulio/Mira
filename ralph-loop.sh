@@ -77,6 +77,7 @@ SERVER_PID=""
 MONITOR_PID=""
 RESTART_SIGNAL="/tmp/ralph-restart-server"
 MAX_TIMEOUT=600  # 10 minutos
+RALPH_PORT=3003  # Puerto exclusivo para Ralph (no toca otros)
 
 # Colores
 RED='\033[0;31m'
@@ -92,21 +93,21 @@ NC='\033[0m'
 
 # Función para iniciar el servidor
 start_server() {
-    echo -e "${BLUE}[SERVER] Iniciando servidor de desarrollo...${NC}"
-    npm run dev > /tmp/next-dev.log 2>&1 &
+    echo -e "${BLUE}[SERVER] Iniciando servidor de desarrollo en puerto $RALPH_PORT...${NC}"
+    npm run dev -- -p $RALPH_PORT > /tmp/next-dev-ralph.log 2>&1 &
     SERVER_PID=$!
     echo -e "${GREEN}[SERVER] Servidor iniciado (PID: $SERVER_PID)${NC}"
 
     # Esperar a que el servidor esté listo
     echo -e "${YELLOW}[SERVER] Esperando que el servidor esté listo...${NC}"
     for i in $(seq 1 30); do
-        if curl -s http://localhost:3000 > /dev/null 2>&1; then
-            echo -e "${GREEN}[SERVER] ✅ Servidor responde en puerto 3000${NC}"
+        if curl -s http://localhost:$RALPH_PORT > /dev/null 2>&1; then
+            echo -e "${GREEN}[SERVER] ✅ Servidor responde en puerto $RALPH_PORT${NC}"
             break
         fi
         if [ $i -eq 30 ]; then
             echo -e "${RED}[SERVER] ❌ Timeout esperando servidor${NC}"
-            cat /tmp/next-dev.log
+            cat /tmp/next-dev-ralph.log
             return 1
         fi
         sleep 1
@@ -115,10 +116,10 @@ start_server() {
     # Esperar a que Tailwind compile
     echo -e "${YELLOW}[SERVER] Esperando compilación de CSS (10s)...${NC}"
     sleep 10
-    echo -e "${GREEN}[SERVER] ✅ Servidor completamente listo${NC}"
+    echo -e "${GREEN}[SERVER] ✅ Servidor completamente listo en http://localhost:$RALPH_PORT${NC}"
 }
 
-# Función para matar el servidor
+# Función para matar el servidor (SOLO puerto $RALPH_PORT)
 kill_server() {
     if [ -n "$SERVER_PID" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
         echo -e "${YELLOW}[SERVER] Matando servidor (PID: $SERVER_PID)${NC}"
@@ -127,13 +128,12 @@ kill_server() {
         kill -9 "$SERVER_PID" 2>/dev/null || true
     fi
 
-    # Matar cualquier next-server huérfano en puertos 3000-3010
-    for port in $(seq 3000 3010); do
-        PID=$(lsof -ti :$port 2>/dev/null || true)
-        if [ -n "$PID" ]; then
-            kill -9 $PID 2>/dev/null || true
-        fi
-    done
+    # Solo matar proceso en puerto $RALPH_PORT (no toca otros puertos)
+    PID=$(lsof -ti :$RALPH_PORT 2>/dev/null || true)
+    if [ -n "$PID" ]; then
+        echo -e "${YELLOW}[SERVER] Matando proceso huérfano en puerto $RALPH_PORT (PID: $PID)${NC}"
+        kill -9 $PID 2>/dev/null || true
+    fi
     sleep 1
 }
 
@@ -189,7 +189,7 @@ trap cleanup SIGTERM
 # ═══════════════════════════════════════════════════════════════
 # PRE-LIMPIEZA: Matar servidores existentes y señales previas
 # ═══════════════════════════════════════════════════════════════
-echo -e "${YELLOW}[PRE-CLEANUP] Verificando servidores existentes...${NC}"
+echo -e "${YELLOW}[PRE-CLEANUP] Verificando puerto $RALPH_PORT...${NC}"
 kill_server
 rm -f "$RESTART_SIGNAL"
 echo -e "${GREEN}[PRE-CLEANUP] ✅ Listo${NC}"
@@ -218,7 +218,7 @@ echo "║  Modelo:   ${CYAN}$MODEL${NC}                                         
 else
 echo "║  Modelo:   default                                            ║"
 fi
-echo "║  Servidor: PID $SERVER_PID (puerto 3000)                      ║"
+echo "║  Servidor: PID $SERVER_PID (puerto $RALPH_PORT)                      ║"
 echo "║  Monitor:  PID $MONITOR_PID (reinicio automático)             ║"
 echo "║  Spec:     $SPEC_DIR/                                  ║"
 echo "║  Log:      $LOG_FILE                                      ║"
@@ -232,7 +232,7 @@ echo "════════════════════════�
 echo "RALPH LOOP v3.3 INICIADO: $(date)" >> "$LOG_FILE"
 echo "Modelo: ${MODEL:-default}" >> "$LOG_FILE"
 echo "Spec Dir: $SPEC_DIR" >> "$LOG_FILE"
-echo "Servidor PID: $SERVER_PID" >> "$LOG_FILE"
+echo "Servidor PID: $SERVER_PID (puerto $RALPH_PORT)" >> "$LOG_FILE"
 echo "═══════════════════════════════════════════════════════════════" >> "$LOG_FILE"
 
 # Loop principal
