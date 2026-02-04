@@ -12,7 +12,7 @@ Fecha: 2026-02-04
   - Output: Campos `dueDate: timestamp('due_date')` y `progress: integer('progress').default(0)` agregados
   - Referencia: ver campos `completedAt` y `startedAt` en línea 62-66
 
-- [ ] **0.2** Generar y aplicar migración Drizzle
+- [x] **0.2** Generar y aplicar migración Drizzle
   - Comando: `pnpm db:generate && pnpm db:push`
   - Output: Migración SQL aplicada a la base de datos
   - Verificación: Campos existen en tabla tasks

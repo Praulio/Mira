@@ -81,3 +81,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Los campos timestamp sin `.notNull()` son nullable por defecto
 - `integer().default(0)` crea el default a nivel de DB
 **Notes:** Build pasa sin errores. Siguiente paso es generar y aplicar la migración Drizzle (tarea 0.2)
+
+### Session 2 - 2026-02-04
+**Task:** 0.2 - Generar y aplicar migración Drizzle
+**Files:** Base de datos (Neon PostgreSQL)
+**Changes:**
+- DROP TABLE `notifications` CASCADE
+- DROP COLUMN `description_mentions` de tasks (32 registros)
+- DROP TYPE `notification_type`
+**Investigation:**
+- `description_mentions` era un campo **no implementado** - nunca se usaba
+- Sistema de menciones funciona via tabla `activity` con `action: 'mentioned'`
+- Menciones se crean al **completar** task, no al crear/editar descripción
+- Campo `completionMentions` en schema SÍ se usa correctamente
+**Patterns:**
+- Para ejecutar drizzle-kit con env vars de .env.local: `DATABASE_URL=$(grep "^DATABASE_URL=" .env.local | cut -d'=' -f2-) npx drizzle-kit push --force`
+- La flag `--force` evita el prompt interactivo que bloqueaba Ralph
+**Notes:** Fase 0 completada. Build pasa. Siguiente: Fase 1 - Data Layer (actualizar tipos)
