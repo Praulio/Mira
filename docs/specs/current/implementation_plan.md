@@ -30,7 +30,7 @@ Validación Fase 0:
   - Output: Tipo incluye `dueDate: Date | null` y `progress: number`
   - Referencia: ver tipo actual en líneas 13-32
 
-- [ ] **1.2** Actualizar query getKanbanData para incluir nuevos campos
+- [x] **1.2** Actualizar query getKanbanData para incluir nuevos campos
   - Archivo: `app/actions/kanban.ts`
   - Output: Query retorna dueDate y progress en el select
 

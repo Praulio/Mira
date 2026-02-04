@@ -110,3 +110,17 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El `as KanbanTaskData` (type assertion) permite que el build pase aunque el objeto no tenga todos los campos
 - La próxima tarea (1.2) debe actualizar la query para retornar los campos reales
 **Notes:** Tarea 1.1 completada - solo actualiza el tipo. Task 1.2 actualizará la query.
+
+### Session 4 - 2026-02-04
+**Task:** 1.2 - Actualizar query getKanbanData para incluir nuevos campos
+**Files:** `app/actions/kanban.ts`
+**Changes:**
+- Agregado `dueDate: tasks.dueDate` al select de la query (línea 87)
+- Agregado `progress: tasks.progress` al select de la query (línea 88)
+- Agregado `dueDate: task.dueDate` al objeto retornado (línea 127)
+- Agregado `progress: task.progress ?? 0` al objeto retornado (línea 128)
+**Patterns:**
+- Los campos de Drizzle en el select se acceden como `tasks.campo`
+- Para campos que pueden ser `null` pero tienen default en DB, usar `?? valorDefault` para garantizar tipo correcto
+- El patrón de `getKanbanData` es: query → map con segunda query para creator → agrupar por status
+**Notes:** Ahora los datos de dueDate y progress fluyen correctamente desde DB hasta el componente. Siguiente: 1.3 actualizar TeamSlotData
