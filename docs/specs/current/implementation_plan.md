@@ -177,7 +177,7 @@ Validación Fase 4:
   - Render: Slider si puede editar, barra read-only si no
   - Comportamiento: Guardar al soltar (onMouseUp/onTouchEnd)
 
-- [ ] **5.4** Agregar progress bar en TeamSlot
+- [x] **5.4** Agregar progress bar en TeamSlot
   - Archivo: `components/team-slot.tsx`
   - Render: Barra de progreso debajo del título si progress > 0
 

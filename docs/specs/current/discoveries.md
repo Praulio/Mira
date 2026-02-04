@@ -375,3 +375,24 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Estado local para UX fluida + sincronización con servidor al finalizar interacción
 - Revert a valor original si el update falla para evitar inconsistencias
 **Notes:** Slider de progreso completado. Siguiente: 5.4 (progress bar en TeamSlot)
+
+### Session 22 - 2026-02-04
+**Task:** 5.4 - Agregar progress bar en TeamSlot
+**Files:** `components/team-slot.tsx`
+**Changes:**
+- Agregada barra de progreso después del título de la tarea (líneas 109-119)
+- Solo se renderiza si `inProgressTask.progress > 0` (no ocupa espacio si progress es 0)
+- Incluye porcentaje visual debajo de la barra (`text-[9px]`)
+- Estilos consistentes con TaskCard: `h-1.5`, `bg-white/10`, `bg-primary`, `rounded-full`
+**Patterns:**
+- El campo `progress` ya existía en `TeamSlotData.inProgressTask` (Session 5)
+- Renderizado condicional `{progress > 0 && JSX}` evita elementos vacíos
+- El componente es read-only (no editable) - la edición se hace en TaskDetailDialog
+**Notes:** 🎉 **FEATURE COMPLETADO** - Task Enhancements V2 finalizado con 25 tareas en 6 fases:
+- ✅ Fase 0: Schema & Migration (dueDate, progress)
+- ✅ Fase 1: Data Layer (tipos en kanban.ts, team.ts)
+- ✅ Fase 1.5: Unified Mentions (menciones en create, edit, complete)
+- ✅ Fase 2: Due Date Feature (create, update, badge con colores)
+- ✅ Fase 3: Eliminar Backlog (redirect, sidebar, cleanup)
+- ✅ Fase 4: Filtro Mis Tareas (toggle, empty state)
+- ✅ Fase 5: Progress Bar (action, TaskCard, dialog, TeamSlot)

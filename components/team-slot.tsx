@@ -106,6 +106,19 @@ export function TeamSlot({ data, slotNumber }: TeamSlotProps) {
             <p className="line-clamp-2 text-xs font-bold leading-relaxed text-foreground/90 group-hover:text-primary transition-colors">
               {inProgressTask.title}
             </p>
+
+            {/* Progress bar - only shows if progress > 0 */}
+            {inProgressTask.progress > 0 && (
+              <div className="space-y-1">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${inProgressTask.progress}%` }}
+                  />
+                </div>
+                <span className="text-[9px] text-muted-foreground">{inProgressTask.progress}%</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-3 rounded-xl border border-dashed border-white/10 p-3 opacity-50">
