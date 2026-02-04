@@ -25,6 +25,7 @@ function getDomain(url: string): string {
 
 type ActivityItemProps = {
   activity: ActivityData
+  currentUserId?: string | null
 }
 
 /**
@@ -56,7 +57,7 @@ function getActionIcon(action: ActivityData['action']) {
  *
  * Best Practice 7.8: Early returns in switch statement
  */
-function getActivityMessage(activity: ActivityData): string {
+function getActivityMessage(activity: ActivityData, currentUserId?: string | null): string {
   const { action, metadata, task } = activity
 
   switch (action) {
@@ -119,16 +120,32 @@ function getActivityMessage(activity: ActivityData): string {
     }
 
     case 'mentioned': {
-      // Use mentionedByName from metadata instead of activity.user (which is the mentioned person)
-      const mentionedByName = (metadata as { mentionedByName?: string })?.mentionedByName;
-      if (mentionedByName) {
+      // Contextual messages based on who is viewing:
+      // - If current user did the mentioning: "Mencionaste a [name]..."
+      // - If current user was mentioned: "[name] te mencionó..."
+      // - Otherwise: "[name] mencionó a [name]..."
+      const mentionedByUserId = (metadata as { mentionedBy?: string })?.mentionedBy;
+      const mentionedByName = (metadata as { mentionedByName?: string })?.mentionedByName || 'Alguien';
+      const mentionedUserName = activity.user.name; // activity.user is the mentioned person
+
+      // Current user did the mentioning
+      if (currentUserId && mentionedByUserId === currentUserId) {
+        return task
+          ? `Mencionaste a ${mentionedUserName} en "${task.title}"`
+          : `Mencionaste a ${mentionedUserName} en una tarea`
+      }
+
+      // Current user was mentioned
+      if (currentUserId && activity.user.id === currentUserId) {
         return task
           ? `${mentionedByName} te mencionó en "${task.title}"`
           : `${mentionedByName} te mencionó en una tarea`
       }
+
+      // Third party viewing (neither mentioner nor mentioned)
       return task
-        ? `te mencionaron en "${task.title}"`
-        : 'te mencionaron en una tarea'
+        ? `${mentionedByName} mencionó a ${mentionedUserName} en "${task.title}"`
+        : `${mentionedByName} mencionó a ${mentionedUserName} en una tarea`
     }
   }
 }
@@ -212,8 +229,8 @@ function CompletionLinks({ links }: { links: string[] }) {
  * Best Practice 3.2: Pure presentational component (minimal serialization)
  * Best Practice 2.1: Uses Next.js Image component for optimization
  */
-export function ActivityItem({ activity }: ActivityItemProps) {
-  const message = getActivityMessage(activity)
+export function ActivityItem({ activity, currentUserId }: ActivityItemProps) {
+  const message = getActivityMessage(activity, currentUserId)
   const relativeTime = getRelativeTime(activity.createdAt)
   const icon = getActionIcon(activity.action)
 

@@ -395,7 +395,7 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
             <MentionInput
               value={description}
               onChange={setDescription}
-              placeholder="Agrega más contexto a esta tarea... Usa @ para mencionar"
+              placeholder="Agrega más contexto a esta tarea..."
             />
           </div>
 

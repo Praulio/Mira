@@ -17,20 +17,23 @@ type MentionInputProps = {
 };
 
 /**
- * MentionInput - Textarea with @mention support
+ * MentionInput - Textarea with @mention support using focus/blur toggle
  *
- * Detects "@" character and shows a dropdown to select team members.
- * Inserts mentions in format: @[name](userId)
+ * Simple approach: show formatted view when blurred, raw textarea when focused.
+ * After selecting a mention, auto-blur to show the formatted result.
  */
 export function MentionInput({ value, onChange, placeholder }: MentionInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mentionButtonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Fetch team users on mount
   useEffect(() => {
@@ -74,7 +77,7 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
     setSelectedIndex(0);
   }, [onChange, searchQuery]);
 
-  // Insert selected user as mention (declared before handleKeyDown to avoid hoisting issues)
+  // Insert selected user as mention
   const selectUser = useCallback((user: User) => {
     if (mentionStartIndex === -1) return;
 
@@ -89,15 +92,40 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
     setSearchQuery('');
     setMentionStartIndex(-1);
 
-    // Focus back on textarea
+    // Auto-blur to show formatted view
     setTimeout(() => {
-      if (textareaRef.current) {
-        const newCursorPos = before.length + mention.length + 1;
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
+      textareaRef.current?.blur();
     }, 0);
   }, [value, onChange, mentionStartIndex, searchQuery]);
+
+  // Handle manual @ button click - opens dropdown to pick a user
+  const handleMentionButtonClick = useCallback(() => {
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Insert @ at cursor position (or end if no cursor)
+        const cursorPos = textareaRef.current.selectionStart || value.length;
+        const before = value.slice(0, cursorPos);
+        const after = value.slice(cursorPos);
+        const newValue = before + '@' + after;
+        onChange(newValue);
+
+        // Set up for mention selection
+        setMentionStartIndex(cursorPos);
+        setSearchQuery('');
+        setShowDropdown(true);
+        setSelectedIndex(0);
+
+        // Move cursor after the @
+        setTimeout(() => {
+          if (textareaRef.current) {
+            const newPos = cursorPos + 1;
+            textareaRef.current.setSelectionRange(newPos, newPos);
+          }
+        }, 0);
+      }
+    }, 50);
+  }, [value, onChange]);
 
   // Handle keyboard navigation in dropdown
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -130,8 +158,10 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node) &&
-        textareaRef.current &&
-        !textareaRef.current.contains(e.target as Node)
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node) &&
+        mentionButtonRef.current &&
+        !mentionButtonRef.current.contains(e.target as Node)
       ) {
         setShowDropdown(false);
       }
@@ -141,22 +171,74 @@ export function MentionInput({ value, onChange, placeholder }: MentionInputProps
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Click on formatted view focuses textarea
+  const handleFormattedClick = useCallback(() => {
+    textareaRef.current?.focus();
+  }, []);
+
   return (
     <div className="relative">
-      {/* Hint for mentions */}
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2 px-1">
-        <AtSign className="h-3 w-3" />
-        <span>Usa @ para mencionar a alguien</span>
+      {/* @ button to manually trigger mention dropdown */}
+      <div className="flex items-center justify-end mb-2">
+        <button
+          ref={mentionButtonRef}
+          type="button"
+          onClick={handleMentionButtonClick}
+          className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-all"
+          title="Mencionar usuario"
+        >
+          <AtSign className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        rows={4}
-        className="w-full bg-white/5 rounded-2xl border border-white/5 p-4 text-sm leading-relaxed focus:outline-none focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all resize-none overflow-y-auto max-h-48"
-      />
+
+      {/* Container - shows formatted view OR textarea based on focus */}
+      <div
+        ref={containerRef}
+        className={`relative w-full bg-white/5 rounded-2xl border p-4 min-h-[120px] transition-all ${
+          isFocused
+            ? 'border-primary/20 ring-4 ring-primary/5'
+            : 'border-white/5 hover:border-white/10'
+        }`}
+      >
+        {/* Formatted view (shown when NOT focused) */}
+        {!isFocused && (
+          <div
+            onClick={handleFormattedClick}
+            className="text-sm leading-relaxed whitespace-pre-wrap break-words cursor-text min-h-[80px]"
+          >
+            {value ? renderMentions(value) : (
+              <span className="text-muted-foreground/50">{placeholder}</span>
+            )}
+          </div>
+        )}
+
+        {/* Textarea (shown when focused) */}
+        {isFocused && (
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onBlur={() => setIsFocused(false)}
+            autoFocus
+            rows={4}
+            placeholder={placeholder}
+            className="w-full bg-transparent text-foreground text-sm leading-relaxed focus:outline-none resize-none overflow-y-auto placeholder:text-muted-foreground/50"
+          />
+        )}
+
+        {/* Hidden textarea to capture focus when clicking formatted view */}
+        {!isFocused && (
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={handleChange}
+            onFocus={() => setIsFocused(true)}
+            className="absolute opacity-0 pointer-events-none"
+            tabIndex={-1}
+          />
+        )}
+      </div>
 
       {/* User Dropdown */}
       {showDropdown && filteredUsers.length > 0 && (

@@ -52,8 +52,9 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
-  const [localProgress, setLocalProgress] = useState(task.progress);
   const [isSavingProgress, setIsSavingProgress] = useState(false);
+  // null = not editing (use task.progress), number = actively dragging
+  const [editingProgress, setEditingProgress] = useState<number | null>(null);
 
   // Can user edit progress? Only in in_progress, and only assignee or creator (if no assignee)
   const canEditProgress =
@@ -62,22 +63,27 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
       (!task.assignee && user?.id === task.creator.id)
     );
 
-  // Sync localProgress when task.progress changes externally
-  useEffect(() => {
-    setLocalProgress(task.progress);
-  }, [task.progress]);
+  // Display value: use editingProgress while dragging, otherwise use task.progress
+  const displayProgress = editingProgress !== null ? editingProgress : task.progress;
 
   async function handleProgressSave() {
-    if (localProgress === task.progress) return;
+    if (editingProgress === null || editingProgress === task.progress) {
+      setEditingProgress(null);
+      return;
+    }
     setIsSavingProgress(true);
-    const result = await updateTaskProgress({ taskId: task.id, progress: localProgress });
+    const result = await updateTaskProgress({ taskId: task.id, progress: editingProgress });
     if (result.success) {
       router.refresh();
     } else {
       toast.error(result.error || 'Error al guardar progreso');
-      setLocalProgress(task.progress);
     }
     setIsSavingProgress(false);
+    setEditingProgress(null);
+  }
+
+  function handleProgressChange(newValue: number) {
+    setEditingProgress(newValue);
   }
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -230,13 +236,17 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
         {task.status !== 'done' && (
           canEditProgress ? (
             // Editable slider for in_progress tasks when user has permission
-            <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="mb-3"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               <input
                 type="range"
                 min="0"
                 max="100"
-                value={localProgress}
-                onChange={(e) => setLocalProgress(Number(e.target.value))}
+                value={displayProgress}
+                onChange={(e) => handleProgressChange(Number(e.target.value))}
                 onMouseUp={handleProgressSave}
                 onTouchEnd={handleProgressSave}
                 disabled={isSavingProgress}

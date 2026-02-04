@@ -173,7 +173,7 @@ export function CreateTaskDialog() {
             <MentionInput
               value={description}
               onChange={setDescription}
-              placeholder="Agrega algunos detalles... Usa @ para mencionar"
+              placeholder="Agrega algunos detalles..."
             />
           </div>
 

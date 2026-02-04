@@ -2,6 +2,7 @@ import { getActivityFeed, type ActivityFilter } from '@/app/actions/activity'
 import { ActivityItem } from '@/components/activity-item'
 import { ActivityFilters } from '@/components/activity-filters'
 import { Activity, PartyPopper, AtSign } from 'lucide-react'
+import { getAuth } from '@/lib/mock-auth'
 
 // Force dynamic rendering since this requires authentication
 export const dynamic = 'force-dynamic'
@@ -26,6 +27,9 @@ export default async function ActivityPage({ searchParams }: PageProps) {
 
   // Fetch activity data server-side with filter
   const activities = await getActivityFeed(filter)
+
+  // Get current user for contextual mention messages
+  const { userId: currentUserId } = await getAuth()
 
   // Get empty state content based on current filter
   const getEmptyState = () => {
@@ -71,7 +75,7 @@ export default async function ActivityPage({ searchParams }: PageProps) {
         {activities.length > 0 ? (
           <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {activities.map((activity) => (
-              <ActivityItem key={activity.id} activity={activity} />
+              <ActivityItem key={activity.id} activity={activity} currentUserId={currentUserId} />
             ))}
           </div>
         ) : (
