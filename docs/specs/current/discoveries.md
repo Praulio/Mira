@@ -70,3 +70,14 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 **Próximos pasos:**
 - Ejecutar `./ralph-loop.sh`
 - Monitorear con `tail -f ralph-log.txt`
+
+### Session 1 - 2026-02-04
+**Task:** 0.1 - Agregar campos dueDate y progress al schema de tasks
+**Files:** `db/schema.ts`
+**Changes:**
+- Agregado `dueDate: timestamp('due_date')` después de `parentTaskId`
+- Agregado `progress: integer('progress').default(0)` después de `dueDate`
+**Patterns:**
+- Los campos timestamp sin `.notNull()` son nullable por defecto
+- `integer().default(0)` crea el default a nivel de DB
+**Notes:** Build pasa sin errores. Siguiente paso es generar y aplicar la migración Drizzle (tarea 0.2)

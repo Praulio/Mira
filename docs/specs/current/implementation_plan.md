@@ -7,7 +7,7 @@ Fecha: 2026-02-04
 
 ## Fase 0: Schema & Migration
 
-- [ ] **0.1** Agregar campos dueDate y progress al schema de tasks
+- [x] **0.1** Agregar campos dueDate y progress al schema de tasks
   - Archivo: `db/schema.ts`
   - Output: Campos `dueDate: timestamp('due_date')` y `progress: integer('progress').default(0)` agregados
   - Referencia: ver campos `completedAt` y `startedAt` en línea 62-66
