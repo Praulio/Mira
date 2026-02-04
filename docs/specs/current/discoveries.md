@@ -259,3 +259,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Formato de fecha con `toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })`
 - Clases Tailwind condicionales con objeto lookup: `colorClasses[status]`
 **Notes:** Fase 2 completada. DueDateBadge muestra fecha con colores según urgencia. Siguiente: Fase 3 (Eliminar Backlog)
+
+### Session 14 - 2026-02-04
+**Task:** 3.1 - Convertir página backlog en redirect
+**Files:** `app/(dashboard)/dashboard/backlog/page.tsx`
+**Changes:**
+- Reemplazado todo el contenido del server component con un simple redirect
+- Importado `redirect` de `next/navigation`
+- Eliminadas importaciones no usadas (getBacklogTasks, BacklogList, Inbox)
+- La función ya no es async (redirect no lo requiere)
+**Patterns:**
+- `redirect()` de `next/navigation` es la forma estándar de hacer redirects en Next.js App Router
+- No requiere `return` - la función `redirect()` lanza internamente una excepción de Next.js para abortar el render
+- El redirect es server-side (307 por defecto), no requiere JavaScript en cliente
+- Comentario DEPRECATED ayuda a futuros desarrolladores a entender por qué existe el archivo
+**Notes:** Tarea 3.1 completada. Siguiente: 3.2 (eliminar enlace del sidebar)

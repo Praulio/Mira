@@ -116,7 +116,7 @@ Validación Fase 2:
 
 ## Fase 3: Eliminar Backlog
 
-- [ ] **3.1** Convertir página backlog en redirect
+- [x] **3.1** Convertir página backlog en redirect
   - Archivo: `app/(dashboard)/dashboard/backlog/page.tsx`
   - Output: `redirect('/dashboard/kanban')` de next/navigation
 
