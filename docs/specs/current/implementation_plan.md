@@ -102,7 +102,7 @@ Validación Fase 1.5:
   - Output: Input type="date" después del campo descripción
   - Comportamiento: Fecha mínima = hoy, opcional
 
-- [ ] **2.4** Agregar DueDateBadge en TaskCard footer
+- [x] **2.4** Agregar DueDateBadge en TaskCard footer
   - Archivo: `components/task-card.tsx`
   - Render: Badge con icono calendario + colores (rojo si vencida, amarillo si ≤24h)
   - Referencia: ver footer en líneas 174-223

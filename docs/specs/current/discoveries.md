@@ -244,3 +244,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El atributo `min` en date inputs acepta formato ISO date (solo fecha, sin hora)
 - Mismo estilo visual que otros inputs del formulario para consistencia
 **Notes:** Tarea 2.3 completada. Siguiente: 2.4 (DueDateBadge en TaskCard)
+
+### Session 13 - 2026-02-04
+**Task:** 2.4 - Agregar DueDateBadge en TaskCard footer
+**Files:** `components/task-card.tsx`
+**Changes:**
+- Importado `CalendarDays` de lucide-react
+- Creada función `getDueDateStatus(dueDate)` que retorna 'overdue' | 'soon' | 'normal' | null
+- Creada función `formatDueDate(date)` para formato español corto (e.g., "4 feb")
+- Badge renderiza en el footer, lado derecho, antes de attachment count
+- Colores: rojo (overdue, <0h), amarillo (soon, ≤24h), neutral (normal, >24h)
+**Patterns:**
+- IIFE `{(() => {...})()}` en JSX permite lógica condicional compleja sin componente separado
+- Formato de fecha con `toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })`
+- Clases Tailwind condicionales con objeto lookup: `colorClasses[status]`
+**Notes:** Fase 2 completada. DueDateBadge muestra fecha con colores según urgencia. Siguiente: Fase 3 (Eliminar Backlog)

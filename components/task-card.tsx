@@ -1,6 +1,6 @@
 'use client';
 
-import { User, MoreVertical, Trash2, Clock, Paperclip } from 'lucide-react';
+import { User, MoreVertical, Trash2, Clock, Paperclip, CalendarDays } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useEffect, useMemo } from 'react';
@@ -15,6 +15,31 @@ type TaskCardProps = {
   task: KanbanTaskData;
   isDragging?: boolean;
 };
+
+/**
+ * Calculate due date status for visual indicators
+ * @returns 'overdue' (red), 'soon' (yellow), 'normal' (neutral), or null
+ */
+function getDueDateStatus(dueDate: Date | null): 'overdue' | 'soon' | 'normal' | null {
+  if (!dueDate) return null;
+  const now = new Date();
+  const diffMs = dueDate.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  if (diffHours < 0) return 'overdue';      // Vencida (ROJO)
+  if (diffHours <= 24) return 'soon';       // Próxima 24h (AMARILLO)
+  return 'normal';                          // Normal
+}
+
+/**
+ * Format due date for display
+ */
+function formatDueDate(date: Date): string {
+  return date.toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
 
 /**
  * TaskCard component - Renders a single task in the Kanban board
@@ -191,8 +216,26 @@ export function TaskCard({ task, isDragging = false }: TaskCardProps) {
             <span className="truncate max-w-[80px]">{task.assignee?.name || 'Unassigned'}</span>
           </div>
 
-          {/* Right side: attachment count + duration/status */}
+          {/* Right side: due date + attachment count + duration/status */}
           <div className="flex items-center gap-2">
+            {/* Due date badge */}
+            {task.dueDate && (() => {
+              const status = getDueDateStatus(task.dueDate);
+              const colorClasses = {
+                overdue: 'text-red-400 bg-red-500/10',
+                soon: 'text-amber-400 bg-amber-500/10',
+                normal: 'text-muted-foreground bg-white/5',
+              };
+              return (
+                <div
+                  className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 ${colorClasses[status || 'normal']}`}
+                >
+                  <CalendarDays className="h-3 w-3" />
+                  <span>{formatDueDate(task.dueDate)}</span>
+                </div>
+              );
+            })()}
+
             {/* Attachment indicator */}
             {task.attachmentCount > 0 && (
               <div className="flex items-center gap-0.5 text-muted-foreground/70">
