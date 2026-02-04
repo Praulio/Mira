@@ -13,6 +13,7 @@ Implementar 3 features interrelacionadas que mejoran la gestión de tareas en Mi
 1. **Sistema de Blockers** - Marcar tareas como bloqueadas con razón visible (cualquier columna)
 2. **Múltiples Actividades en Progreso** - Eliminar restricción de 1 tarea in_progress por usuario
 3. **Dashboard Multi-Actividad** - Mostrar múltiples tareas activas por usuario en TeamSlot
+4. **Adjuntos al Completar Tarea** - Agregar archivos al completar una tarea (como en CreateTaskDialog)
 
 ## Problem Statement / Motivation
 
@@ -25,6 +26,7 @@ Implementar 3 features interrelacionadas que mejoran la gestión de tareas en Mi
 - Usuarios no pueden reflejar trabajo paralelo real
 - Bloqueos se comunican fuera del sistema (Slack, reuniones)
 - Dashboard no refleja carga de trabajo real del equipo
+- Al completar tareas no se pueden adjuntar archivos de soporte (solo links)
 
 ## Decisions Made
 
@@ -293,6 +295,152 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
 
 ---
 
+### Fase 6: Adjuntos en CompleteTaskModal
+
+**Archivo:** `components/complete-task-modal.tsx`
+
+Esta feature replica el patrón de adjuntos de `CreateTaskDialog` en el modal de completar tarea.
+
+#### 6.1 Importaciones Adicionales
+
+```typescript
+// complete-task-modal.tsx (agregar a imports existentes)
+import { Paperclip, Loader2 } from 'lucide-react';
+import { PendingFilePicker } from '@/components/pending-file-picker';
+```
+
+#### 6.2 Nuevos Estados
+
+```typescript
+// Dentro de CompleteTaskModalInner
+const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
+```
+
+#### 6.3 Lógica de Upload (después de completeTask)
+
+```typescript
+const handleComplete = async () => {
+  setIsSubmitting(true);
+
+  const mentionIds = extractMentionIds(notes);
+  const result = await completeTask({
+    taskId: task.id,
+    notes: notes.trim() || undefined,
+    links: links.length > 0 ? links : undefined,
+    mentions: mentionIds.length > 0 ? mentionIds : undefined,
+  });
+
+  if (result.success) {
+    // Upload pending files if any
+    if (pendingFiles.length > 0) {
+      setUploadProgress({ current: 0, total: pendingFiles.length });
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i];
+        setUploadProgress({ current: i + 1, total: pendingFiles.length });
+
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', file);
+          uploadFormData.append('taskId', task.id);
+
+          const response = await fetch('/api/attachments/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          const uploadResult = await response.json();
+          if (uploadResult.success) successCount++;
+          else errorCount++;
+        } catch {
+          errorCount++;
+        }
+      }
+
+      setUploadProgress(null);
+
+      // Show appropriate toast
+      if (errorCount > 0 && successCount > 0) {
+        toast.warning(`¡Tarea completada! ${successCount} archivo(s) subido(s), ${errorCount} fallido(s).`);
+      } else if (errorCount > 0) {
+        toast.warning('Tarea completada, pero los archivos no se pudieron subir.');
+      } else {
+        // Celebration with attachments
+        fireConfetti();
+        playCelebrationSound();
+        toast.success('¡Tarea completada con adjuntos!');
+      }
+    } else {
+      // Normal celebration
+      fireConfetti();
+      playCelebrationSound();
+      toast.success('¡Tarea completada!');
+    }
+
+    router.refresh();
+    onClose();
+    onComplete?.();
+  } else {
+    toast.error(result.error || 'Error al completar la tarea');
+    setIsSubmitting(false);
+  }
+};
+```
+
+#### 6.4 UI - Sección de Adjuntos
+
+Agregar después de la sección de Links:
+
+```tsx
+{/* Attachments Section */}
+<div className="space-y-2">
+  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+    <Paperclip className="h-3 w-3" /> Adjuntar archivos (opcional)
+  </label>
+  <PendingFilePicker
+    files={pendingFiles}
+    onFilesChange={setPendingFiles}
+    disabled={isSubmitting}
+  />
+</div>
+```
+
+#### 6.5 Actualizar Botón de Submit
+
+```tsx
+<button
+  onClick={handleComplete}
+  disabled={isSubmitting}
+  className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+>
+  {isSubmitting ? (
+    <>
+      <Loader2 className="h-4 w-4 animate-spin" />
+      {uploadProgress
+        ? `Subiendo ${uploadProgress.current}/${uploadProgress.total}...`
+        : 'Completando...'}
+    </>
+  ) : (
+    <>
+      <PartyPopper className="h-4 w-4" />
+      Completar
+    </>
+  )}
+</button>
+```
+
+#### 6.6 Actualizar hasContent Check
+
+```typescript
+const hasContent = notes.trim().length > 0 || links.length > 0 || pendingFiles.length > 0;
+```
+
+---
+
 ## Acceptance Criteria
 
 ### Feature 1: Sistema de Blockers
@@ -317,6 +465,14 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
 - [ ] Indicador de blocker por tarea en lista
 - [ ] Tiempo transcurrido por tarea
 
+### Feature 4: Adjuntos al Completar Tarea
+- [ ] `PendingFilePicker` integrado en CompleteTaskModal
+- [ ] Estado `pendingFiles` y `uploadProgress` funcionan
+- [ ] Archivos se suben a `/api/attachments/upload` después de completar
+- [ ] Toast muestra resultado de uploads (éxito/parcial/error)
+- [ ] Warning de confirmación incluye archivos pendientes
+- [ ] Botón muestra progreso de upload
+
 ---
 
 ## Files to Modify
@@ -331,6 +487,7 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
 | `components/task-card.tsx` | +visualización blocker |
 | `components/task-detail-dialog.tsx` | +sección blocker |
 | `components/team-slot.tsx` | +multi-actividad |
+| `components/complete-task-modal.tsx` | +PendingFilePicker, upload logic |
 
 ---
 
@@ -345,6 +502,7 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
 6. TaskCard con visualización de blocker
 7. TaskDetailDialog con sección blocker
 8. TeamSlot multi-actividad
+9. CompleteTaskModal con adjuntos
 ```
 
 ---
@@ -370,6 +528,11 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
    - Actualizar `task-time-tracking.spec.ts` si depende de Single In-Progress
    - Agregar test para blocker flow
 
+5. **Adjuntos al Completar:**
+   - Abrir CompleteTaskModal → Agregar archivo → Completar
+   - Verificar archivo aparece en attachments de la tarea
+   - Probar upload parcial (1 éxito, 1 error) → Warning correcto
+
 ---
 
 ## References
@@ -379,6 +542,10 @@ function MultiTaskView({ tasks }: { tasks: InProgressTask[] }) {
 - Task actions: `app/actions/tasks.ts`
 - TeamSlot: `components/team-slot.tsx`
 - TaskCard: `components/task-card.tsx`
+- CreateTaskDialog (patrón de adjuntos): `components/create-task-dialog.tsx:21-116`
+- CompleteTaskModal: `components/complete-task-modal.tsx`
+- PendingFilePicker (reutilizar): `components/pending-file-picker.tsx`
+- API upload: `/api/attachments/upload`
 
 ### Learnings Aplicados
 - **Anti-patrón de tipos duplicados**: Usar campo simple `blockerReason` en lugar de tabla separada

@@ -1,4 +1,4 @@
-# Ralph Loop Instructions: Task Enhancements V2
+# Ralph Loop Instructions: Blockers + Multi-Actividad
 
 ## Tu Rol
 
@@ -47,21 +47,17 @@ Actualizar `discoveries.md`:
 **Notes:** [observaciones para próxima sesión]
 ```
 
-### PASO 5: Marcar Completado
-Editar `implementation_plan.md`:
-- Cambiar `- [ ] **X.Y**` a `- [x] **X.Y**`
-
-### PASO 6: Commit
+### PASO 5: Commit
 ```bash
 git add .
-git commit -m "feat(task-enhancements-v2): [task description]
+git commit -m "feat(blockers): [task description]
 
 Task [X.Y] completed
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-### PASO 7: Exit
+### PASO 6: Exit
 ```
 RALPH_COMPLETE: Task [X.Y] completed
 ```
@@ -95,63 +91,33 @@ Si verificación falla:
 
 | Tipo de tarea | Verificación requerida |
 |---------------|------------------------|
-| Schema change | Migration aplica + build |
-| Server Action | Build + sin errores TS |
-| UI Component | Build + renders sin error |
-| Cambio de tipos | TypeScript compila |
-
-## Archivos Clave
-
-```
-db/schema.ts                           # Schema de base de datos
-app/actions/tasks.ts                   # Server actions de tareas
-app/actions/kanban.ts                  # Query de datos Kanban
-app/actions/team.ts                    # Query de datos Team View
-components/kanban-board.tsx            # Tablero Kanban (filtro)
-components/kanban-column.tsx           # Columna Kanban
-components/task-card.tsx               # Card de tarea (due date, progress)
-components/task-detail-dialog.tsx      # Modal de detalle (date picker, slider)
-components/create-task-dialog.tsx      # Dialog de crear tarea
-components/team-slot.tsx               # Slot de usuario en Team View
-components/sidebar.tsx                 # Navegación lateral
-app/(dashboard)/dashboard/backlog/     # Página a eliminar
-app/(dashboard)/dashboard/kanban/      # Página Kanban
-```
+| Nuevo campo BD | Migration aplica, build pasa |
+| Server Action | Build + acción ejecutable |
+| Tipo TypeScript | Build sin errores TS |
+| Componente UI | Build + renders sin error |
+| Variables CSS | Build pasa |
 
 ## Project Knowledge (OBLIGATORIO)
 
-Antes de implementar, Ralph DEBE buscar conocimiento existente del proyecto:
+Antes de implementar, Ralph DEBE buscar conocimiento existente:
 
 ### 1. Skills del Proyecto
 ```bash
 ls .claude/skills/ 2>/dev/null
 ```
-Si existen skills, leer el `SKILL.md` de los relevantes para la tarea actual.
 
 ### 2. Soluciones Documentadas
 ```bash
 ls docs/solutions/ 2>/dev/null
 ```
-Antes de investigar cualquier error, buscar si ya está documentado.
 
-### 3. Reglas del Codebase
-```bash
-ls .claude/rules/ 2>/dev/null
-```
-Leer reglas relevantes del proyecto.
+### 3. Patrones Existentes
+- Server Actions: ver `app/actions/tasks.ts` (patrón de transacción + actividad)
+- Componentes: ver `components/task-card.tsx` (patrón de glassmorphism)
+- CSS: ver `app/globals.css` (variables OKLCH)
 
 ## Spec Reference
 
-Feature: Task Enhancements V2
+Feature: Blockers + Multi-Actividad
 Spec: `docs/specs/current/spec.md`
 Plan: `docs/specs/current/implementation_plan.md`
-
-## Notas Importantes
-
-1. **Drizzle ORM**: Usar patterns existentes de campos timestamp y integer
-2. **Server Actions**: Siempre `'use server'` al inicio, validación Zod
-3. **Permisos Due Date**: Solo CREADOR puede editar
-4. **Permisos Progress**: Assignee O creador (si no hay assignee)
-5. **Colores Due Date**: Rojo = vencida, Amarillo = ≤24h, Normal = >24h
-6. **Progress**: Guardar al soltar slider (onMouseUp/onTouchEnd)
-7. **Filtro**: Estado local, NO persiste entre sesiones

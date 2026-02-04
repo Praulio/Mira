@@ -1,190 +1,146 @@
-# Implementation Plan: Task Enhancements V2
+# Implementation Plan: Blockers + Multi-Actividad
 
-Generado desde: `docs/plans/2026-02-04-feat-task-enhancements-v2-plan.md`
+Generado desde: `docs/plans/2026-02-04-feat-blockers-multi-activity-plan.md`
 Fecha: 2026-02-04
 
 ---
 
-## Fase 0: Schema & Migration
+## Fase 0: Activation & Smoke Test
 
-- [x] **0.1** Agregar campos dueDate y progress al schema de tasks
-  - Archivo: `db/schema.ts`
-  - Output: Campos `dueDate: timestamp('due_date')` y `progress: integer('progress').default(0)` agregados
-  - Referencia: ver campos `completedAt` y `startedAt` en línea 62-66
-
-- [x] **0.2** Generar y aplicar migración Drizzle
-  - Comando: `pnpm db:generate && pnpm db:push`
-  - Output: Migración SQL aplicada a la base de datos
-  - Verificación: Campos existen en tabla tasks
+- [ ] **0.1** Agregar campo `blockerReason` al schema de tasks
+  - Output: Campo `blocker_reason text` en tabla tasks
+  - Comportamiento: Ejecutar `npx drizzle-kit generate && npx drizzle-kit push`
+  - Referencia: ver `db/schema.ts:69` (campo progress)
 
 Validación Fase 0:
 • `pnpm build` pasa
-• Campos `due_date` y `progress` existen en tabla tasks
+• Campo visible en BD (verificar con SQL)
 
 ---
 
-## Fase 1: Data Layer
+## Fase 1: Backend - Multi-Actividad
 
-- [x] **1.1** Actualizar tipo KanbanTaskData con dueDate y progress
-  - Archivo: `app/actions/kanban.ts`
-  - Output: Tipo incluye `dueDate: Date | null` y `progress: number`
-  - Referencia: ver tipo actual en líneas 13-32
-
-- [x] **1.2** Actualizar query getKanbanData para incluir nuevos campos
-  - Archivo: `app/actions/kanban.ts`
-  - Output: Query retorna dueDate y progress en el select
-
-- [x] **1.3** Actualizar TeamSlotData para incluir progress
-  - Archivo: `app/actions/team.ts`
-  - Output: `inProgressTask` incluye campo `progress: number`
+- [ ] **1.1** Eliminar restricción Single In-Progress en updateTaskStatus
+  - Input: Archivo `app/actions/tasks.ts`
+  - Output: Bloque líneas 286-303 eliminado
+  - Comportamiento: Usuarios pueden tener múltiples tareas in_progress
+  - Referencia: ver `app/actions/tasks.ts:286-303`
 
 Validación Fase 1:
-• `pnpm build` pasa
-• TypeScript no reporta errores de tipos
+• Build pasa
+• Mover 2 tareas a "En Progreso" → ambas permanecen
 
 ---
 
-## Fase 1.5: Unified Mentions
+## Fase 2: Backend - Acciones de Blocker
 
-- [x] **1.5.1** Renombrar completionMentions → mentions en schema
-  - Archivo: `db/schema.ts:65`
-  - Output: Campo `mentions: jsonb('mentions').$type<string[]>()`
-  - Migración: `ALTER TABLE tasks RENAME COLUMN completion_mentions TO mentions`
+- [ ] **2.1** Agregar action addBlocker
+  - Input: `{ taskId, reason }` validado con Zod
+  - Output: Tarea actualizada con blockerReason
+  - Comportamiento: Solo assignee/creator puede agregar, registra actividad
+  - Referencia: ver `app/actions/tasks.ts` (patrón de updateTaskMetadata)
 
-- [x] **1.5.2** Actualizar createTask para aceptar mentions
-  - Archivo: `app/actions/tasks.ts`
-  - Input: Agregar `mentions: z.array(z.string()).optional()` al schema
-  - Comportamiento: Guardar mentions + crear activity 'mentioned'
-  - Referencia: ver patrón en completeTask líneas 801-816
-
-- [x] **1.5.3** Actualizar updateTaskMetadata para procesar mentions
-  - Archivo: `app/actions/tasks.ts`
-  - Comportamiento: Al editar descripción, guardar mentions + crear activity para NUEVAS menciones
-  - Nota: Solo crear activity para menciones que no existían antes (diff)
-
-- [x] **1.5.4** Actualizar completeTask para usar campo mentions
-  - Archivo: `app/actions/tasks.ts`
-  - Cambio: Reemplazar `completionMentions` → `mentions`
-
-- [x] **1.5.5** Agregar MentionInput a CreateTaskDialog
-  - Archivo: `components/create-task-dialog.tsx`
-  - Output: Reemplazar textarea descripción con MentionInput
-  - Comportamiento: Extraer mentions con extractMentionIds() y pasarlos a createTask()
-
-- [x] **1.5.6** Agregar MentionInput a TaskDetailDialog
-  - Archivo: `components/task-detail-dialog.tsx:328-334`
-  - Output: Reemplazar textarea descripción con MentionInput
-  - Comportamiento: Al guardar, extraer mentions y pasarlos a updateTaskMetadata()
-
-Validación Fase 1.5:
-• `pnpm build` pasa
-• Crear task con @mención → aparece en "Mis Menciones" del mencionado
-• Editar descripción con @mención → aparece en "Mis Menciones"
-• Completar task con @mención → sigue funcionando
-
----
-
-## Fase 2: Due Date Feature
-
-- [x] **2.1** Agregar dueDate a createTaskSchema y createTask action
-  - Archivo: `app/actions/tasks.ts`
-  - Output: Schema acepta `dueDate: z.coerce.date().optional()`, action guarda el campo
-  - Referencia: ver `createTaskSchema` líneas 24-28
-
-- [x] **2.2** Crear action updateTaskDueDate
-  - Archivo: `app/actions/tasks.ts`
-  - Input: `{ taskId: string, dueDate: Date | null }`
-  - Comportamiento: Solo el CREADOR puede editar
-  - Referencia: ver patrón de `updateCompletedAt` líneas 854-960
-
-- [x] **2.3** Agregar date picker en CreateTaskDialog
-  - Archivo: `components/create-task-dialog.tsx`
-  - Output: Input type="date" después del campo descripción
-  - Comportamiento: Fecha mínima = hoy, opcional
-
-- [x] **2.4** Agregar DueDateBadge en TaskCard footer
-  - Archivo: `components/task-card.tsx`
-  - Render: Badge con icono calendario + colores (rojo si vencida, amarillo si ≤24h)
-  - Referencia: ver footer en líneas 174-223
+- [ ] **2.2** Agregar action removeBlocker
+  - Input: `{ taskId }` validado con Zod
+  - Output: Tarea con blockerReason = null
+  - Comportamiento: Solo assignee/creator puede quitar, registra actividad
+  - Referencia: ver `app/actions/tasks.ts` (patrón de updateTaskMetadata)
 
 Validación Fase 2:
-• `pnpm build` pasa
-• Crear tarea con fecha funciona
-• Badge muestra colores correctos
+• Build pasa
+• Llamar addBlocker → tarea tiene blockerReason
+• Llamar removeBlocker → blockerReason es null
 
 ---
 
-## Fase 3: Eliminar Backlog
+## Fase 3: Tipos y Queries
 
-- [x] **3.1** Convertir página backlog en redirect
-  - Archivo: `app/(dashboard)/dashboard/backlog/page.tsx`
-  - Output: `redirect('/dashboard/kanban')` de next/navigation
+- [ ] **3.1** Agregar blockerReason a KanbanTaskData
+  - Input: Archivo `app/actions/kanban.ts`
+  - Output: Tipo incluye `blockerReason: string | null`, query lo selecciona
+  - Comportamiento: Kanban recibe datos de blocker
+  - Referencia: ver `app/actions/kanban.ts:33` (tipo KanbanTaskData)
 
-- [x] **3.2** Eliminar enlace backlog del sidebar
-  - Archivo: `components/sidebar.tsx`
-  - Output: Remover item con `href: "/dashboard/backlog"` del array navItems
-
-- [x] **3.3** Limpiar archivos no usados
-  - Archivos: `components/backlog-list.tsx`, `components/backlog-task-card.tsx`
-  - Comportamiento: Eliminar si no tienen otros usos
+- [ ] **3.2** Cambiar TeamSlotData de singular a array
+  - Input: Archivo `app/actions/team.ts`
+  - Output: `inProgressTasks` array con blockerReason incluido
+  - Comportamiento: Quitar `.limit(1)`, ordenar por startedAt DESC
+  - Referencia: ver `app/actions/team.ts` (getTeamViewData)
 
 Validación Fase 3:
-• `pnpm build` pasa
-• `/dashboard/backlog` redirige a `/dashboard/kanban`
-• Sidebar no muestra "Pila de Tareas"
+• Build pasa
+• TypeScript no tiene errores
 
 ---
 
-## Fase 4: Filtro Mis Tareas
+## Fase 4: UI - Variables CSS
 
-- [x] **4.1** Pasar currentUserId a KanbanBoard
-  - Archivo: `app/(dashboard)/dashboard/kanban/page.tsx`
-  - Output: `<KanbanBoard initialData={data} currentUserId={userId} />`
-
-- [x] **4.2** Agregar toggle "Mis Tareas" en KanbanBoard
-  - Archivo: `components/kanban-board.tsx`
-  - Props: Recibir `currentUserId: string`
-  - Render: Botón toggle encima de columnas, alineado derecha
-  - Comportamiento: Estado local, filtra por assignee.id === currentUserId
-
-- [x] **4.3** Agregar mensaje vacío filtrado en KanbanColumn
-  - Archivo: `components/kanban-column.tsx`
-  - Props: `{ isFiltered?: boolean }`
-  - Render: "No tienes tareas en esta etapa" si vacío + filtrado
+- [ ] **4.1** Agregar variables CSS para blocker
+  - Input: Archivo `app/globals.css`
+  - Output: 4 variables: --status-blocked, --status-blocked-bg, --glow-blocked, --border-blocked
+  - Comportamiento: Colores naranja (oklch 0.60 0.25 30)
+  - Referencia: ver `app/globals.css:76` (variables existentes de status)
 
 Validación Fase 4:
-• `pnpm build` pasa
-• Toggle visible y funcional
-• Columnas vacías muestran mensaje correcto
+• Build pasa
 
 ---
 
-## Fase 5: Progress Bar
+## Fase 5: UI - TaskCard con Blocker
 
-- [x] **5.1** Crear action updateTaskProgress
-  - Archivo: `app/actions/tasks.ts`
-  - Input: `{ taskId: string, progress: number (0-100) }`
-  - Comportamiento: Solo assignee O creador (si no hay assignee) puede editar
-  - Referencia: ver permisos en `updateCompletedAt`
-
-- [x] **5.2** Agregar mini progress bar en TaskCard
-  - Archivo: `components/task-card.tsx`
-  - Render: Barra horizontal (h-1.5) si progress > 0
-  - Comportamiento: Solo visual, no editable
-
-- [x] **5.3** Agregar progress slider en TaskDetailDialog
-  - Archivo: `components/task-detail-dialog.tsx`
-  - Render: Slider si puede editar, barra read-only si no
-  - Comportamiento: Guardar al soltar (onMouseUp/onTouchEnd)
-
-- [x] **5.4** Agregar progress bar en TeamSlot
-  - Archivo: `components/team-slot.tsx`
-  - Render: Barra de progreso debajo del título si progress > 0
+- [ ] **5.1** Agregar visualización de blocker en TaskCard
+  - Props: task.blockerReason (ya viene de KanbanTaskData)
+  - Render: Badge "Bloqueada" naranja + razón del bloqueo (2 líneas max)
+  - Comportamiento: Si blockerReason existe → mostrar badge + razón + borde naranja
+  - Referencia: ver `components/task-card.tsx`
 
 Validación Fase 5:
-• `pnpm build` pasa
-• Progress visible en TaskCard, TeamSlot
-• Slider funcional solo para asignado/creador
+• Build pasa
+• Tarea con blocker muestra badge naranja en Kanban
+
+---
+
+## Fase 6: UI - TaskDetailDialog con Blocker
+
+- [ ] **6.1** Agregar sección Blocker en TaskDetailDialog
+  - Props: task.blockerReason, addBlocker, removeBlocker actions
+  - Render: Input para razón + botón agregar, o vista de blocker + botón X
+  - Comportamiento: Agregar blocker → llama addBlocker, quitar → llama removeBlocker
+  - Referencia: ver `components/task-detail-dialog.tsx`
+
+Validación Fase 6:
+• Build pasa
+• Abrir tarea → agregar blocker → badge aparece
+• Quitar blocker → badge desaparece
+
+---
+
+## Fase 7: UI - TeamSlot Multi-Actividad
+
+- [ ] **7.1** Actualizar TeamSlot para array de tareas
+  - Props: data.inProgressTasks (array)
+  - Render: Badge cantidad, lista compacta (max 2), indicador blocker por tarea
+  - Comportamiento: 0 tareas=inactivo, 1=vista normal, 2+=lista con "+N más"
+  - Referencia: ver `components/team-slot.tsx`
+
+Validación Fase 7:
+• Build pasa
+• Dashboard muestra múltiples tareas por usuario
+• Badge con cantidad visible
+
+---
+
+## Fase 8: UI - CompleteTaskModal con Adjuntos
+
+- [ ] **8.1** Agregar PendingFilePicker a CompleteTaskModal
+  - Props: pendingFiles, uploadProgress states
+  - Render: Sección adjuntos con PendingFilePicker, botón con progreso
+  - Comportamiento: Después de completeTask, subir archivos a /api/attachments/upload
+  - Referencia: ver `components/create-task-dialog.tsx:21-116` (patrón de adjuntos)
+
+Validación Fase 8:
+• Build pasa
+• Completar tarea con adjunto → archivo aparece en attachments
 
 ---
 
@@ -192,11 +148,13 @@ Validación Fase 5:
 
 | Fase | Tareas | Descripción |
 |------|--------|-------------|
-| 0 | 2 | Schema & Migration ✅ |
-| 1 | 3 | Data Layer |
-| **1.5** | **6** | **Unified Mentions** |
-| 2 | 4 | Due Date Feature |
-| 3 | 3 | Eliminar Backlog |
-| 4 | 3 | Filtro Mis Tareas |
-| 5 | 4 | Progress Bar |
-| **Total** | **25** | |
+| 0 | 1 | Migración BD |
+| 1 | 1 | Multi-actividad backend |
+| 2 | 2 | Acciones blocker |
+| 3 | 2 | Tipos y queries |
+| 4 | 1 | Variables CSS |
+| 5 | 1 | TaskCard blocker |
+| 6 | 1 | TaskDetailDialog blocker |
+| 7 | 1 | TeamSlot multi-actividad |
+| 8 | 1 | CompleteTaskModal adjuntos |
+| **Total** | **11** | |
