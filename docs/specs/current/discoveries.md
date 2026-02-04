@@ -274,3 +274,14 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El redirect es server-side (307 por defecto), no requiere JavaScript en cliente
 - Comentario DEPRECATED ayuda a futuros desarrolladores a entender por qué existe el archivo
 **Notes:** Tarea 3.1 completada. Siguiente: 3.2 (eliminar enlace del sidebar)
+
+### Session 15 - 2026-02-04
+**Task:** 3.2 - Eliminar enlace backlog del sidebar
+**Files:** `components/sidebar.tsx`
+**Changes:**
+- Eliminado item `{ title: "Pila de Tareas", href: "/dashboard/backlog", ... }` del array `navItems`
+- Eliminado import `ListTodo` de lucide-react (ya no se usaba)
+**Patterns:**
+- Al eliminar items de navegación, siempre verificar si el icono importado queda huérfano
+- El array `navItems` está antes del componente, facilitando modificaciones sin tocar JSX
+**Notes:** Sidebar ya no muestra "Pila de Tareas". Siguiente: 3.3 (limpiar archivos backlog no usados)

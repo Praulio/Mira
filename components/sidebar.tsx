@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutGrid, Columns3, ListTodo, Activity, Eye, Settings } from "lucide-react"
+import { LayoutGrid, Columns3, Activity, Eye, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -18,12 +18,6 @@ const navItems = [
     href: "/dashboard/kanban",
     icon: Columns3,
     description: "Arrastra y suelta tareas",
-  },
-  {
-    title: "Pila de Tareas",
-    href: "/dashboard/backlog",
-    icon: ListTodo,
-    description: "Prioriza trabajo pendiente",
   },
   {
     title: "Actividad",

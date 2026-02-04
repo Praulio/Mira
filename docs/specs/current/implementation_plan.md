@@ -120,7 +120,7 @@ Validación Fase 2:
   - Archivo: `app/(dashboard)/dashboard/backlog/page.tsx`
   - Output: `redirect('/dashboard/kanban')` de next/navigation
 
-- [ ] **3.2** Eliminar enlace backlog del sidebar
+- [x] **3.2** Eliminar enlace backlog del sidebar
   - Archivo: `components/sidebar.tsx`
   - Output: Remover item con `href: "/dashboard/backlog"` del array navItems
 
