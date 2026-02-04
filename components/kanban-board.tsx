@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DndContext,
   DragEndEvent,
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { KanbanColumn } from './kanban-column';
 import { TaskCard } from './task-card';
 import { CompleteTaskModal } from './complete-task-modal';
+import { TaskDetailDialog } from './task-detail-dialog';
 import type { KanbanData, KanbanTaskData } from '@/app/actions/kanban';
 import { updateTaskStatus } from '@/app/actions/tasks';
 
@@ -43,9 +44,13 @@ type KanbanBoardProps = {
  */
 export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // State for drag overlay
   const [activeTask, setActiveTask] = useState<KanbanTaskData | null>(null);
+
+  // State for URL-based task detail modal (notifications click-through)
+  const [urlTaskId, setUrlTaskId] = useState<string | null>(null);
 
   // State for optimistic UI updates
   // Following Best Practice 5.5: Lazy state initialization
@@ -80,6 +85,37 @@ export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
       done: filterByUser(kanbanData.done),
     };
   }, [kanbanData, showOnlyMyTasks, currentUserId]);
+
+  // Find task by ID across all columns
+  const findTaskById = useCallback((taskId: string): KanbanTaskData | null => {
+    const allTasks = [
+      ...kanbanData.backlog,
+      ...kanbanData.todo,
+      ...kanbanData.in_progress,
+      ...kanbanData.done,
+    ];
+    return allTasks.find((t) => t.id === taskId) || null;
+  }, [kanbanData]);
+
+  // Handle URL-based task opening (from notifications)
+  useEffect(() => {
+    const taskParam = searchParams.get('task');
+    if (taskParam && taskParam !== urlTaskId) {
+      setUrlTaskId(taskParam);
+    }
+  }, [searchParams, urlTaskId]);
+
+  // Get the task to show in modal from URL
+  const urlTask = urlTaskId ? findTaskById(urlTaskId) : null;
+
+  // Close URL task modal and clear URL param
+  const handleCloseUrlTask = useCallback(() => {
+    setUrlTaskId(null);
+    // Remove task param from URL without navigation
+    const url = new URL(window.location.href);
+    url.searchParams.delete('task');
+    router.replace(url.pathname, { scroll: false });
+  }, [router]);
 
   // Configure sensors for drag detection
   // PointerSensor requires 5px movement to start drag (prevents accidental drags on click)
@@ -311,6 +347,15 @@ export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
           isOpen={showCompleteModal}
           onClose={handleCompleteModalClose}
           onComplete={handleCompleteSuccess}
+        />
+      )}
+
+      {/* Task Detail Modal - opens from URL param (notifications click-through) */}
+      {urlTask && (
+        <TaskDetailDialog
+          task={urlTask}
+          isOpen={!!urlTask}
+          onClose={handleCloseUrlTask}
         />
       )}
     </DndContext>

@@ -82,7 +82,7 @@ export function NotificationBell() {
     }
     setOpen(false);
     if (notification.taskId) {
-      router.push(`/dashboard?task=${notification.taskId}`);
+      router.push(`/dashboard/kanban?task=${notification.taskId}`);
     }
   };
 
