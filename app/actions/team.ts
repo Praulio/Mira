@@ -21,6 +21,7 @@ export type TeamSlotData = {
     title: string;
     description: string | null;
     updatedAt: Date;
+    progress: number;
   } | null;
 };
 
@@ -66,6 +67,7 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
             title: tasks.title,
             description: tasks.description,
             updatedAt: tasks.updatedAt,
+            progress: tasks.progress,
           })
           .from(tasks)
           .where(
@@ -79,7 +81,12 @@ export async function getTeamViewData(): Promise<TeamSlotData[]> {
 
         return {
           user,
-          inProgressTask: inProgressTask || null,
+          inProgressTask: inProgressTask
+            ? {
+                ...inProgressTask,
+                progress: inProgressTask.progress ?? 0,
+              }
+            : null,
         };
       })
     );

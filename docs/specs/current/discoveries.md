@@ -124,3 +124,15 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Para campos que pueden ser `null` pero tienen default en DB, usar `?? valorDefault` para garantizar tipo correcto
 - El patrón de `getKanbanData` es: query → map con segunda query para creator → agrupar por status
 **Notes:** Ahora los datos de dueDate y progress fluyen correctamente desde DB hasta el componente. Siguiente: 1.3 actualizar TeamSlotData
+
+### Session 5 - 2026-02-04
+**Task:** 1.3 - Actualizar TeamSlotData para incluir progress
+**Files:** `app/actions/team.ts`
+**Changes:**
+- Agregado `progress: number` al tipo `TeamSlotData.inProgressTask` (línea 24)
+- Agregado `progress: tasks.progress` al select de la query (línea 70)
+- Transformación del objeto retornado con `progress: inProgressTask.progress ?? 0` para garantizar tipo `number`
+**Patterns:**
+- Cuando Drizzle retorna objeto nullable y el tipo exige campos non-null, usar spread con override: `{ ...obj, campo: obj.campo ?? default }`
+- El patrón de `getTeamViewData` es: query users → Promise.all map → query in_progress task por user
+**Notes:** Fase 1 completada. Data Layer actualizado para dueDate y progress en Kanban y Team View. Siguiente: Fase 1.5 (Unified Mentions)

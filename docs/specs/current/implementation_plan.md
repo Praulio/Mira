@@ -34,7 +34,7 @@ Validación Fase 0:
   - Archivo: `app/actions/kanban.ts`
   - Output: Query retorna dueDate y progress en el select
 
-- [ ] **1.3** Actualizar TeamSlotData para incluir progress
+- [x] **1.3** Actualizar TeamSlotData para incluir progress
   - Archivo: `app/actions/team.ts`
   - Output: `inProgressTask` incluye campo `progress: number`
 
