@@ -34,13 +34,13 @@ Validación Fase 1:
 
 ## Fase 2: Backend - Acciones de Blocker
 
-- [ ] **2.1** Agregar action addBlocker
+- [x] **2.1** Agregar action addBlocker
   - Input: `{ taskId, reason }` validado con Zod
   - Output: Tarea actualizada con blockerReason
   - Comportamiento: Solo assignee/creator puede agregar, registra actividad
   - Referencia: ver `app/actions/tasks.ts` (patrón de updateTaskMetadata)
 
-- [ ] **2.2** Agregar action removeBlocker
+- [x] **2.2** Agregar action removeBlocker
   - Input: `{ taskId }` validado con Zod
   - Output: Tarea con blockerReason = null
   - Comportamiento: Solo assignee/creator puede quitar, registra actividad

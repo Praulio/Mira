@@ -59,3 +59,19 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - MANTENIDO: lógica de `startedAt` para time tracking (cada tarea tiene su propio timestamp)
 
 **Notes:** Build pasa. Los usuarios ahora pueden tener múltiples tareas "En Progreso" simultáneamente.
+
+### Session 3 - 2026-02-04
+**Task:** 2.1 + 2.2 - Agregar actions addBlocker y removeBlocker
+**Files:** `app/actions/tasks.ts:93-110` (schemas), `app/actions/tasks.ts:1417-1620` (functions)
+
+**Patterns descubiertos:**
+1. El patrón de permisos `assignee OR creator` es consistente en el proyecto para acciones de ownership
+2. Se reutiliza `action: 'updated'` con `fieldUpdated: 'blockerReason'` en metadata para mantener consistencia con otros updates (progress, dueDate, completedAt)
+3. La validación de que la tarea ya tenga blocker antes de removerlo previene operaciones innecesarias
+
+**Cambios realizados:**
+- Agregados schemas Zod `addBlockerSchema` y `removeBlockerSchema`
+- Agregada función `addBlocker()` - verifica ownership, actualiza blockerReason, registra actividad
+- Agregada función `removeBlocker()` - verifica ownership, verifica que exista blocker, limpia blockerReason
+
+**Notes:** Build pasa. Siguiente: 3.1 agregar blockerReason a KanbanTaskData.

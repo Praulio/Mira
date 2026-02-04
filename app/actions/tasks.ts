@@ -92,6 +92,23 @@ const updateProgressSchema = z.object({
 });
 
 /**
+ * Zod schema for adding a blocker to a task
+ * Only assignee or creator can add a blocker
+ */
+const addBlockerSchema = z.object({
+  taskId: z.string().uuid('ID de tarea inválido'),
+  reason: z.string().min(1, 'La razón es requerida').max(500, 'Máximo 500 caracteres'),
+});
+
+/**
+ * Zod schema for removing a blocker from a task
+ * Only assignee or creator can remove a blocker
+ */
+const removeBlockerSchema = z.object({
+  taskId: z.string().uuid('ID de tarea inválido'),
+});
+
+/**
  * Zod schema for creating a derived task
  * A derived task links to a parent task via parentTaskId
  */
@@ -1392,6 +1409,240 @@ export async function updateTaskProgress(
     return {
       success: false,
       error: 'An unexpected error occurred while updating the progress',
+    };
+  }
+}
+
+/**
+ * Server Action: Add a blocker to a task
+ *
+ * Marks a task as blocked with a reason. Blocked tasks can still be moved
+ * between columns (the blocker is a visual indicator only).
+ *
+ * Rules:
+ * - Only the assignee or creator can add a blocker
+ * - The reason is required and limited to 500 characters
+ *
+ * @param input - Task ID and blocker reason
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function addBlocker(
+  input: z.infer<typeof addBlockerSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to add blockers',
+      };
+    }
+
+    // Validate input
+    const validationResult = addBlockerSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId, reason } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Verify ownership: user must be assignee OR creator
+    const isOwner = currentTask.assigneeId === userId || currentTask.creatorId === userId;
+
+    if (!isOwner) {
+      return {
+        success: false,
+        error: 'Solo el asignado o creador de la tarea puede agregar un blocker',
+      };
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          blockerReason: reason,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to add blocker');
+      }
+
+      // Log the blocker addition in activity (inherit area from task)
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        area: currentTask.area,
+        metadata: {
+          taskTitle: updatedTask.title,
+          blocked: true,
+          blockerReason: reason,
+          fieldUpdated: 'blockerReason',
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+    revalidatePath('/activity');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error adding blocker:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while adding the blocker',
+    };
+  }
+}
+
+/**
+ * Server Action: Remove a blocker from a task
+ *
+ * Removes the blocked status from a task by clearing the blockerReason.
+ *
+ * Rules:
+ * - Only the assignee or creator can remove a blocker
+ *
+ * @param input - Task ID to remove blocker from
+ * @returns ActionResponse with updated task data or error message
+ */
+export async function removeBlocker(
+  input: z.infer<typeof removeBlockerSchema>
+): Promise<ActionResponse<typeof tasks.$inferSelect>> {
+  try {
+    // Get authenticated user
+    const { userId } = await getAuth();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized - You must be logged in to remove blockers',
+      };
+    }
+
+    // Validate input
+    const validationResult = removeBlockerSchema.safeParse(input);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.issues[0]?.message || 'Invalid input',
+      };
+    }
+
+    const { taskId } = validationResult.data;
+
+    // Fetch the current task
+    const [currentTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Verify ownership: user must be assignee OR creator
+    const isOwner = currentTask.assigneeId === userId || currentTask.creatorId === userId;
+
+    if (!isOwner) {
+      return {
+        success: false,
+        error: 'Solo el asignado o creador de la tarea puede quitar el blocker',
+      };
+    }
+
+    // Verify task is actually blocked
+    if (!currentTask.blockerReason) {
+      return {
+        success: false,
+        error: 'Esta tarea no tiene un blocker activo',
+      };
+    }
+
+    // Execute update in transaction
+    const result = await db.transaction(async (tx) => {
+      const [updatedTask] = await tx
+        .update(tasks)
+        .set({
+          blockerReason: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        throw new Error('Failed to remove blocker');
+      }
+
+      // Log the blocker removal in activity (inherit area from task)
+      await tx.insert(activity).values({
+        taskId: updatedTask.id,
+        userId,
+        action: 'updated',
+        area: currentTask.area,
+        metadata: {
+          taskTitle: updatedTask.title,
+          blocked: false,
+          previousBlockerReason: currentTask.blockerReason,
+          fieldUpdated: 'blockerReason',
+        },
+      });
+
+      return updatedTask;
+    });
+
+    // Revalidate relevant paths
+    revalidatePath('/');
+    revalidatePath('/kanban');
+    revalidatePath('/backlog');
+    revalidatePath('/activity');
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error removing blocker:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while removing the blocker',
     };
   }
 }
