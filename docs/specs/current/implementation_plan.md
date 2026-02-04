@@ -97,7 +97,7 @@ Validación Fase 1.5:
   - Comportamiento: Solo el CREADOR puede editar
   - Referencia: ver patrón de `updateCompletedAt` líneas 854-960
 
-- [ ] **2.3** Agregar date picker en CreateTaskDialog
+- [x] **2.3** Agregar date picker en CreateTaskDialog
   - Archivo: `components/create-task-dialog.tsx`
   - Output: Input type="date" después del campo descripción
   - Comportamiento: Fecha mínima = hoy, opcional

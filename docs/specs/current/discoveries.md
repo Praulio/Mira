@@ -229,3 +229,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Usar `?.toISOString() || null` para serializar fechas en metadata de activity
 - Diferencia clave con `updateCompletedAt`: Due Date solo creador, CompletedAt permite assignee O creator
 **Notes:** Tarea 2.2 completada. Siguiente: 2.3 (date picker en CreateTaskDialog para dueDate)
+
+### Session 12 - 2026-02-04
+**Task:** 2.3 - Agregar date picker en CreateTaskDialog
+**Files:** `components/create-task-dialog.tsx`
+**Changes:**
+- Agregado estado `dueDate` con `useState('')` (string para input type="date")
+- Agregado input `type="date"` después del campo descripción
+- Propiedad `min` usa `new Date().toISOString().split('T')[0]` para evitar fechas pasadas
+- Pasado `dueDate: dueDate ? new Date(dueDate) : undefined` a `createTask()`
+- Agregado `setDueDate('')` al reset del formulario
+**Patterns:**
+- Input type="date" usa formato string `YYYY-MM-DD`, se convierte a Date al enviar
+- El atributo `min` en date inputs acepta formato ISO date (solo fecha, sin hora)
+- Mismo estilo visual que otros inputs del formulario para consistencia
+**Notes:** Tarea 2.3 completada. Siguiente: 2.4 (DueDateBadge en TaskCard)

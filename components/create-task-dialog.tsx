@@ -21,6 +21,7 @@ export function CreateTaskDialog() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
 
   // Fetch team users when dialog opens
   useEffect(() => {
@@ -45,6 +46,7 @@ export function CreateTaskDialog() {
       description: description || undefined,
       assigneeId: selectedAssigneeId || undefined,
       mentions: mentionIds.length > 0 ? mentionIds : undefined,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
     });
 
     if (!result.success) {
@@ -108,6 +110,7 @@ export function CreateTaskDialog() {
     setSelectedAssigneeId(null);
     setPendingFiles([]);
     setDescription('');
+    setDueDate('');
     // Reset form
     (e.target as HTMLFormElement).reset();
     router.refresh();
@@ -171,6 +174,24 @@ export function CreateTaskDialog() {
               value={description}
               onChange={setDescription}
               placeholder="Agrega algunos detalles... Usa @ para mencionar"
+            />
+          </div>
+
+          {/* Due Date */}
+          <div className="space-y-2">
+            <label
+              htmlFor="dueDate"
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Fecha de entrega
+            </label>
+            <input
+              id="dueDate"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full rounded-xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
             />
           </div>
 
