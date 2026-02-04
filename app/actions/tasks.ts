@@ -1756,11 +1756,17 @@ export type HistorialTask = {
 };
 
 /**
+ * View mode for historial
+ */
+export type HistorialViewMode = 'day' | 'week';
+
+/**
  * Type for historial filter parameters
  */
 export type HistorialFilters = {
   date: Date;
   userId?: string;
+  mode?: HistorialViewMode;
 };
 
 /**
@@ -1774,9 +1780,9 @@ export type HistorialData = {
 };
 
 /**
- * Fetch completed tasks for a specific day with optional user filter
+ * Fetch completed tasks for a specific day or week with optional user filter
  *
- * Returns tasks completed on the specified date, grouped by day.
+ * Returns tasks completed in the specified period.
  * Also returns users in the area for the filter dropdown and
  * indicators for whether older/newer tasks exist.
  */
@@ -1796,20 +1802,40 @@ export async function getHistorialData(
 
   try {
     const area = await getCurrentArea();
+    const mode = filters.mode || 'day';
 
-    // Calculate day range
-    const startOfDay = new Date(filters.date);
-    startOfDay.setHours(0, 0, 0, 0);
+    let startOfPeriod: Date;
+    let endOfPeriod: Date;
 
-    const endOfDay = new Date(filters.date);
-    endOfDay.setHours(23, 59, 59, 999);
+    if (mode === 'week') {
+      // Calculate week range (Monday to Sunday)
+      const date = new Date(filters.date);
+      const dayOfWeek = date.getDay();
+      // Get Monday (day 0 = Sunday, so we need to handle it)
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+      startOfPeriod = new Date(date);
+      startOfPeriod.setDate(date.getDate() + mondayOffset);
+      startOfPeriod.setHours(0, 0, 0, 0);
+
+      endOfPeriod = new Date(startOfPeriod);
+      endOfPeriod.setDate(startOfPeriod.getDate() + 6);
+      endOfPeriod.setHours(23, 59, 59, 999);
+    } else {
+      // Day mode
+      startOfPeriod = new Date(filters.date);
+      startOfPeriod.setHours(0, 0, 0, 0);
+
+      endOfPeriod = new Date(filters.date);
+      endOfPeriod.setHours(23, 59, 59, 999);
+    }
 
     // Build conditions array
     const conditions = [
       eq(tasks.area, area),
       eq(tasks.status, 'done'),
-      gte(tasks.completedAt, startOfDay),
-      lte(tasks.completedAt, endOfDay),
+      gte(tasks.completedAt, startOfPeriod),
+      lte(tasks.completedAt, endOfPeriod),
     ];
 
     // Add user filter if provided
@@ -1817,8 +1843,8 @@ export async function getHistorialData(
       conditions.push(eq(tasks.assigneeId, filters.userId));
     }
 
-    // Query tasks for the day
-    const dayTasks = await db
+    // Query tasks for the period
+    const periodTasks = await db
       .select({
         id: tasks.id,
         title: tasks.title,
@@ -1854,18 +1880,18 @@ export async function getHistorialData(
         and(
           eq(tasks.area, area),
           eq(tasks.status, 'done'),
-          lt(tasks.completedAt, startOfDay)
+          lt(tasks.completedAt, startOfPeriod)
         )
       )
       .limit(1);
 
-    // Check if there are newer tasks (date is before today)
+    // Check if there are newer tasks (period end is before today)
     const today = new Date();
     today.setHours(23, 59, 59, 999);
-    const hasNewerTasks = endOfDay < today;
+    const hasNewerTasks = endOfPeriod < today;
 
     return {
-      tasks: dayTasks as HistorialTask[],
+      tasks: periodTasks as HistorialTask[],
       users: areaUsers,
       hasOlderTasks: !!olderTask,
       hasNewerTasks,
