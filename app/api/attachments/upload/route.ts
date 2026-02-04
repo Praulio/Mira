@@ -178,13 +178,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Block uploads for tasks in 'done' status
-    if (task.status === 'done') {
-      return NextResponse.json(
-        { success: false, error: 'No se pueden agregar adjuntos a tareas completadas' },
-        { status: 400 }
-      );
-    }
+    // Note: We allow uploads to 'done' tasks to support the CompleteTaskModal flow
+    // where files are uploaded AFTER the task is marked complete
 
     // Convert File to Buffer
     const arrayBuffer = await file.arrayBuffer();
