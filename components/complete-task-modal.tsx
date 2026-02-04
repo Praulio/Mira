@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, PartyPopper, Link as LinkIconHeader } from 'lucide-react';
+import { X, PartyPopper, Link as LinkIconHeader, Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { completeTask } from '@/app/actions/tasks';
 import { MentionInput, extractMentionIds } from '@/components/mention-input';
 import { LinkInput } from '@/components/link-input';
+import { PendingFilePicker } from '@/components/pending-file-picker';
 import { fireConfetti, playCelebrationSound } from '@/lib/confetti';
 import type { KanbanTaskData } from '@/app/actions/kanban';
 
@@ -38,14 +39,16 @@ function CompleteTaskModalInner({
   const router = useRouter();
   const [notes, setNotes] = useState('');
   const [links, setLinks] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const hasContent = notes.trim().length > 0 || links.length > 0;
+  const hasContent = notes.trim().length > 0 || links.length > 0 || pendingFiles.length > 0;
 
   const handleClose = () => {
     if (hasContent) {
       const confirmed = confirm(
-        '¿Estás seguro de cancelar? Se perderán las notas y links que has agregado.'
+        '¿Estás seguro de cancelar? Se perderán las notas, links y archivos que has agregado.'
       );
       if (!confirmed) return;
     }
@@ -66,11 +69,55 @@ function CompleteTaskModalInner({
     });
 
     if (result.success) {
-      // Fire celebration effects
-      fireConfetti();
-      playCelebrationSound();
+      // Upload pending files if any
+      if (pendingFiles.length > 0) {
+        setUploadProgress({ current: 0, total: pendingFiles.length });
 
-      toast.success('¡Tarea completada!');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (let i = 0; i < pendingFiles.length; i++) {
+          const file = pendingFiles[i];
+          setUploadProgress({ current: i + 1, total: pendingFiles.length });
+
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+            uploadFormData.append('taskId', task.id);
+
+            const response = await fetch('/api/attachments/upload', {
+              method: 'POST',
+              body: uploadFormData,
+            });
+
+            const uploadResult = await response.json();
+            if (uploadResult.success) successCount++;
+            else errorCount++;
+          } catch {
+            errorCount++;
+          }
+        }
+
+        setUploadProgress(null);
+
+        // Show appropriate toast based on upload results
+        if (errorCount > 0 && successCount > 0) {
+          toast.warning(`¡Tarea completada! ${successCount} archivo(s) subido(s), ${errorCount} fallido(s).`);
+        } else if (errorCount > 0) {
+          toast.warning('Tarea completada, pero los archivos no se pudieron subir.');
+        } else {
+          // Celebration with attachments
+          fireConfetti();
+          playCelebrationSound();
+          toast.success('¡Tarea completada con adjuntos!');
+        }
+      } else {
+        // Normal celebration (no attachments)
+        fireConfetti();
+        playCelebrationSound();
+        toast.success('¡Tarea completada!');
+      }
+
       router.refresh();
       onClose();
       onComplete?.();
@@ -125,6 +172,18 @@ function CompleteTaskModalInner({
             </label>
             <LinkInput links={links} onChange={setLinks} maxLinks={10} />
           </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+              <Paperclip className="h-3 w-3" /> Adjuntar archivos (opcional)
+            </label>
+            <PendingFilePicker
+              files={pendingFiles}
+              onFilesChange={setPendingFiles}
+              disabled={isSubmitting}
+            />
+          </div>
         </div>
 
         {/* Footer Actions */}
@@ -142,7 +201,12 @@ function CompleteTaskModalInner({
             className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? (
-              'Completando...'
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {uploadProgress
+                  ? `Subiendo ${uploadProgress.current}/${uploadProgress.total}...`
+                  : 'Completando...'}
+              </>
             ) : (
               <>
                 <PartyPopper className="h-4 w-4" />

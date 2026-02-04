@@ -132,7 +132,7 @@ Validación Fase 7:
 
 ## Fase 8: UI - CompleteTaskModal con Adjuntos
 
-- [ ] **8.1** Agregar PendingFilePicker a CompleteTaskModal
+- [x] **8.1** Agregar PendingFilePicker a CompleteTaskModal
   - Props: pendingFiles, uploadProgress states
   - Render: Sección adjuntos con PendingFilePicker, botón con progreso
   - Comportamiento: Después de completeTask, subir archivos a /api/attachments/upload

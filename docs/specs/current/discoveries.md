@@ -184,3 +184,27 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El patrón `tasks.slice(0, 2)` con `remainingCount = tasks.length - 2` es idiomático para "max N visible + '+M más'"
 
 **Notes:** Build pasa. Siguiente: 8.1 agregar PendingFilePicker a CompleteTaskModal.
+
+### Session 10 - 2026-02-04
+**Task:** 8.1 - Agregar PendingFilePicker a CompleteTaskModal
+**Files:** `components/complete-task-modal.tsx`
+
+**Cambios realizados:**
+1. Importados `Paperclip`, `Loader2` de lucide-react y `PendingFilePicker`
+2. Agregados estados: `pendingFiles` (File[]), `uploadProgress` ({ current, total } | null)
+3. Actualizado `hasContent` para incluir `pendingFiles.length > 0`
+4. Actualizado mensaje de confirmación de cierre para mencionar "archivos"
+5. Lógica de upload post-completeTask:
+   - Loop secuencial con progreso granular
+   - Toast diferenciado: éxito total, parcial, error total
+   - Confetti solo si no hubo errores de upload
+6. Sección UI "Adjuntar archivos" con PendingFilePicker
+7. Botón con Loader2 animado y texto de progreso
+
+**Patterns descubiertos:**
+- El patrón de upload post-acción de `CreateTaskDialog` se replica exactamente
+- El orden matters: completeTask primero, uploads después. Si uploads fallan, la tarea ya está completada.
+- Tres estados de toast: success (todo bien), warning con detalles (parcial), warning genérico (todo falló)
+- El confetti solo dispara en escenarios de éxito total (sin attachments o con todos subidos)
+
+**Notes:** Build pasa. **TODAS LAS TAREAS COMPLETADAS** - Feature "Blockers + Multi-Actividad" implementada.
