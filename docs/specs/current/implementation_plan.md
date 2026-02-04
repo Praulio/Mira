@@ -25,7 +25,7 @@ Validación Fase 0:
 
 ## Fase 1: Data Layer
 
-- [ ] **1.1** Actualizar tipo KanbanTaskData con dueDate y progress
+- [x] **1.1** Actualizar tipo KanbanTaskData con dueDate y progress
   - Archivo: `app/actions/kanban.ts`
   - Output: Tipo incluye `dueDate: Date | null` y `progress: number`
   - Referencia: ver tipo actual en líneas 13-32

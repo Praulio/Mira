@@ -98,3 +98,15 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Para ejecutar drizzle-kit con env vars de .env.local: `DATABASE_URL=$(grep "^DATABASE_URL=" .env.local | cut -d'=' -f2-) npx drizzle-kit push --force`
 - La flag `--force` evita el prompt interactivo que bloqueaba Ralph
 **Notes:** Fase 0 completada. Build pasa. Siguiente: Fase 1 - Data Layer (actualizar tipos)
+
+### Session 3 - 2026-02-04
+**Task:** 1.1 - Actualizar tipo KanbanTaskData con dueDate y progress
+**Files:** `app/actions/kanban.ts`
+**Changes:**
+- Agregado `dueDate: Date | null` al tipo KanbanTaskData (línea 32)
+- Agregado `progress: number` al tipo KanbanTaskData (línea 33)
+**Patterns:**
+- Los tipos TypeScript se definen separados de las queries
+- El `as KanbanTaskData` (type assertion) permite que el build pase aunque el objeto no tenga todos los campos
+- La próxima tarea (1.2) debe actualizar la query para retornar los campos reales
+**Notes:** Tarea 1.1 completada - solo actualiza el tipo. Task 1.2 actualizará la query.

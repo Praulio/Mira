@@ -29,6 +29,8 @@ export type KanbanTaskData = {
   startedAt: Date | null;
   completedAt: Date | null;
   attachmentCount: number;
+  dueDate: Date | null;
+  progress: number;
 };
 
 /**
