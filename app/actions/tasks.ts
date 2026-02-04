@@ -4,9 +4,12 @@ import { getAuth } from '@/lib/mock-auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/db';
-import { tasks, activity, users } from '@/db/schema';
+import { tasks, activity, notifications, users } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { deleteTaskFolder } from '@/lib/google-drive';
+import { after } from 'next/server';
+import { sendTaskAssignedEmail } from '@/lib/email';
+import { extractMentionIds } from '@/components/mention-input';
 import { getCurrentArea } from '@/lib/area-context';
 
 /**
@@ -215,7 +218,7 @@ export async function createTask(
         },
       });
 
-      // If assigned at creation, log assignment activity too
+// If assigned at creation, log assignment activity too
       if (newTask.assigneeId) {
         await tx.insert(activity).values({
           taskId: newTask.id,
@@ -249,6 +252,44 @@ export async function createTask(
 
       return newTask;
     });
+
+    // Create notifications (outside transaction)
+    if (result.assigneeId && result.assigneeId !== userId) {
+      await db.insert(notifications).values({
+        recipientId: result.assigneeId,
+        actorId: userId,
+        taskId: result.id,
+        type: 'assigned',
+      });
+
+      // Send email non-blocking
+      after(async () => {
+        const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1);
+        const [recipient] = await db.select({ email: users.email }).from(users).where(eq(users.id, result.assigneeId!)).limit(1);
+        if (actor && recipient) {
+          await sendTaskAssignedEmail({
+            to: recipient.email,
+            assignerName: actor.name,
+            taskTitle: result.title,
+            taskId: result.id,
+          });
+        }
+      });
+    }
+
+    // Create mention notifications
+    if (mentions && mentions.length > 0) {
+      for (const mentionedUserId of mentions) {
+        if (mentionedUserId !== userId) {
+          await db.insert(notifications).values({
+            recipientId: mentionedUserId,
+            actorId: userId,
+            taskId: result.id,
+            type: 'mentioned',
+          });
+        }
+      }
+    }
 
     // Revalidate relevant paths
     revalidatePath('/');
@@ -604,7 +645,7 @@ export async function updateTaskMetadata(
         },
       });
 
-      // Create 'mentioned' activity for each NEW mention (diff)
+// Create 'mentioned' activity and notifications for each NEW mention (diff)
       if (newMentions.length > 0) {
         for (const mentionedUserId of newMentions) {
           await tx.insert(activity).values({
@@ -619,6 +660,16 @@ export async function updateTaskMetadata(
               context: 'edit',
             },
           });
+
+          // Also create notification (skip self)
+          if (mentionedUserId !== userId) {
+            await tx.insert(notifications).values({
+              recipientId: mentionedUserId,
+              actorId: userId,
+              taskId: updatedTask.id,
+              type: 'mentioned',
+            });
+          }
         }
       }
 
@@ -686,8 +737,34 @@ export async function assignTask(
         },
       });
 
+      // Notify new assignee (skip self-notification and null assignee)
+      if (newAssigneeId && newAssigneeId !== currentUserId) {
+        await tx.insert(notifications).values({
+          recipientId: newAssigneeId,
+          actorId: currentUserId,
+          taskId: taskId,
+          type: 'assigned',
+        });
+      }
+
       return updatedTask;
     });
+
+    // Send email non-blocking (outside transaction)
+    if (newAssigneeId && newAssigneeId !== currentUserId) {
+      after(async () => {
+        const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, currentUserId)).limit(1);
+        const [recipient] = await db.select({ email: users.email }).from(users).where(eq(users.id, newAssigneeId)).limit(1);
+        if (actor && recipient) {
+          await sendTaskAssignedEmail({
+            to: recipient.email,
+            assignerName: actor.name,
+            taskTitle: currentTask.title,
+            taskId: taskId,
+          });
+        }
+      });
+    }
 
     revalidatePath('/');
     revalidatePath('/kanban');
@@ -903,7 +980,8 @@ export async function completeTask(
 
       // Create 'mentioned' activity for each mentioned user
       if (mentions && mentions.length > 0) {
-        for (const mentionedUserId of mentions) {
+        const uniqueMentionIds = [...new Set(mentions)];
+        for (const mentionedUserId of uniqueMentionIds) {
           await tx.insert(activity).values({
             taskId: updatedTask.id,
             userId: mentionedUserId,
@@ -916,6 +994,16 @@ export async function completeTask(
               notes: notes || null,
             },
           });
+
+          // Insert notification for mentioned user (skip self-notification)
+          if (mentionedUserId !== userId) {
+            await tx.insert(notifications).values({
+              recipientId: mentionedUserId,
+              actorId: userId,
+              taskId: updatedTask.id,
+              type: 'mentioned',
+            });
+          }
         }
       }
 

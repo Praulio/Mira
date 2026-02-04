@@ -62,7 +62,7 @@ export const tasks = pgTable('tasks', {
   completedAt: timestamp('completed_at'),
   completionNotes: text('completion_notes'),
   completionLinks: jsonb('completion_links').$type<string[]>(),
-  mentions: jsonb('mentions').$type<string[]>(),
+mentions: jsonb('mentions').$type<string[]>(),
   startedAt: timestamp('started_at'),
   parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
   dueDate: timestamp('due_date'),
@@ -95,6 +95,31 @@ export const activity = pgTable('activity', {
   createdAtIdx: index('activity_created_at_idx').on(table.createdAt),
   userIdx: index('activity_user_idx').on(table.userId),
   areaIdx: index('activity_area_idx').on(table.area),
+}));
+
+/**
+ * Enum for notification types
+ */
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'assigned',
+  'mentioned'
+]);
+
+/**
+ * Notifications table - in-app notifications for users
+ */
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  recipientId: text('recipient_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  actorId: text('actor_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum('type').notNull(),
+  isRead: boolean('is_read').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  recipientIdx: index('notifications_recipient_idx').on(table.recipientId),
+  recipientReadIdx: index('notifications_recipient_read_idx').on(table.recipientId, table.isRead),
+  createdAtIdx: index('notifications_created_at_idx').on(table.createdAt),
 }));
 
 /**

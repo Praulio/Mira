@@ -37,11 +37,18 @@
       "tag": "0004_lean_songbird",
       "breakpoints": true
     },
-    {
+{
       "idx": 5,
       "version": "7",
       "when": 1770226226110,
       "tag": "0005_plain_luke_cage",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769626136407,
+      "tag": "0006_notifications_and_mentions",
       "breakpoints": true
     }
   ]

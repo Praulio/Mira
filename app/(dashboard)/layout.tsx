@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import { redirect } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { UserNav } from "@/components/user-nav"
+import { NotificationBell } from "@/components/notification-bell"
 import { AreaSwitcher } from "@/components/area-switcher"
 import { getAreaContext } from "@/lib/area-context"
 
@@ -36,12 +37,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </span>
           </div>
 
-          {/* User menu with area switcher */}
+          {/* User menu with area switcher and notifications */}
           <div className="flex items-center gap-4">
             {/* Area switcher only for superadmin */}
             {areaContext.canSwitchArea && (
               <AreaSwitcher currentArea={areaContext.currentArea} />
             )}
+            <NotificationBell />
             <UserNav />
           </div>
         </header>
