@@ -75,7 +75,7 @@ Validación Fase 3:
 
 ## Fase 4: UI - Variables CSS
 
-- [ ] **4.1** Agregar variables CSS para blocker
+- [x] **4.1** Agregar variables CSS para blocker
   - Input: Archivo `app/globals.css`
   - Output: 4 variables: --status-blocked, --status-blocked-bg, --glow-blocked, --border-blocked
   - Comportamiento: Colores naranja (oklch 0.60 0.25 30)

@@ -104,3 +104,12 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - `startedAt` es preferible a `updatedAt` para calcular tiempo transcurrido (más preciso)
 
 **Notes:** Build pasa. Siguiente: 4.1 agregar variables CSS para blocker.
+
+### Session 6 - 2026-02-04
+**Task:** 4.1 - Agregar variables CSS para blocker
+**Files:** `app/globals.css:77-81`
+**Patterns:**
+- OKLCH usa hue ~30 para naranja (entre rojo 25 y amarillo 80)
+- Patrón de 4 variables por status: base, bg (con alpha), glow (con alpha), border (con alpha)
+- Las variables se agregan junto a otras de status para mantener organización semántica
+**Notes:** Build pasa. Siguiente: 5.1 agregar visualización de blocker en TaskCard.
