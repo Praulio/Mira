@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { X, Calendar, User, AlignLeft, Trash2, Check, PartyPopper, Clock, GitBranch, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
-import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask } from '@/app/actions/tasks';
+import { updateTaskMetadata, assignTask, deleteTask, updateCompletedAt, createDerivedTask, updateTaskProgress } from '@/app/actions/tasks';
 import { getTaskAttachments } from '@/app/actions/attachments';
 import { getTeamUsers } from '@/app/actions/users';
 import type { KanbanTaskData } from '@/app/actions/kanban';
@@ -55,10 +55,16 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
     uploadedAt: Date;
   }[]>([]);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(true);
+  const [progress, setProgress] = useState(task.progress || 0);
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
 
   // Check if current user is owner (assignee or creator)
   const isOwner = user?.id === task.assignee?.id || user?.id === task.creator.id;
   const isDone = task.status === 'done';
+
+  // Check if current user can edit progress: assignee OR creator (if no assignee)
+  const canEditProgress = user?.id === task.assignee?.id ||
+                          (!task.assignee?.id && user?.id === task.creator.id);
 
   useEffect(() => {
     getTeamUsers().then(setTeamUsers);
@@ -186,6 +192,26 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
       toast.error(result.error || 'Error al crear tarea derivada');
     }
     setIsCreatingDerived(false);
+  }
+
+  async function handleProgressSave() {
+    if (!canEditProgress || progress === (task.progress || 0)) return;
+
+    setIsSavingProgress(true);
+    const result = await updateTaskProgress({
+      taskId: task.id,
+      progress,
+    });
+
+    if (result.success) {
+      toast.success('Progreso actualizado');
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Error al actualizar progreso');
+      // Revert to original value on error
+      setProgress(task.progress || 0);
+    }
+    setIsSavingProgress(false);
   }
 
   return (
@@ -323,6 +349,42 @@ function TaskDetailDialogInner({ task, onClose }: Omit<TaskDetailDialogProps, 'i
                 </div>
               </div>
             )}
+
+            {/* Progress Section */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                Progreso
+              </label>
+              {canEditProgress ? (
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progress}
+                    onChange={(e) => setProgress(Number(e.target.value))}
+                    onMouseUp={handleProgressSave}
+                    onTouchEnd={handleProgressSave}
+                    disabled={isSavingProgress}
+                    className="w-full h-2 rounded-full bg-white/10 accent-primary cursor-pointer disabled:opacity-50"
+                  />
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground">{progress}%</span>
+                    {isSavingProgress && <span className="text-muted-foreground">Guardando...</span>}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{ width: `${task.progress || 0}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{task.progress || 0}%</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Description Section */}

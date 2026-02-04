@@ -356,3 +356,22 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Usar `style={{ width: \`\${value}%\` }}` para ancho dinámico en CSS
 - `overflow-hidden` en contenedor padre para que barra interna no se desborde
 **Notes:** Progress bar visual completada. Siguiente: 5.3 (progress slider en TaskDetailDialog)
+
+### Session 21 - 2026-02-04
+**Task:** 5.3 - Agregar progress slider en TaskDetailDialog
+**Files:** `components/task-detail-dialog.tsx`
+**Changes:**
+- Importada action `updateTaskProgress` de `@/app/actions/tasks`
+- Agregado estado `progress` inicializado desde `task.progress || 0`
+- Agregado estado `isSavingProgress` para feedback visual
+- Agregada variable `canEditProgress` con lógica: assignee O creador (si no hay assignee)
+- Creada función `handleProgressSave()` que llama `updateTaskProgress` solo si cambió
+- Agregada sección "Progreso" en el grid de metadata con:
+  - **Editable**: slider `type="range"` con eventos `onMouseUp`/`onTouchEnd`
+  - **Read-only**: barra de progreso visual con porcentaje
+**Patterns:**
+- Permisos contextuales separados: `canEditProgress` distinto de `isOwner` (que se usa para otras cosas)
+- Guardar al soltar (no en cada change) evita llamadas excesivas al servidor
+- Estado local para UX fluida + sincronización con servidor al finalizar interacción
+- Revert a valor original si el update falla para evitar inconsistencias
+**Notes:** Slider de progreso completado. Siguiente: 5.4 (progress bar en TeamSlot)

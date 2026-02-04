@@ -172,7 +172,7 @@ Validación Fase 4:
   - Render: Barra horizontal (h-1.5) si progress > 0
   - Comportamiento: Solo visual, no editable
 
-- [ ] **5.3** Agregar progress slider en TaskDetailDialog
+- [x] **5.3** Agregar progress slider en TaskDetailDialog
   - Archivo: `components/task-detail-dialog.tsx`
   - Render: Slider si puede editar, barra read-only si no
   - Comportamiento: Guardar al soltar (onMouseUp/onTouchEnd)
