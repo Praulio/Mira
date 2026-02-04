@@ -186,3 +186,18 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - El patrón es: componente controla estado → al submit extrae IDs → pasa a server action
 - Mismo patrón usado en `CompleteTaskModal` (línea 8, 39, 59)
 **Notes:** Ahora al crear tareas con @menciones, los usuarios mencionados verán la mención en "Mis Menciones". Siguiente: 1.5.6 (MentionInput en TaskDetailDialog)
+
+### Session 9 - 2026-02-04
+**Task:** 1.5.6 - Agregar MentionInput a TaskDetailDialog
+**Files:** `components/task-detail-dialog.tsx`
+**Changes:**
+- Importado `MentionInput` y `extractMentionIds` de `@/components/mention-input`
+- Reemplazado `<textarea>` de descripción con `<MentionInput>` (líneas 328-334 → componente MentionInput)
+- En `handleSave()`, extraído `mentionIds` con `extractMentionIds(description)`
+- Pasado `mentions: mentionIds.length > 0 ? mentionIds : undefined` a `updateTaskMetadata()`
+- Placeholder actualizado a español: "Agrega más contexto a esta tarea... Usa @ para mencionar"
+**Patterns:**
+- El estado `description` ya existía en el componente (línea 39)
+- Integración más simple que CreateTaskDialog porque no hay reset de formulario
+- La lógica de diff de menciones (crear activities solo para nuevas) ya está en el servidor (Session 7)
+**Notes:** ¡Fase 1.5 COMPLETADA! Menciones unificadas funcionan en creación, edición y completado de tareas. Siguiente: Fase 2 (Due Date Feature)

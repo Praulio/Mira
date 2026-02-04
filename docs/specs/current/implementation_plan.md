@@ -71,7 +71,7 @@ Validación Fase 1:
   - Output: Reemplazar textarea descripción con MentionInput
   - Comportamiento: Extraer mentions con extractMentionIds() y pasarlos a createTask()
 
-- [ ] **1.5.6** Agregar MentionInput a TaskDetailDialog
+- [x] **1.5.6** Agregar MentionInput a TaskDetailDialog
   - Archivo: `components/task-detail-dialog.tsx:328-334`
   - Output: Reemplazar textarea descripción con MentionInput
   - Comportamiento: Al guardar, extraer mentions y pasarlos a updateTaskMetadata()
