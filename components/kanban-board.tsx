@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   DndContext,
@@ -13,6 +13,8 @@ import {
   closestCorners,
 } from '@dnd-kit/core';
 import { toast } from 'sonner';
+import { User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { KanbanColumn } from './kanban-column';
 import { TaskCard } from './task-card';
 import { CompleteTaskModal } from './complete-task-modal';
@@ -56,10 +58,28 @@ export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
     oldStatus: 'backlog' | 'todo' | 'in_progress' | 'done';
   } | null>(null);
 
+  // State for "Mis Tareas" filter (Fase 4.2)
+  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false);
+
   // Sincronizar estado local cuando el servidor envíe datos nuevos
   useEffect(() => {
     setKanbanData(initialData);
   }, [initialData]);
+
+  // Filter tasks by current user when "Mis Tareas" is active (Fase 4.2)
+  const filteredKanbanData = useMemo(() => {
+    if (!showOnlyMyTasks) return kanbanData;
+
+    const filterByUser = (tasks: KanbanTaskData[]) =>
+      tasks.filter((task) => task.assignee?.id === currentUserId);
+
+    return {
+      backlog: filterByUser(kanbanData.backlog),
+      todo: filterByUser(kanbanData.todo),
+      in_progress: filterByUser(kanbanData.in_progress),
+      done: filterByUser(kanbanData.done),
+    };
+  }, [kanbanData, showOnlyMyTasks, currentUserId]);
 
   // Configure sensors for drag detection
   // PointerSensor requires 5px movement to start drag (prevents accidental drags on click)
@@ -227,31 +247,51 @@ export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      {/* Filter toggle - "Mis Tareas" (Fase 4.2) */}
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={() => setShowOnlyMyTasks(!showOnlyMyTasks)}
+          className={cn(
+            'flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all',
+            showOnlyMyTasks
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-white/5 text-muted-foreground hover:bg-white/10'
+          )}
+        >
+          <User className="h-4 w-4" />
+          Mis Tareas
+        </button>
+      </div>
+
       {/* Kanban Board - 4 columns */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KanbanColumn
           id="backlog"
           title="Pila de Tareas"
-          tasks={kanbanData.backlog}
+          tasks={filteredKanbanData.backlog}
           statusColor="neutral"
+          isFiltered={showOnlyMyTasks}
         />
         <KanbanColumn
           id="todo"
           title="Por Hacer"
-          tasks={kanbanData.todo}
+          tasks={filteredKanbanData.todo}
           statusColor="blue"
+          isFiltered={showOnlyMyTasks}
         />
         <KanbanColumn
           id="in_progress"
           title="En Progreso"
-          tasks={kanbanData.in_progress}
+          tasks={filteredKanbanData.in_progress}
           statusColor="amber"
+          isFiltered={showOnlyMyTasks}
         />
         <KanbanColumn
           id="done"
           title="Completado"
-          tasks={kanbanData.done}
+          tasks={filteredKanbanData.done}
           statusColor="green"
+          isFiltered={showOnlyMyTasks}
         />
       </div>
 

@@ -9,6 +9,7 @@ type KanbanColumnProps = {
   title: string;
   tasks: KanbanTaskData[];
   statusColor: 'neutral' | 'blue' | 'amber' | 'green';
+  isFiltered?: boolean;
 };
 
 /**
@@ -51,7 +52,7 @@ function getColorClasses(color: 'neutral' | 'blue' | 'amber' | 'green'): {
  * - Static structure with dynamic content
  * - Uses @dnd-kit/core for drag and drop
  */
-export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, tasks, isFiltered }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -90,7 +91,7 @@ export function KanbanColumn({ id, title, tasks, statusColor }: KanbanColumnProp
         ) : (
           <div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900">
             <p className="text-sm text-neutral-500 dark:text-neutral-500">
-              Sin tareas
+              {isFiltered ? 'No tienes tareas en esta etapa' : 'Sin tareas'}
             </p>
           </div>
         )}

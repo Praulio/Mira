@@ -141,13 +141,13 @@ Validación Fase 3:
   - Archivo: `app/(dashboard)/dashboard/kanban/page.tsx`
   - Output: `<KanbanBoard initialData={data} currentUserId={userId} />`
 
-- [ ] **4.2** Agregar toggle "Mis Tareas" en KanbanBoard
+- [x] **4.2** Agregar toggle "Mis Tareas" en KanbanBoard
   - Archivo: `components/kanban-board.tsx`
   - Props: Recibir `currentUserId: string`
   - Render: Botón toggle encima de columnas, alineado derecha
   - Comportamiento: Estado local, filtra por assignee.id === currentUserId
 
-- [ ] **4.3** Agregar mensaje vacío filtrado en KanbanColumn
+- [x] **4.3** Agregar mensaje vacío filtrado en KanbanColumn
   - Archivo: `components/kanban-column.tsx`
   - Props: `{ isFiltered?: boolean }`
   - Render: "No tienes tareas en esta etapa" si vacío + filtrado

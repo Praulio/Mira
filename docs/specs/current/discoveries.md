@@ -311,3 +311,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Mismo patrón usado en dashboard/page.tsx
 - Props de componentes cliente se pasan desde server components para datos de auth
 **Notes:** El warning de lint `'currentUserId' is defined but never used` es esperado - tarea 4.2 usará el prop para el filtro
+
+### Session 18 - 2026-02-04
+**Task:** 4.2 + 4.3 - Agregar toggle "Mis Tareas" y mensaje vacío filtrado
+**Files:** `components/kanban-board.tsx`, `components/kanban-column.tsx`
+**Changes:**
+- KanbanBoard: Agregado `useMemo` import, `User` icon de lucide, `cn` utility
+- KanbanBoard: Estado `showOnlyMyTasks` (boolean, default false)
+- KanbanBoard: `filteredKanbanData` memoizado que filtra tasks por `assignee?.id === currentUserId`
+- KanbanBoard: Toggle button con estilo glassmorphism (`bg-white/5` inactivo, `bg-primary` activo)
+- KanbanBoard: Pasando `isFiltered={showOnlyMyTasks}` a cada KanbanColumn
+- KanbanColumn: Agregada prop `isFiltered?: boolean` al tipo
+- KanbanColumn: Mensaje vacío dinámico: "No tienes tareas en esta etapa" si filtrado, "Sin tareas" si no
+**Patterns:**
+- `useMemo` para evitar recálculo de filtrado en cada render
+- Filtro client-side es apropiado porque el estado es local (no persiste entre sesiones)
+- El prop `statusColor` estaba sin uso pero se mantiene en tipo para compatibilidad futura
+**Notes:** Tareas 4.2 y 4.3 completadas juntas porque 4.2 dependía de la prop `isFiltered` de 4.3
