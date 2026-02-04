@@ -98,23 +98,22 @@ export function KanbanBoard({ initialData, currentUserId }: KanbanBoardProps) {
   }, [kanbanData]);
 
   // Handle URL-based task opening (from notifications)
+  // Only sync URL → state, not the other way around
+  const taskParam = searchParams.get('task');
+
   useEffect(() => {
-    const taskParam = searchParams.get('task');
-    if (taskParam && taskParam !== urlTaskId) {
-      setUrlTaskId(taskParam);
-    }
-  }, [searchParams, urlTaskId]);
+    // Sync URL param to state (only when param changes)
+    setUrlTaskId(taskParam);
+  }, [taskParam]);
 
   // Get the task to show in modal from URL
   const urlTask = urlTaskId ? findTaskById(urlTaskId) : null;
 
   // Close URL task modal and clear URL param
   const handleCloseUrlTask = useCallback(() => {
+    // Clear state first, then URL
     setUrlTaskId(null);
-    // Remove task param from URL without navigation
-    const url = new URL(window.location.href);
-    url.searchParams.delete('task');
-    router.replace(url.pathname, { scroll: false });
+    router.replace('/dashboard/kanban', { scroll: false });
   }, [router]);
 
   // Configure sensors for drag detection
