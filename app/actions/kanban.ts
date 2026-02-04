@@ -31,6 +31,7 @@ export type KanbanTaskData = {
   attachmentCount: number;
   dueDate: Date | null;
   progress: number;
+  blockerReason: string | null;
 };
 
 /**
@@ -85,6 +86,7 @@ export async function getKanbanData(): Promise<KanbanData> {
         completedAt: tasks.completedAt,
         dueDate: tasks.dueDate,
         progress: tasks.progress,
+        blockerReason: tasks.blockerReason,
         attachmentCount: sql<number>`(SELECT COUNT(*) FROM ${attachments} WHERE ${attachments.taskId} = ${tasks.id})`.as('attachment_count'),
       })
       .from(tasks)
@@ -127,6 +129,7 @@ export async function getKanbanData(): Promise<KanbanData> {
           completedAt: task.completedAt,
           dueDate: task.dueDate,
           progress: task.progress ?? 0,
+          blockerReason: task.blockerReason,
           attachmentCount: Number(task.attachmentCount) || 0,
         } as KanbanTaskData;
       })

@@ -75,3 +75,11 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Agregada función `removeBlocker()` - verifica ownership, verifica que exista blocker, limpia blockerReason
 
 **Notes:** Build pasa. Siguiente: 3.1 agregar blockerReason a KanbanTaskData.
+
+### Session 4 - 2026-02-04
+**Task:** 3.1 - Agregar blockerReason a KanbanTaskData
+**Files:** `app/actions/kanban.ts:34` (tipo), `app/actions/kanban.ts:88` (query), `app/actions/kanban.ts:130` (objeto retorno)
+**Patterns:**
+- Al agregar campo nuevo a query de Drizzle, actualizar 3 lugares: tipo → select → objeto retorno
+- El campo viene de `tasks.blockerReason` del schema ya migrado
+**Notes:** Build pasa. Siguiente: 3.2 cambiar TeamSlotData de singular a array.

@@ -55,7 +55,7 @@ Validación Fase 2:
 
 ## Fase 3: Tipos y Queries
 
-- [ ] **3.1** Agregar blockerReason a KanbanTaskData
+- [x] **3.1** Agregar blockerReason a KanbanTaskData
   - Input: Archivo `app/actions/kanban.ts`
   - Output: Tipo incluye `blockerReason: string | null`, query lo selecciona
   - Comportamiento: Kanban recibe datos de blocker
