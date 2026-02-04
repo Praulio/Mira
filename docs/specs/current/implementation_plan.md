@@ -57,7 +57,7 @@ Validación Fase 1:
   - Comportamiento: Guardar mentions + crear activity 'mentioned'
   - Referencia: ver patrón en completeTask líneas 801-816
 
-- [ ] **1.5.3** Actualizar updateTaskMetadata para procesar mentions
+- [x] **1.5.3** Actualizar updateTaskMetadata para procesar mentions
   - Archivo: `app/actions/tasks.ts`
   - Comportamiento: Al editar descripción, guardar mentions + crear activity para NUEVAS menciones
   - Nota: Solo crear activity para menciones que no existían antes (diff)

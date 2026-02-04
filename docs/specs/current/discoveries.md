@@ -153,3 +153,20 @@ Log de aprendizajes entre sesiones de Ralph Loop.
 - Contexto en metadata diferencia origen: 'creation', 'edit', o ausente (completar tarea)
 - Envolver en transacción cuando hay múltiples inserts relacionados
 **Notes:** Ahora las menciones funcionan desde la creación de tareas. Siguiente: 1.5.3 (menciones al editar descripción)
+
+### Session 7 - 2026-02-04
+**Task:** 1.5.3 - Actualizar updateTaskMetadata para procesar mentions
+**Files:** `app/actions/tasks.ts`
+**Changes:**
+- Agregado `mentions: z.array(z.string()).optional()` a `updateTaskMetadataSchema` (línea 91)
+- Actualizado `updateTaskMetadata` para extraer `mentions` de validationResult.data
+- Agregado update de campo `mentions` en `updateData` si se proporciona
+- Implementado **diff de menciones**: `newMentions = mentions.filter(m => !existingMentions.includes(m))`
+- Solo se crean activities 'mentioned' para menciones NUEVAS (evita spam)
+- Agregado `context: 'edit'` en metadata para diferenciar origen
+- Agregado `revalidatePath('/activity')` para refrescar vista de actividad
+**Patterns:**
+- **Diff de menciones**: Obtener existentes del task actual, filtrar las nuevas con `Array.filter()`
+- El campo `mentions` en DB es `jsonb.$type<string[]>()`, TypeScript lo ve como `unknown`, cast a `string[] | null`
+- `fieldsUpdated` en metadata del activity ahora incluye `mentions: boolean` para trazabilidad
+**Notes:** Menciones funcionan al editar descripción. Siguiente: 1.5.5 (MentionInput en CreateTaskDialog)

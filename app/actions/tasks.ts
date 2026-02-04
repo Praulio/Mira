@@ -82,12 +82,13 @@ const createDerivedTaskSchema = z.object({
 });
 
 /**
- * Zod schema for task metadata update (title/description)
+ * Zod schema for task metadata update (title/description/mentions)
  */
 const updateTaskMetadataSchema = z.object({
   taskId: z.string().uuid('Invalid task ID'),
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
   description: z.string().max(50000, 'La descripción no puede exceder 50,000 caracteres').optional(),
+  mentions: z.array(z.string()).optional(),
 }).refine(
   (data) => data.title !== undefined || data.description !== undefined,
   'At least one field (title or description) must be provided'
@@ -449,13 +450,14 @@ export async function deleteTask(
 }
 
 /**
- * Server Action: Update task metadata (title/description)
- * 
+ * Server Action: Update task metadata (title/description/mentions)
+ *
  * Updates the title and/or description of a task.
  * At least one field must be provided for update.
  * Logs the update activity with old and new values.
- * 
- * @param input - Task metadata update data (taskId, title?, description?)
+ * If mentions are provided, creates 'mentioned' activity for NEW mentions only (diff).
+ *
+ * @param input - Task metadata update data (taskId, title?, description?, mentions?)
  * @returns ActionResponse with updated task data or error message
  */
 export async function updateTaskMetadata(
@@ -464,7 +466,7 @@ export async function updateTaskMetadata(
   try {
     // Get authenticated user
     const { userId } = await getAuth();
-    
+
     if (!userId) {
       return {
         success: false,
@@ -474,7 +476,7 @@ export async function updateTaskMetadata(
 
     // Validate input
     const validationResult = updateTaskMetadataSchema.safeParse(input);
-    
+
     if (!validationResult.success) {
       return {
         success: false,
@@ -482,7 +484,7 @@ export async function updateTaskMetadata(
       };
     }
 
-    const { taskId, title, description } = validationResult.data;
+    const { taskId, title, description, mentions } = validationResult.data;
 
     // Fetch the current task to get old values
     const [currentTask] = await db
@@ -511,6 +513,17 @@ export async function updateTaskMetadata(
       updateData.description = description;
     }
 
+    // If mentions are provided, update them
+    if (mentions !== undefined) {
+      updateData.mentions = mentions.length > 0 ? mentions : null;
+    }
+
+    // Calculate NEW mentions (diff): mentions that didn't exist before
+    const existingMentions = (currentTask.mentions as string[] | null) || [];
+    const newMentions = mentions
+      ? mentions.filter((m) => !existingMentions.includes(m))
+      : [];
+
     // Execute update in transaction
     const result = await db.transaction(async (tx) => {
       // Update the task
@@ -538,9 +551,27 @@ export async function updateTaskMetadata(
           fieldsUpdated: {
             title: title !== undefined,
             description: description !== undefined,
+            mentions: mentions !== undefined,
           },
         },
       });
+
+      // Create 'mentioned' activity for each NEW mention (diff)
+      if (newMentions.length > 0) {
+        for (const mentionedUserId of newMentions) {
+          await tx.insert(activity).values({
+            taskId: updatedTask.id,
+            userId: mentionedUserId,
+            action: 'mentioned',
+            area: currentTask.area,
+            metadata: {
+              taskTitle: updatedTask.title,
+              mentionedBy: userId,
+              context: 'edit',
+            },
+          });
+        }
+      }
 
       return updatedTask;
     });
@@ -549,6 +580,7 @@ export async function updateTaskMetadata(
     revalidatePath('/');
     revalidatePath('/kanban');
     revalidatePath('/backlog');
+    revalidatePath('/activity');
 
     return { success: true, data: result };
   } catch (error) {
