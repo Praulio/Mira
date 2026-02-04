@@ -1,4 +1,4 @@
-# Ralph Loop Instructions: Task Enhancements - Tracking de Tiempos y Adjuntos
+# Ralph Loop Instructions: Task Enhancements V2
 
 ## Tu Rol
 
@@ -18,16 +18,17 @@ Eres Ralph, un agente de implementación autónomo. Ejecutas UNA tarea por sesi�
 1. Leer `docs/specs/current/spec.md` (contexto del feature)
 2. Leer `docs/specs/current/discoveries.md` (aprendizajes previos)
 3. Leer `docs/specs/current/implementation_plan.md` (encontrar tarea)
+4. Buscar skills relevantes: `ls .claude/skills/` → leer SKILL.md de los útiles
+5. Buscar soluciones existentes: `ls docs/solutions/` si hay errores conocidos
 
 ### PASO 1: Identificar Tarea
 - Buscar primera `- [ ]` sin completar
 - Anunciar: `RALPH_TASK: Executing [X.Y] - [description]`
 
 ### PASO 2: Ejecutar
-- Leer archivos mencionados en la Referencia de la tarea
-- Seguir el patrón de los archivos existentes
-- Implementar según Input/Output/Comportamiento descritos
-- NO agregar funcionalidad extra más allá de lo especificado
+- Leer archivos mencionados en "Referencia"
+- Implementar según "Input" y "Output"
+- NO agregar nada extra
 
 ### PASO 3: Verificar
 ```bash
@@ -37,7 +38,7 @@ pnpm lint && pnpm build
 - Si pasa → continuar
 
 ### PASO 4: Documentar
-Actualizar `docs/specs/current/discoveries.md`:
+Actualizar `discoveries.md`:
 ```markdown
 ### Session [N] - [fecha]
 **Task:** [X.Y] - [descripción]
@@ -50,11 +51,10 @@ Actualizar `docs/specs/current/discoveries.md`:
 Editar `implementation_plan.md`:
 - Cambiar `- [ ] **X.Y**` a `- [x] **X.Y**`
 
-### PASO 6: Commit Atómico
-**IMPORTANTE: Un solo commit con TODO (código + docs + plan)**
+### PASO 6: Commit
 ```bash
 git add .
-git commit -m "feat(task-enhancements): [task description]
+git commit -m "feat(task-enhancements-v2): [task description]
 
 Task [X.Y] completed
 
@@ -95,44 +95,63 @@ Si verificación falla:
 
 | Tipo de tarea | Verificación requerida |
 |---------------|------------------------|
-| Nuevo componente | Build + renders sin error |
-| Cambio de UI | Build + verificación visual |
+| Schema change | Migration aplica + build |
 | Server Action | Build + sin errores TS |
-| Database | Migration aplica |
-| Google Drive | Build + test manual si hay credenciales |
+| UI Component | Build + renders sin error |
+| Cambio de tipos | TypeScript compila |
 
 ## Archivos Clave
 
 ```
 db/schema.ts                           # Schema de base de datos
 app/actions/tasks.ts                   # Server actions de tareas
-app/actions/attachments.ts             # NUEVO: Server actions de adjuntos
 app/actions/kanban.ts                  # Query de datos Kanban
-lib/google-drive.ts                    # NUEVO: Cliente Google Drive
-lib/format-duration.ts                 # NUEVO: Helper de formateo
-components/kanban-board.tsx            # Tablero Kanban (bloquear drag done)
-components/task-card.tsx               # Card de tarea (duración, clip)
-components/task-detail-dialog.tsx      # Modal de detalle (tiempos, adjuntos)
-components/file-dropzone.tsx           # NUEVO: Upload de archivos
-components/attachment-list.tsx         # NUEVO: Lista de adjuntos
-app/api/attachments/[id]/download/     # NUEVO: API de descarga
-app/api/cron/cleanup-attachments/      # NUEVO: Cron de limpieza
-vercel.json                            # Configuración cron
+app/actions/team.ts                    # Query de datos Team View
+components/kanban-board.tsx            # Tablero Kanban (filtro)
+components/kanban-column.tsx           # Columna Kanban
+components/task-card.tsx               # Card de tarea (due date, progress)
+components/task-detail-dialog.tsx      # Modal de detalle (date picker, slider)
+components/create-task-dialog.tsx      # Dialog de crear tarea
+components/team-slot.tsx               # Slot de usuario en Team View
+components/sidebar.tsx                 # Navegación lateral
+app/(dashboard)/dashboard/backlog/     # Página a eliminar
+app/(dashboard)/dashboard/kanban/      # Página Kanban
 ```
+
+## Project Knowledge (OBLIGATORIO)
+
+Antes de implementar, Ralph DEBE buscar conocimiento existente del proyecto:
+
+### 1. Skills del Proyecto
+```bash
+ls .claude/skills/ 2>/dev/null
+```
+Si existen skills, leer el `SKILL.md` de los relevantes para la tarea actual.
+
+### 2. Soluciones Documentadas
+```bash
+ls docs/solutions/ 2>/dev/null
+```
+Antes de investigar cualquier error, buscar si ya está documentado.
+
+### 3. Reglas del Codebase
+```bash
+ls .claude/rules/ 2>/dev/null
+```
+Leer reglas relevantes del proyecto.
 
 ## Spec Reference
 
-Feature: Task Enhancements - Tracking de Tiempos y Adjuntos
+Feature: Task Enhancements V2
 Spec: `docs/specs/current/spec.md`
 Plan: `docs/specs/current/implementation_plan.md`
 
 ## Notas Importantes
 
-1. **Drizzle ORM**: Usar `AnyPgColumn` para self-referencing FK (parentTaskId)
-2. **Google Drive API**: Requiere `googleapis` package y Service Account
-3. **Server Actions**: Siempre `'use server'` al inicio
-4. **Timestamps**: `startedAt` se captura automáticamente, `completedAt` es editable por owner
-5. **Attachments**: Bloqueados para tareas en status 'done'
-6. **Cron Job**: Validar CRON_SECRET antes de procesar
-7. **formatDuration**: Mostrar días si > 24h, minutos si < 1h
-8. **Owner**: assignee OR creator pueden editar completedAt
+1. **Drizzle ORM**: Usar patterns existentes de campos timestamp y integer
+2. **Server Actions**: Siempre `'use server'` al inicio, validación Zod
+3. **Permisos Due Date**: Solo CREADOR puede editar
+4. **Permisos Progress**: Assignee O creador (si no hay assignee)
+5. **Colores Due Date**: Rojo = vencida, Amarillo = ≤24h, Normal = >24h
+6. **Progress**: Guardar al soltar slider (onMouseUp/onTouchEnd)
+7. **Filtro**: Estado local, NO persiste entre sesiones

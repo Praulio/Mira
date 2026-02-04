@@ -1,273 +1,150 @@
-# Implementation Plan: Task Enhancements - Tracking de Tiempos y Adjuntos
+# Implementation Plan: Task Enhancements V2
 
-Generado desde: `plans/feat-task-enhancements-tracking-attachments.md`
-Fecha: 2026-01-22
+Generado desde: `docs/plans/2026-02-04-feat-task-enhancements-v2-plan.md`
+Fecha: 2026-02-04
 
 ---
 
-## Fase 0: Preparación y Dependencias
+## Fase 0: Schema & Migration
 
-- [x] **0.1** Instalar paquete googleapis
-  - Input: package.json actual
-  - Output: googleapis instalado
-  - Comando: `pnpm add googleapis`
-  - Verificación: import funciona sin error
+- [ ] **0.1** Agregar campos dueDate y progress al schema de tasks
+  - Archivo: `db/schema.ts`
+  - Output: Campos `dueDate: timestamp('due_date')` y `progress: integer('progress').default(0)` agregados
+  - Referencia: ver campos `completedAt` y `startedAt` en línea 62-66
 
-- [x] **0.2** Agregar variables de entorno de ejemplo
-  - Input: .env.example actual
-  - Output: Variables GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_DRIVE_FOLDER_ID, CRON_SECRET agregadas
-  - Referencia: ver .env.example líneas 1-18
+- [ ] **0.2** Generar y aplicar migración Drizzle
+  - Comando: `pnpm db:generate && pnpm db:push`
+  - Output: Migración SQL aplicada a la base de datos
+  - Verificación: Campos existen en tabla tasks
 
 Validación Fase 0:
-• Build pasa (`pnpm build`)
-• Variables documentadas en .env.example
+• `pnpm build` pasa
+• Campos `due_date` y `progress` existen en tabla tasks
 
 ---
 
-## Fase 1: Schema y Migraciones
+## Fase 1: Data Layer
 
-- [x] **1.1** Agregar campos startedAt y parentTaskId a tabla tasks
-  - Input: db/schema.ts línea 53 (después de completionMentions)
-  - Output: Campos startedAt (timestamp nullable) y parentTaskId (uuid self-reference) agregados
-  - Comportamiento: parentTaskId referencia tasks.id con onDelete: 'set null'
-  - Referencia: ver db/schema.ts:42-60 para pattern existente
+- [ ] **1.1** Actualizar tipo KanbanTaskData con dueDate y progress
+  - Archivo: `app/actions/kanban.ts`
+  - Output: Tipo incluye `dueDate: Date | null` y `progress: number`
+  - Referencia: ver tipo actual en líneas 13-32
 
-- [x] **1.2** Crear tabla attachments
-  - Input: db/schema.ts (después de tabla activity, línea 76)
-  - Output: Tabla con id, taskId, driveFileId, name, mimeType, sizeBytes, uploadedBy, uploadedAt
-  - Comportamiento: taskId FK a tasks con cascade delete, índice en taskId
-  - Referencia: ver db/schema.ts:65-76 para pattern de tabla activity
+- [ ] **1.2** Actualizar query getKanbanData para incluir nuevos campos
+  - Archivo: `app/actions/kanban.ts`
+  - Output: Query retorna dueDate y progress en el select
 
-- [x] **1.3** Ejecutar migración
-  - Input: Schema actualizado
-  - Output: Tablas actualizadas en Neon DB
-  - Comando: `pnpm db:generate && pnpm db:push`
-  - Verificación: Campos visibles en Drizzle Studio
+- [ ] **1.3** Actualizar TeamSlotData para incluir progress
+  - Archivo: `app/actions/team.ts`
+  - Output: `inProgressTask` incluye campo `progress: number`
 
 Validación Fase 1:
-• Build pasa
-• `pnpm db:studio` muestra campos started_at, parent_task_id en tasks
-• Tabla attachments existe
+• `pnpm build` pasa
+• TypeScript no reporta errores de tipos
 
 ---
 
-## Fase 2: Backend - Tracking de Tiempos
+## Fase 2: Due Date Feature
 
-- [x] **2.1** Modificar updateTaskStatus para capturar startedAt
-  - Input: app/actions/tasks.ts función updateTaskStatus (buscar .set({ status:)
-  - Output: Captura startedAt=now() si newStatus='in_progress' y !currentTask.startedAt
-  - Comportamiento: Si vuelve a backlog/todo, resetear startedAt=null
-  - Referencia: ver app/actions/tasks.ts líneas 180-286
+- [ ] **2.1** Agregar dueDate a createTaskSchema y createTask action
+  - Archivo: `app/actions/tasks.ts`
+  - Output: Schema acepta `dueDate: z.coerce.date().optional()`, action guarda el campo
+  - Referencia: ver `createTaskSchema` líneas 24-28
 
-- [x] **2.2** Bloquear drag desde Done en kanban-board
-  - Input: components/kanban-board.tsx función handleDragEnd
-  - Output: Si task.status === 'done', mostrar toast.error y return early
-  - Comportamiento: Mensaje "Las tareas completadas no se pueden mover"
-  - Referencia: ver components/kanban-board.tsx:127-214
+- [ ] **2.2** Crear action updateTaskDueDate
+  - Archivo: `app/actions/tasks.ts`
+  - Input: `{ taskId: string, dueDate: Date | null }`
+  - Comportamiento: Solo el CREADOR puede editar
+  - Referencia: ver patrón de `updateCompletedAt` líneas 854-960
 
-- [x] **2.3** Crear función updateCompletedAt
-  - Input: app/actions/tasks.ts (nueva función)
-  - Output: Función que valida ownership y actualiza completedAt
-  - Props: { taskId: string, completedAt: Date }
-  - Comportamiento: Solo assignee o creator pueden editar, validar fecha <= now()
-  - Referencia: ver pattern de completeTask en mismo archivo
+- [ ] **2.3** Agregar date picker en CreateTaskDialog
+  - Archivo: `components/create-task-dialog.tsx`
+  - Output: Input type="date" después del campo descripción
+  - Comportamiento: Fecha mínima = hoy, opcional
 
-- [x] **2.4** Crear función createDerivedTask
-  - Input: app/actions/tasks.ts (nueva función)
-  - Output: Función que crea tarea con parentTaskId
-  - Props: { parentTaskId: string, title?: string }
-  - Comportamiento: Hereda description, assignee del padre. Registra activity con metadata.derivedFrom
-  - Referencia: ver createTask para pattern de inserción
+- [ ] **2.4** Agregar DueDateBadge en TaskCard footer
+  - Archivo: `components/task-card.tsx`
+  - Render: Badge con icono calendario + colores (rojo si vencida, amarillo si ≤24h)
+  - Referencia: ver footer en líneas 174-223
 
 Validación Fase 2:
-• Build pasa
-• Mover tarea a In Progress registra startedAt en DB
-• Drag desde Done muestra toast de error
-• API de updateCompletedAt valida ownership
+• `pnpm build` pasa
+• Crear tarea con fecha funciona
+• Badge muestra colores correctos
 
 ---
 
-## Fase 3: Backend - Google Drive Integration
+## Fase 3: Eliminar Backlog
 
-- [x] **3.1** Crear cliente Google Drive
-  - Input: Nuevo archivo lib/google-drive.ts
-  - Output: Función getGoogleDriveClient() y constante MIRA_FOLDER_ID
-  - Comportamiento: Usa googleapis con Service Account credentials de env
-  - Referencia: ver lib/mock-auth.ts para pattern de singleton
+- [ ] **3.1** Convertir página backlog en redirect
+  - Archivo: `app/(dashboard)/dashboard/backlog/page.tsx`
+  - Output: `redirect('/dashboard/kanban')` de next/navigation
 
-- [x] **3.2** Crear Server Actions para attachments
-  - Input: Nuevo archivo app/actions/attachments.ts
-  - Output: Funciones uploadAttachment, deleteAttachment, getTaskAttachments
-  - Comportamiento: uploadAttachment crea carpeta por taskId, valida mime types, bloquea si status=done
-  - Referencia: ver app/actions/tasks.ts para patterns de Server Actions
+- [ ] **3.2** Eliminar enlace backlog del sidebar
+  - Archivo: `components/sidebar.tsx`
+  - Output: Remover item con `href: "/dashboard/backlog"` del array navItems
 
-- [x] **3.3** Crear API route para descarga
-  - Input: Nuevo archivo app/api/attachments/[id]/download/route.ts
-  - Output: GET handler que streams archivo desde Drive
-  - Comportamiento: Valida auth, busca attachment en DB, descarga de Drive, retorna con headers
-  - Referencia: ver app/api/webhooks/clerk/route.ts para pattern de API route
+- [ ] **3.3** Limpiar archivos no usados
+  - Archivos: `components/backlog-list.tsx`, `components/backlog-task-card.tsx`
+  - Comportamiento: Eliminar si no tienen otros usos
 
 Validación Fase 3:
-• Build pasa
-• uploadAttachment sube archivo a Drive (test manual con curl o script)
-• deleteAttachment elimina de Drive y DB
+• `pnpm build` pasa
+• `/dashboard/backlog` redirige a `/dashboard/kanban`
+• Sidebar no muestra "Pila de Tareas"
 
 ---
 
-## Fase 4: UI - Tracking de Tiempos
+## Fase 4: Filtro Mis Tareas
 
-- [x] **4.1** Crear helper formatDuration
-  - Input: Nuevo archivo lib/format-duration.ts
-  - Output: Función formatDuration(startedAt, completedAt) → "2h 30m" o "1d 4h"
-  - Comportamiento: Si no hay startedAt retorna '-', si >24h muestra días
-  - Referencia: ver lib/utils.ts para pattern de helpers
+- [ ] **4.1** Pasar currentUserId a KanbanBoard
+  - Archivo: `app/(dashboard)/dashboard/kanban/page.tsx`
+  - Output: `<KanbanBoard initialData={data} currentUserId={userId} />`
 
-- [x] **4.2** Mostrar duración en TaskCard
-  - Input: components/task-card.tsx footer (líneas 140-165)
-  - Output: Span con duración verde si done, amber pulsante si in_progress
-  - Comportamiento: Reemplaza status dot por duración formateada cuando aplica
-  - Referencia: ver components/task-card.tsx:140-165
+- [ ] **4.2** Agregar toggle "Mis Tareas" en KanbanBoard
+  - Archivo: `components/kanban-board.tsx`
+  - Props: Recibir `currentUserId: string`
+  - Render: Botón toggle encima de columnas, alineado derecha
+  - Comportamiento: Estado local, filtra por assignee.id === currentUserId
 
-- [x] **4.3** Agregar info de tiempos en TaskDetailDialog
-  - Input: components/task-detail-dialog.tsx sección Information (líneas 166-181)
-  - Output: Mostrar startedAt, completedAt (editable si owner), duración calculada
-  - Comportamiento: DateTimePicker para completedAt solo si isOwner, botón crear derivada si done
-  - Referencia: ver components/task-detail-dialog.tsx:166-196
-
-- [x] **4.4** Actualizar query getKanbanData para incluir startedAt
-  - Input: app/actions/kanban.ts función getKanbanData
-  - Output: Incluir startedAt en select de tasks
-  - Referencia: ver app/actions/kanban.ts
+- [ ] **4.3** Agregar mensaje vacío filtrado en KanbanColumn
+  - Archivo: `components/kanban-column.tsx`
+  - Props: `{ isFiltered?: boolean }`
+  - Render: "No tienes tareas en esta etapa" si vacío + filtrado
 
 Validación Fase 4:
-• Build pasa
-• Cards en Done muestran "Xh Xm"
-• Cards en In Progress muestran tiempo con pulso
-• Modal muestra fechas y permite editar completedAt al owner
+• `pnpm build` pasa
+• Toggle visible y funcional
+• Columnas vacías muestran mensaje correcto
 
 ---
 
-## Fase 5: UI - Adjuntos
+## Fase 5: Progress Bar
 
-- [x] **5.1** Crear componente FileDropzone
-  - Input: Nuevo archivo components/file-dropzone.tsx
-  - Output: Componente con drag&drop y file input
-  - Props: { taskId, onUploadComplete, disabled? }
-  - Comportamiento: Arrastra/click → llama uploadAttachment → toast resultado → callback
-  - Referencia: ver components/link-input.tsx para pattern de input con lista
+- [ ] **5.1** Crear action updateTaskProgress
+  - Archivo: `app/actions/tasks.ts`
+  - Input: `{ taskId: string, progress: number (0-100) }`
+  - Comportamiento: Solo assignee O creador (si no hay assignee) puede editar
+  - Referencia: ver permisos en `updateCompletedAt`
 
-- [x] **5.2** Crear componente AttachmentList
-  - Input: Nuevo archivo components/attachment-list.tsx
-  - Output: Lista de adjuntos con iconos, tamaño, download, delete
-  - Props: { attachments, onDelete, readonly? }
-  - Comportamiento: Icono según mimeType, botón download link a API, delete con confirmación
-  - Referencia: ver components/link-input.tsx para pattern de lista con delete
+- [ ] **5.2** Agregar mini progress bar en TaskCard
+  - Archivo: `components/task-card.tsx`
+  - Render: Barra horizontal (h-1.5) si progress > 0
+  - Comportamiento: Solo visual, no editable
 
-- [x] **5.3** Agregar icono clip en TaskCard
-  - Input: components/task-card.tsx footer
-  - Output: Icono Paperclip + count si task tiene adjuntos
-  - Comportamiento: Mostrar solo si attachmentCount > 0
-  - Nota: Requiere agregar attachmentCount al type KanbanTaskData
+- [ ] **5.3** Agregar progress slider en TaskDetailDialog
+  - Archivo: `components/task-detail-dialog.tsx`
+  - Render: Slider si puede editar, barra read-only si no
+  - Comportamiento: Guardar al soltar (onMouseUp/onTouchEnd)
 
-- [x] **5.4** Integrar adjuntos en TaskDetailDialog
-  - Input: components/task-detail-dialog.tsx (después de descripción)
-  - Output: Sección "Adjuntos" con FileDropzone + AttachmentList
-  - Comportamiento: Dropzone disabled si status=done, lista readonly si done
-  - Referencia: ver estructura de secciones existentes en el dialog
-
-- [x] **5.5** Actualizar query para incluir attachmentCount
-  - Input: app/actions/kanban.ts
-  - Output: Agregar subquery count de attachments por task
-  - Referencia: ver pattern de select existente
+- [ ] **5.4** Agregar progress bar en TeamSlot
+  - Archivo: `components/team-slot.tsx`
+  - Render: Barra de progreso debajo del título si progress > 0
 
 Validación Fase 5:
-• Build pasa
-• Modal permite subir archivos con drag&drop
-• Lista muestra adjuntos con opción de descargar/eliminar
-• Cards muestran icono clip con contador
-
----
-
-## Fase 6: Cron Job Cleanup
-
-- [x] **6.1** Crear configuración vercel.json
-  - Input: vercel.json (crear o actualizar)
-  - Output: Cron job configurado para /api/cron/cleanup-attachments a las 3am UTC
-  - Referencia: Vercel docs cron syntax
-
-- [x] **6.2** Crear API route del cron
-  - Input: Nuevo archivo app/api/cron/cleanup-attachments/route.ts
-  - Output: GET handler que elimina adjuntos de tareas done +3 días
-  - Comportamiento: Valida CRON_SECRET, busca tareas, elimina de Drive y DB, elimina carpetas
-  - Referencia: ver app/api/webhooks/clerk/route.ts para pattern de validación de secret
-
-Validación Fase 6:
-• Build pasa
-• Endpoint responde con stats cuando se llama con CRON_SECRET correcto
-• Endpoint retorna 401 sin secret
-
----
-
-## Fase 7: QA/Testing - Pruebas de Integración con Playwright
-
-- [x] **7.1** Crear tests E2E para tracking de tiempos
-  - Input: Nuevo archivo e2e/task-time-tracking.spec.ts
-  - Output: Tests que verifican flujo completo de tracking
-  - Comportamiento: Crear tarea → drag a In Progress → verificar startedAt → completar → verificar duración
-  - Referencia: ver tests/e2e/ para patterns existentes de Playwright
-
-- [x] **7.2** Crear tests E2E para bloqueo de tareas Done
-  - Input: Nuevo archivo tests/e2e/task-done-blocking.spec.ts
-  - Output: Tests que verifican que tareas Done no se pueden mover
-  - Comportamiento: Completar tarea → intentar drag → verificar toast error → verificar posición no cambió
-
-- [x] **7.3** Crear tests E2E para adjuntos
-  - Input: Nuevo archivo tests/e2e/task-attachments.spec.ts
-  - Output: Tests que verifican upload, download y delete de adjuntos
-  - Comportamiento: Subir archivo → verificar en lista → descargar → eliminar → verificar eliminado
-  - Nota: Requiere mock de Google Drive API o test account
-
-- [x] **7.4** Crear tests E2E para edición de completedAt
-  - Input: Nuevo archivo tests/e2e/task-completed-at-edit.spec.ts
-  - Output: Tests que verifican permisos de edición
-  - Comportamiento: Owner puede editar → no-owner no puede → fecha se guarda correctamente
-
-Validación Fase 7:
-• Todos los tests E2E pasan (`pnpm test:e2e`)
-• Coverage de flujos críticos: tracking, bloqueo, adjuntos, permisos
-• Sin flaky tests
-
----
-
-## Fase 8: Peer Review - Auditoría de Seguridad
-
-- [x] **8.1** Auditar integración Google Drive
-  - Input: lib/google-drive.ts, app/actions/attachments.ts
-  - Output: Reporte de seguridad documentado en discoveries.md
-  - Verificar: Credentials no expuestas, validación de inputs, manejo de errores seguros
-  - Checklist: No secrets en logs, sanitización de nombres de archivo, límites de request
-
-- [x] **8.2** Auditar API routes y Server Actions
-  - Input: app/api/attachments/*, app/api/cron/*, app/actions/attachments.ts
-  - Output: Confirmación de validación de auth en todos los endpoints
-  - Verificar: Auth requerida, ownership validado, CRON_SECRET verificado, no IDOR vulnerabilities
-
-- [x] **8.3** Auditar manejo de archivos
-  - Input: Componentes de upload y download
-  - Output: Confirmación de validación de mime types y tamaños
-  - Verificar: Mime types validados server-side, no path traversal, Content-Disposition headers seguros
-
-- [x] **8.4** Review final de código
-  - Input: Todos los archivos modificados/creados en este feature
-  - Output: PR aprobado o lista de cambios requeridos
-  - Comportamiento: Usar agente security-sentinel para scan automatizado + review manual
-  - Referencia: compound-engineering:review:security-sentinel
-
-Validación Fase 8:
-• Sin vulnerabilidades críticas o altas identificadas
-• Todos los endpoints protegidos con auth
-• Credentials manejadas correctamente (env vars, no hardcoded)
-• PR listo para merge
+• `pnpm build` pasa
+• Progress visible en TaskCard, TeamSlot
+• Slider funcional solo para asignado/creador
 
 ---
 
@@ -275,13 +152,10 @@ Validación Fase 8:
 
 | Fase | Tareas | Descripción |
 |------|--------|-------------|
-| 0 | 2 | Preparación y dependencias |
-| 1 | 3 | Schema y migraciones |
-| 2 | 4 | Backend tracking de tiempos |
-| 3 | 3 | Backend Google Drive |
-| 4 | 4 | UI tracking de tiempos |
-| 5 | 5 | UI adjuntos |
-| 6 | 2 | Cron job cleanup |
-| 7 | 4 | QA/Testing - Playwright E2E |
-| 8 | 4 | Peer Review - Auditoría de seguridad |
-| **Total** | **31** | |
+| 0 | 2 | Schema & Migration |
+| 1 | 3 | Data Layer |
+| 2 | 4 | Due Date Feature |
+| 3 | 3 | Eliminar Backlog |
+| 4 | 3 | Filtro Mis Tareas |
+| 5 | 4 | Progress Bar |
+| **Total** | **19** | |
