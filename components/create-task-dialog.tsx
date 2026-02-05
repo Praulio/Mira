@@ -130,10 +130,10 @@ export function CreateTaskDialog() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-card/40 p-8 shadow-2xl backdrop-blur-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-background/60 backdrop-blur-sm p-2 sm:p-4">
+      <div className="w-full max-w-md max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-8 shadow-2xl backdrop-blur-2xl">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight text-foreground">
             Crear Nueva Tarea
           </h2>
@@ -146,7 +146,7 @@ export function CreateTaskDialog() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <label
               htmlFor="title"
