@@ -130,8 +130,9 @@ export function CreateTaskDialog() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-background/60 backdrop-blur-sm p-2 sm:p-4">
-      <div className="w-full max-w-md max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-8 shadow-2xl backdrop-blur-2xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-background/60 backdrop-blur-sm">
+      <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
         {/* Header */}
         <div className="mb-4 sm:mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -200,7 +201,7 @@ export function CreateTaskDialog() {
             <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Asignar a
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {teamUsers.map((user) => (
                 <button
                   key={user.id}
@@ -232,7 +233,7 @@ export function CreateTaskDialog() {
                 </button>
               ))}
               {teamUsers.length === 0 && (
-                <p className="col-span-4 text-center py-4 text-xs text-muted-foreground italic">
+                <p className="col-span-3 sm:col-span-4 text-center py-4 text-xs text-muted-foreground italic">
                   No se encontraron miembros del equipo
                 </p>
               )}
@@ -281,6 +282,7 @@ export function CreateTaskDialog() {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

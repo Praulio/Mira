@@ -7,7 +7,10 @@
       "Bash(node ./node_modules/.bin/next build:*)",
       "Bash(ls:*)",
       "Bash(node:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(find:*)",
+      "Bash(npx next build:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
