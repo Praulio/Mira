@@ -23,6 +23,7 @@ Per run:
 - `<timestamp>/evidence/<task_id>/...images...`
 - `latest/queue.md`
 - `latest/queue.json`
+- `latest/automation_inputs/` (ready-to-copy handoff folder)
 
 ## Export command
 
@@ -55,17 +56,22 @@ node "/Users/rogelioguz/Documents/Code House/Activos/Mira/scripts/automation/hd-
 - queueMdPath
 - queueJsonPath
 - warnings
+- handoffDir
 
 No implementar código de HD en esta automation.
 ```
 
 ## Manual handoff
 
-Copy from Mira export into HD repo:
+Copy only one folder:
 
-- `latest/queue.md` -> `<HD_REPO>/automation_inputs/queue.md`
-- `latest/queue.json` -> `<HD_REPO>/automation_inputs/queue.json`
-- `latest` evidence snapshot folder -> `<HD_REPO>/automation_inputs/evidence/`
+- `/Users/rogelioguz/Documents/Code House/Activos/Mira/automation_exports/hd_queue/latest/automation_inputs`
+
+Into HD repo root so final path becomes:
+
+- `<HD_REPO>/automation_inputs/queue.md`
+- `<HD_REPO>/automation_inputs/queue.json`
+- `<HD_REPO>/automation_inputs/evidence/...`
 
 ## Automation B prompt (HD worker)
 

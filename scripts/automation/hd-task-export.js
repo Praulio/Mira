@@ -451,11 +451,35 @@ function refreshLatest(outputRoot, snapshotDir) {
   ensureDir(latestDir);
   const srcJson = path.join(snapshotDir, 'queue.json');
   const srcMd = path.join(snapshotDir, 'queue.md');
+  const srcEvidenceDir = path.join(snapshotDir, 'evidence');
   const dstJson = path.join(latestDir, 'queue.json');
   const dstMd = path.join(latestDir, 'queue.md');
+  const handoffDir = path.join(latestDir, 'automation_inputs');
+  const handoffEvidenceDir = path.join(handoffDir, 'evidence');
+
+  // Keep simple latest files for quick inspection.
   fs.copyFileSync(srcJson, dstJson);
   fs.copyFileSync(srcMd, dstMd);
-  return { latestDir, latestJsonPath: dstJson, latestMdPath: dstMd };
+
+  // Build a single folder that can be copied directly into HD repo.
+  fs.rmSync(handoffDir, { recursive: true, force: true });
+  ensureDir(handoffDir);
+  ensureDir(handoffEvidenceDir);
+  fs.copyFileSync(srcJson, path.join(handoffDir, 'queue.json'));
+  fs.copyFileSync(srcMd, path.join(handoffDir, 'queue.md'));
+  if (fs.existsSync(srcEvidenceDir)) {
+    fs.cpSync(srcEvidenceDir, handoffEvidenceDir, { recursive: true });
+  }
+
+  return {
+    latestDir,
+    latestJsonPath: dstJson,
+    latestMdPath: dstMd,
+    handoffDir,
+    handoffQueueJsonPath: path.join(handoffDir, 'queue.json'),
+    handoffQueueMdPath: path.join(handoffDir, 'queue.md'),
+    handoffEvidenceDir,
+  };
 }
 
 async function main() {
@@ -593,6 +617,10 @@ async function main() {
           latestDir: latest.latestDir,
           latestJsonPath: latest.latestJsonPath,
           latestMdPath: latest.latestMdPath,
+          handoffDir: latest.handoffDir,
+          handoffQueueJsonPath: latest.handoffQueueJsonPath,
+          handoffQueueMdPath: latest.handoffQueueMdPath,
+          handoffEvidenceDir: latest.handoffEvidenceDir,
         },
         null,
         2
