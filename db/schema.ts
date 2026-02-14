@@ -21,6 +21,15 @@ export const taskStatusEnum = pgEnum('task_status', [
 ]);
 
 /**
+ * Enum for backend automation lifecycle (not exposed in UI)
+ */
+export const taskAutomationStatusEnum = pgEnum('task_automation_status', [
+  'claimed',
+  'completed',
+  'failed'
+]);
+
+/**
  * Enum for activity actions
  */
 export const activityActionEnum = pgEnum('activity_action', [
@@ -62,12 +71,21 @@ export const tasks = pgTable('tasks', {
   completedAt: timestamp('completed_at'),
   completionNotes: text('completion_notes'),
   completionLinks: jsonb('completion_links').$type<string[]>(),
-mentions: jsonb('mentions').$type<string[]>(),
+  mentions: jsonb('mentions').$type<string[]>(),
   startedAt: timestamp('started_at'),
   parentTaskId: uuid('parent_task_id').references((): AnyPgColumn => tasks.id, { onDelete: 'set null' }),
   dueDate: timestamp('due_date'),
   progress: integer('progress').default(0),
   blockerReason: text('blocker_reason'), // NULL = no bloqueada, string = razón del bloqueo
+  automationStatus: taskAutomationStatusEnum('automation_status'),
+  automationClaimedBy: text('automation_claimed_by'),
+  automationClaimedAt: timestamp('automation_claimed_at'),
+  automationCompletedAt: timestamp('automation_completed_at'),
+  automationRunId: text('automation_run_id'),
+  automationTargetRepo: text('automation_target_repo'),
+  automationBranch: text('automation_branch'),
+  automationCommitSha: text('automation_commit_sha'),
+  automationLastError: text('automation_last_error'),
   area: areaEnum('area').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -77,6 +95,8 @@ mentions: jsonb('mentions').$type<string[]>(),
   creatorIdx: index('tasks_creator_idx').on(table.creatorId),
   parentTaskIdx: index('tasks_parent_task_idx').on(table.parentTaskId),
   areaIdx: index('tasks_area_idx').on(table.area),
+  automationStatusIdx: index('tasks_automation_status_idx').on(table.automationStatus),
+  automationRunIdx: index('tasks_automation_run_idx').on(table.automationRunId),
 }));
 
 /**
