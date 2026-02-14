@@ -38,6 +38,51 @@ function ensureDatabaseUrl() {
   }
 }
 
+function loadEnvFromFile(filePath) {
+  if (!fs.existsSync(filePath)) return false;
+
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1);
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith('\'') && value.endsWith('\''))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+
+  return true;
+}
+
+function bootstrapEnv() {
+  if (process.env.DATABASE_URL) return;
+
+  const envPaths = [
+    path.resolve(process.cwd(), '.env.local'),
+    '/Users/rogelioguz/Documents/Code House/Activos/Mira/.env.local',
+  ];
+
+  for (const envPath of envPaths) {
+    loadEnvFromFile(envPath);
+    if (process.env.DATABASE_URL) return;
+  }
+}
+
 function buildRunId() {
   return `run_${new Date().toISOString()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -298,6 +343,7 @@ async function main() {
     process.exit(command ? 0 : 1);
   }
 
+  bootstrapEnv();
   ensureDatabaseUrl();
 
   const postgres = getPostgres();

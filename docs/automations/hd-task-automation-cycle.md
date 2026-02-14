@@ -44,6 +44,8 @@ npm run automation:hd:complete -- --task-id <task-id> --branch <branch> --commit
 npm run automation:hd:fail -- --task-id <task-id> --error "<failure summary>" --run-id <run-id>
 ```
 
+The CLI auto-loads env from `.env.local` in the current workspace and falls back to `/Users/rogelioguz/Documents/Code House/Activos/Mira/.env.local` when needed.
+
 ## Claim query pattern (atomic)
 
 Use a transaction with `FOR UPDATE SKIP LOCKED`:
