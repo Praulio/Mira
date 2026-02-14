@@ -14,8 +14,11 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "db:generate": "drizzle-kit generate",
-    "db:push": "dotenv -e .env.local -- drizzle-kit push",
-    "db:studio": "dotenv -e .env.local -- drizzle-kit studio"
+    "db:push": "./node_modules/.bin/dotenv -e .env.local -- drizzle-kit push",
+    "db:studio": "./node_modules/.bin/dotenv -e .env.local -- drizzle-kit studio",
+    "automation:hd:claim": "./node_modules/.bin/dotenv -e .env.local -- node scripts/automation/hd-task-lifecycle.js claim --download-images",
+    "automation:hd:complete": "./node_modules/.bin/dotenv -e .env.local -- node scripts/automation/hd-task-lifecycle.js complete",
+    "automation:hd:fail": "./node_modules/.bin/dotenv -e .env.local -- node scripts/automation/hd-task-lifecycle.js fail"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.7",
