@@ -3,7 +3,10 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
-let postgresLib = null;
+const dns = require('dns').promises;
+const net = require('net');
+const postgres = require('postgres');
+const { google } = require('googleapis');
 
 const command = process.argv[2];
 const rawArgs = process.argv.slice(3);
@@ -87,6 +90,70 @@ function buildRunId() {
   return `run_${new Date().toISOString()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function isInfraError(error) {
+  const infraCodes = new Set([
+    'ENOTFOUND',
+    'EAI_AGAIN',
+    'ECONNREFUSED',
+    'ETIMEDOUT',
+    'ENETUNREACH',
+    'EHOSTUNREACH',
+    'ECONNRESET',
+  ]);
+
+  return Boolean(error && error.code && infraCodes.has(error.code));
+}
+
+function classifyError(error) {
+  const message = error?.message || 'Unknown error';
+
+  if (error?.code === 'ENOTFOUND' || error?.code === 'EAI_AGAIN') {
+    return { errorType: 'infra_dns_failure', message };
+  }
+  if (isInfraError(error)) {
+    return { errorType: 'infra_network_failure', message };
+  }
+  if (message.includes('DATABASE_URL environment variable is required')) {
+    return { errorType: 'infra_missing_config', message };
+  }
+  if (message.includes('Unknown command')) {
+    return { errorType: 'usage_error', message };
+  }
+  return { errorType: 'task_runtime_failure', message };
+}
+
+function checkTcpReachability(hostname, port, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host: hostname, port });
+
+    const onError = (error) => {
+      socket.destroy();
+      reject(error);
+    };
+
+    socket.setTimeout(timeoutMs);
+    socket.once('error', onError);
+    socket.once('timeout', () => {
+      const timeoutError = new Error(`TCP timeout connecting to ${hostname}:${port}`);
+      timeoutError.code = 'ETIMEDOUT';
+      onError(timeoutError);
+    });
+    socket.once('connect', () => {
+      socket.end();
+      resolve();
+    });
+  });
+}
+
+async function runInfraPreflight() {
+  const dbUrl = new URL(process.env.DATABASE_URL);
+  const hostname = dbUrl.hostname;
+  const port = Number(dbUrl.port || 5432);
+
+  await dns.lookup(hostname);
+  await checkTcpReachability(hostname, port, 5000);
+}
+
 function parseServiceAccountKey() {
   const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   if (!serviceAccountKey) {
@@ -104,37 +171,13 @@ function parseServiceAccountKey() {
   };
 }
 
-function getPostgres() {
-  if (postgresLib) return postgresLib;
-  try {
-    // Load lazily so the script can print a clear error when dependencies are missing.
-    postgresLib = require('postgres');
-  } catch {
-    throw new Error("Dependency 'postgres' is missing. Run 'npm ci' in the Mira workspace.");
-  }
-  return postgresLib;
-}
-
 function getDriveClient() {
   const credentials = parseServiceAccountKey();
   if (!credentials) {
-    return {
-      drive: null,
-      warning: 'GOOGLE_SERVICE_ACCOUNT_KEY is not configured; image download skipped.',
-    };
+    return null;
   }
 
-  let googleApi = null;
-  try {
-    googleApi = require('googleapis').google;
-  } catch {
-    return {
-      drive: null,
-      warning: "Dependency 'googleapis' is missing. Run 'npm ci' in the Mira workspace.",
-    };
-  }
-
-  const auth = new googleApi.auth.GoogleAuth({
+  const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: credentials.clientEmail,
       private_key: credentials.privateKey,
@@ -142,10 +185,7 @@ function getDriveClient() {
     scopes: ['https://www.googleapis.com/auth/drive'],
   });
 
-  return {
-    drive: googleApi.drive({ version: 'v3', auth }),
-    warning: null,
-  };
+  return google.drive({ version: 'v3', auth });
 }
 
 function sanitizeFilename(fileName) {
@@ -167,11 +207,11 @@ async function fetchTaskAttachments(sql, taskId) {
 }
 
 async function downloadImageAttachments(taskId, attachments) {
-  const { drive, warning } = getDriveClient();
+  const drive = getDriveClient();
   if (!drive) {
     return {
       downloaded: [],
-      warning,
+      warning: 'GOOGLE_SERVICE_ACCOUNT_KEY is not configured; image download skipped.',
     };
   }
 
@@ -346,7 +386,10 @@ async function main() {
   bootstrapEnv();
   ensureDatabaseUrl();
 
-  const postgres = getPostgres();
+  if (command === 'claim') {
+    await runInfraPreflight();
+  }
+
   const sql = postgres(process.env.DATABASE_URL, { ssl: 'require' });
 
   try {
@@ -366,6 +409,18 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: error.message }, null, 2));
+  const { errorType, message } = classifyError(error);
+  console.error(
+    JSON.stringify(
+      {
+        ok: false,
+        errorType,
+        errorCode: error?.code || null,
+        error: message,
+      },
+      null,
+      2
+    )
+  );
   process.exit(1);
 });
