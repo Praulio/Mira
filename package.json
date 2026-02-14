@@ -16,6 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "./node_modules/.bin/dotenv -e .env.local -- drizzle-kit push",
     "db:studio": "./node_modules/.bin/dotenv -e .env.local -- drizzle-kit studio",
+    "automation:hd:export-queue": "node scripts/automation/hd-task-export.js --download-images",
     "automation:hd:claim": "node scripts/automation/hd-task-lifecycle.js claim --download-images",
     "automation:hd:complete": "node scripts/automation/hd-task-lifecycle.js complete",
     "automation:hd:fail": "node scripts/automation/hd-task-lifecycle.js fail"
